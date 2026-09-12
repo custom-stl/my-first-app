@@ -1,0 +1,1105 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>さんすうノート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=M+PLUS+Rounded+1c:wght@700;800&display=swap">
+<style>
+  :root {
+    --paper: #f4f7fb;
+    --grid: #dbe6f1;
+    --card: #ffffff;
+    --card-2: #eef4fa;
+    --ink: #1f2f45;
+    --ink-soft: #5b7392;
+    --line: #c9d8e6;
+    --shu: #e4523f;
+    --shu-soft: #fdeae6;
+    --ai: #2b6ca3;
+    --ai-soft: #e5eff8;
+    --kin: #e8a51c;
+    --kin-soft: #fdf1d8;
+    --shadow: 0 1px 0 rgba(31,47,69,.06), 0 6px 18px -10px rgba(31,47,69,.35);
+    --r-s: 8px;
+    --r-m: 14px;
+    --r-l: 22px;
+    --f-disp: "Kiwi Maru", "Hiragino Mincho ProN", serif;
+    --f-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
+    --f-num: "M PLUS Rounded 1c", "Zen Kaku Gothic New", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #141a24;
+      --grid: #1f2a38;
+      --card: #1b2331;
+      --card-2: #222c3d;
+      --ink: #e7eef7;
+      --ink-soft: #9db2ca;
+      --line: #33425a;
+      --shu: #ff7d67;
+      --shu-soft: #3a2320;
+      --ai: #74b6ea;
+      --ai-soft: #1e2c3c;
+      --kin: #ffc95c;
+      --kin-soft: #33290f;
+      --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 22px -12px rgba(0,0,0,.8);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #141a24;
+    --grid: #1f2a38;
+    --card: #1b2331;
+    --card-2: #222c3d;
+    --ink: #e7eef7;
+    --ink-soft: #9db2ca;
+    --line: #33425a;
+    --shu: #ff7d67;
+    --shu-soft: #3a2320;
+    --ai: #74b6ea;
+    --ai-soft: #1e2c3c;
+    --kin: #ffc95c;
+    --kin-soft: #33290f;
+    --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 22px -12px rgba(0,0,0,.8);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--f-body);
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 30px 30px;
+    background-position: center top;
+    -webkit-text-size-adjust: 100%;
+  }
+  .app {
+    max-width: 540px;
+    margin: 0 auto;
+    padding-inline: 16px;
+    padding-block: 14px 34px;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :is(button, [tabindex]):focus-visible {
+    outline: 3px solid var(--ai);
+    outline-offset: 2px;
+  }
+
+  /* ---------- ヘッダー ---------- */
+  .bar { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+  .brand {
+    font-family: var(--f-disp);
+    font-size: 1.15rem;
+    letter-spacing: .04em;
+    margin: 0;
+  }
+  .brand b { color: var(--shu); font-weight: 500; }
+  .bar-sp { flex: 1; }
+  .chip-btn {
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .chip-btn[aria-pressed="true"] { color: var(--ai); border-color: var(--ai); background: var(--ai-soft); }
+
+  /* ---------- ホーム ---------- */
+  .lead {
+    font-family: var(--f-disp);
+    font-size: 1.02rem;
+    line-height: 1.85;
+    color: var(--ink-soft);
+    margin: 18px 0 22px;
+    text-wrap: balance;
+  }
+  .lead em { color: var(--ink); font-style: normal; }
+  .sec-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: .74rem; font-weight: 900; letter-spacing: .16em;
+    color: var(--ink-soft);
+    margin: 0 0 10px;
+  }
+  .sec-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .levels { display: flex; gap: 8px; margin-bottom: 26px; }
+  .lv {
+    flex: 1;
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    border-radius: var(--r-m);
+    padding: 9px 4px 8px;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .lv span { display: block; font-weight: 900; font-size: .95rem; }
+  .lv small { display: block; font-size: .66rem; color: var(--ink-soft); margin-top: 2px; }
+  .lv[aria-pressed="true"] {
+    border-color: var(--shu);
+    background: var(--shu-soft);
+    color: var(--shu);
+    box-shadow: inset 0 0 0 1px var(--shu);
+  }
+  .lv[aria-pressed="true"] small { color: var(--shu); }
+
+  .modes { display: grid; gap: 12px; }
+  .mode {
+    display: grid;
+    grid-template-columns: 1fr 104px;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    border: 0;
+    border-radius: var(--r-l);
+    background: var(--card);
+    box-shadow: var(--shadow);
+    padding: 16px 16px 16px 18px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .12s ease;
+  }
+  .mode::before {
+    content: "";
+    position: absolute; inset: 0 auto 0 0; width: 6px;
+    background: var(--accent, var(--ai));
+  }
+  .mode:hover { transform: translateY(-2px); }
+  .mode:active { transform: translateY(0); }
+  .mode h3 {
+    font-family: var(--f-disp);
+    font-size: 1.28rem; margin: 0 0 4px; letter-spacing: .02em;
+  }
+  .mode p { margin: 0; font-size: .8rem; color: var(--ink-soft); line-height: 1.6; }
+  .mode .peek {
+    background: var(--card-2);
+    border-radius: var(--r-s);
+    padding: 8px 6px;
+    display: grid; place-items: center;
+    min-height: 74px;
+  }
+  .peek-calc {
+    font-family: var(--f-num); font-weight: 800; font-size: .84rem;
+    line-height: 1.45; text-align: right; font-variant-numeric: tabular-nums;
+    color: var(--ink-soft);
+  }
+  .peek-calc u { text-decoration: none; display: block; border-bottom: 2px solid var(--ink-soft); padding-bottom: 2px; }
+  .peek-word {
+    font-size: .62rem; line-height: 1.7; color: var(--ink-soft);
+  }
+  .peek-word b { color: var(--shu); font-weight: 700; }
+  .mode .peek-mix { display: flex; gap: 7px; align-items: center; color: var(--ink-soft); }
+
+  /* ---------- 出題画面 ---------- */
+  .marks { display: flex; gap: 5px; margin: 14px 0 12px; align-items: center; }
+  .mark {
+    flex: 1; height: 8px; border-radius: 999px;
+    background: var(--line);
+  }
+  .mark.ok { background: var(--shu); }
+  .mark.ng { background: var(--ai); }
+  .mark.now { background: var(--kin); box-shadow: 0 0 0 3px var(--kin-soft); }
+  .qmeta {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: .74rem; font-weight: 700; color: var(--ink-soft);
+    letter-spacing: .08em;
+  }
+  .qmeta .n { font-family: var(--f-num); font-size: .95rem; color: var(--ink); }
+
+  .sheet {
+    background: var(--card);
+    border-radius: var(--r-l);
+    box-shadow: var(--shadow);
+    padding: 20px 18px;
+    margin: 10px 0 14px;
+    position: relative;
+  }
+  .ask {
+    font-family: var(--f-disp);
+    font-size: 1.04rem; line-height: 2; margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  .ask.small { font-size: .95rem; }
+  .ask { line-break: strict; }
+
+  /* 筆算 */
+  .hz {
+    font-family: var(--f-num); font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    display: grid; justify-content: center;
+    gap: 2px;
+    font-size: clamp(2rem, 12vw, 2.9rem);
+    line-height: 1.15;
+  }
+  .hz-row { display: grid; grid-template-columns: 1.7ch repeat(var(--cols), 1.15ch); }
+  .hz-row span { text-align: center; }
+  .hz-op { color: var(--shu); font-size: .82em; }
+  .hz-rule { height: 4px; background: var(--ink); border-radius: 2px; margin: 4px 0 6px; }
+  .flat {
+    font-family: var(--f-num); font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    font-size: clamp(1.7rem, 9vw, 2.3rem);
+  }
+  .flat i { color: var(--shu); font-style: normal; padding: 0 .2em; }
+
+  /* こたえ欄 */
+  .ansrow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .field {
+    min-width: 3.4ch; min-height: 56px;
+    border: 2.5px dashed var(--line);
+    border-radius: var(--r-m);
+    background: var(--card-2);
+    font-family: var(--f-num); font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(1.6rem, 8vw, 2.1rem);
+    display: flex; align-items: center; justify-content: flex-end;
+    padding: 0 12px;
+    color: var(--ink);
+  }
+  .field.wide { min-width: 5.6ch; }
+  .field.on { border-style: solid; border-color: var(--shu); background: var(--shu-soft); }
+  .field .cursor {
+    display: inline-block; width: 3px; height: 1.1em; background: var(--shu);
+    margin-left: 3px; border-radius: 2px;
+    animation: blink 1s steps(2, start) infinite;
+  }
+  .field.empty { color: var(--ink-soft); }
+  @keyframes blink { 50% { opacity: 0; } }
+  .unit { font-size: 1.15rem; font-weight: 700; }
+
+  /* とけい */
+  .clockwrap { display: grid; justify-items: center; gap: 10px; }
+  .clock { width: min(258px, 68vw); height: auto; }
+  .legend { display: flex; gap: 14px; font-size: .72rem; font-weight: 700; color: var(--ink-soft); }
+  .legend b { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; }
+  .legend i { width: 16px; height: 5px; border-radius: 3px; display: inline-block; }
+  .legend .h i { background: var(--shu); width: 11px; }
+  .legend .m i { background: var(--ai); }
+
+  /* 4たくのとけい */
+  .picks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pick {
+    border: 2px solid var(--line); background: var(--card-2);
+    border-radius: var(--r-m); padding: 8px 4px 6px;
+    display: grid; justify-items: center; gap: 2px;
+  }
+  .pick svg { width: 100%; max-width: 118px; height: auto; }
+  .pick span { font-family: var(--f-num); font-weight: 800; font-size: .8rem; color: var(--ink-soft); }
+  .pick:hover { border-color: var(--ai); }
+
+  /* キーパッド */
+  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .key {
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    border-radius: var(--r-m);
+    padding: 14px 0 13px;
+    font-family: var(--f-num); font-weight: 800; font-size: 1.5rem;
+    box-shadow: 0 2px 0 var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  .key:active { transform: translateY(2px); box-shadow: none; }
+  .key.fn { font-family: var(--f-body); font-size: .92rem; color: var(--ink-soft); }
+  .go {
+    margin-top: 10px; width: 100%;
+    border: 0; border-radius: var(--r-m);
+    background: var(--shu); color: #fff;
+    font-family: var(--f-disp); font-size: 1.22rem; letter-spacing: .1em;
+    padding: 15px 0;
+    box-shadow: 0 3px 0 color-mix(in srgb, var(--shu) 70%, #000);
+  }
+  .go:active { transform: translateY(3px); box-shadow: none; }
+  .go[disabled] { background: var(--line); color: var(--ink-soft); box-shadow: none; cursor: default; }
+
+  /* はんてい */
+  .judge {
+    display: flex; align-items: center; gap: 12px;
+    border-radius: var(--r-m);
+    padding: 12px 14px;
+    margin-top: 12px;
+    background: var(--shu-soft);
+    border: 1.5px solid var(--shu);
+  }
+  .judge.ng { background: var(--ai-soft); border-color: var(--ai); }
+  .judge .txt { flex: 1; }
+  .judge strong {
+    display: block; font-family: var(--f-disp); font-size: 1.12rem; color: var(--shu);
+    letter-spacing: .06em;
+  }
+  .judge.ng strong { color: var(--ai); }
+  .judge small { font-size: .8rem; color: var(--ink-soft); font-weight: 700; }
+  .judge small b { font-family: var(--f-num); font-size: 1.05rem; color: var(--ink); }
+  .judge .next {
+    border: 0; background: var(--ink); color: var(--paper);
+    border-radius: 999px; padding: 9px 16px; font-weight: 900; font-size: .85rem;
+    white-space: nowrap;
+  }
+
+  /* 花まる */
+  .maru {
+    position: absolute; left: 50%; bottom: -4px;
+    transform: translateX(-50%);
+    width: min(184px, 54%); height: auto;
+    pointer-events: none; z-index: 2;
+  }
+  .maru path { fill: none; stroke: var(--shu); stroke-width: 3.6; stroke-linecap: round; }
+  .maru .flower { stroke-dasharray: 340; stroke-dashoffset: 340; animation: draw .5s ease-out forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .shake { animation: shake .32s ease-in-out; }
+  @keyframes shake {
+    25% { transform: translateX(-6px); } 75% { transform: translateX(6px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .maru .flower { animation: none; stroke-dashoffset: 0; }
+    .shake { animation: none; }
+    .field .cursor { animation: none; }
+    .mode { transition: none; }
+  }
+
+  /* ---------- けっか ---------- */
+  .stamp {
+    width: 168px; height: 168px; margin: 6px auto 14px;
+    border: 4px double var(--shu);
+    border-radius: 50%;
+    display: grid; place-content: center; text-align: center;
+    color: var(--shu);
+    transform: rotate(-7deg);
+    font-family: var(--f-disp);
+    line-height: 1.45;
+  }
+  .stamp .big { font-size: 1.3rem; letter-spacing: .06em; }
+  .stamp .sub { font-family: var(--f-num); font-weight: 800; font-size: 2.4rem; letter-spacing: -.02em; }
+  .stamp .sub small { font-size: .95rem; letter-spacing: 0; }
+  .stars { text-align: center; font-size: 1.7rem; color: var(--kin); letter-spacing: .18em; margin-bottom: 4px; }
+  .stars span { color: var(--line); }
+  .score-note { text-align: center; font-size: .86rem; color: var(--ink-soft); font-weight: 700; margin: 0 0 6px; }
+  #reviewbox { margin-top: 18px; }
+  .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .review li {
+    display: flex; gap: 10px; align-items: baseline;
+    border-top: 1px dashed var(--line); padding-top: 8px;
+    font-size: .88rem; line-height: 1.7;
+  }
+  .review li:first-child { border-top: 0; }
+  .review .q { flex: 1; }
+  .review .a { font-family: var(--f-num); font-weight: 800; color: var(--shu); white-space: nowrap; }
+  .btnrow { display: flex; gap: 10px; margin-top: 18px; }
+  .btn {
+    flex: 1; border-radius: var(--r-m); padding: 14px 0;
+    font-family: var(--f-disp); font-size: 1.02rem; letter-spacing: .06em;
+    border: 1.5px solid var(--line); background: var(--card); box-shadow: 0 2px 0 var(--line);
+  }
+  .btn.primary { background: var(--shu); color: #fff; border-color: var(--shu); box-shadow: 0 3px 0 color-mix(in srgb, var(--shu) 70%, #000); }
+  .btn:active { transform: translateY(2px); box-shadow: none; }
+  .foot { margin-top: 26px; font-size: .68rem; color: var(--ink-soft); text-align: center; line-height: 1.8; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="bar">
+    <h1 class="brand">さんすう<b>ノート</b></h1>
+    <div class="bar-sp"></div>
+    <button type="button" class="chip-btn" id="sound" aria-pressed="true">おと オン</button>
+    <button type="button" class="chip-btn" id="quit" hidden>やめる</button>
+  </div>
+
+  <!-- ======== ホーム ======== -->
+  <main id="home">
+    <p class="lead">1・2ねんせいの さんすう。<br><em>10もん</em>ずつ ちょうせん しよう。</p>
+
+    <h2 class="sec-label">レベル</h2>
+    <div class="levels" id="levels" role="group" aria-label="レベルをえらぶ">
+      <button type="button" class="lv" data-lv="1"><span>やさしい</span><small>2けた・5ふん</small></button>
+      <button type="button" class="lv" data-lv="2"><span>ふつう</span><small>3けた・1ふん</small></button>
+      <button type="button" class="lv" data-lv="3"><span>むずかしい</span><small>4けた・なんぷんご</small></button>
+    </div>
+
+    <h2 class="sec-label">もんだいを えらぶ</h2>
+    <div class="modes">
+      <button type="button" class="mode" data-mode="calc" style="--accent: var(--shu)">
+        <div>
+          <h3>ひっさん</h3>
+          <p>たしざん・ひきざん（4けたまで）</p>
+        </div>
+        <div class="peek" aria-hidden="true">
+          <div class="peek-calc">1 2 3 4<br><u>+&nbsp; 5 6 7</u></div>
+        </div>
+      </button>
+
+      <button type="button" class="mode" data-mode="word" style="--accent: var(--ai)">
+        <div>
+          <h3>ぶんしょうだい</h3>
+          <p>くらしの なかの たしざん・ひきざん</p>
+        </div>
+        <div class="peek" aria-hidden="true">
+          <div class="peek-word">おりがみ <b>32まい</b>。<br><b>15まい</b> つかうと<br>のこりは…</div>
+        </div>
+      </button>
+
+      <button type="button" class="mode" data-mode="clock" style="--accent: var(--kin)">
+        <div>
+          <h3>とけい</h3>
+          <p>なんじ なんぷん／なんぷんご</p>
+        </div>
+        <div class="peek" id="peek-clock" aria-hidden="true"></div>
+      </button>
+
+      <button type="button" class="mode" data-mode="mix" style="--accent: var(--ink-soft)">
+        <div>
+          <h3>ミックス</h3>
+          <p>3しゅるいを まとめて 10もん</p>
+        </div>
+        <div class="peek peek-mix" aria-hidden="true">
+          <span class="peek-calc">＋</span><span class="peek-calc">－</span><span id="peek-mini"></span>
+        </div>
+      </button>
+    </div>
+
+    <p class="foot">こたえは すうじの ボタンで にゅうりょく します。<br>パソコンでは キーボードの すうじ・Enter も つかえます。</p>
+  </main>
+
+  <!-- ======== 出題 ======== -->
+  <main id="quiz" hidden>
+    <div class="marks" id="marks" aria-hidden="true"></div>
+    <div class="qmeta">
+      <span id="qmode">ひっさん</span>
+      <span><span class="n" id="qnum">1</span> / 10もん</span>
+    </div>
+
+    <section class="sheet" id="sheet">
+      <p class="ask" id="ask"></p>
+      <div id="body"></div>
+      <div id="answer"></div>
+    </section>
+
+    <div id="input"></div>
+    <div id="judge"></div>
+  </main>
+
+  <!-- ======== けっか ======== -->
+  <main id="result" hidden>
+    <section class="sheet">
+      <div class="stamp" id="stamp"></div>
+      <div class="stars" id="stars"></div>
+      <p class="score-note" id="note"></p>
+      <div id="reviewbox" hidden>
+        <h2 class="sec-label">みなおし</h2>
+        <ul class="review" id="review"></ul>
+      </div>
+    </section>
+    <div class="btnrow">
+      <button type="button" class="btn primary" id="again">もういちど</button>
+      <button type="button" class="btn" id="tohome">ホームへ</button>
+    </div>
+  </main>
+
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ========== ちいさな どうぐ ========== */
+  const $ = (id) => document.getElementById(id);
+  const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const shuffle = (arr) => {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+  const store = {
+    get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch { /* 非対応でも動く */ } },
+  };
+
+  const TOTAL = 10;
+  const MODE_NAME = { calc: "ひっさん", word: "ぶんしょうだい", clock: "とけい", mix: "ミックス" };
+
+  /* ========== おと ========== */
+  let soundOn = store.get("sn-sound", "1") === "1";
+  let actx = null;
+  function beep(kind) {
+    if (!soundOn) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const notes = kind === "ok" ? [784, 1046] : [262, 208];
+      notes.forEach((f, i) => {
+        const o = actx.createOscillator(), g = actx.createGain();
+        o.type = "triangle";
+        o.frequency.value = f;
+        const t = actx.currentTime + i * 0.11;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+        o.connect(g); g.connect(actx.destination);
+        o.start(t); o.stop(t + 0.24);
+      });
+    } catch { /* おとが でなくても もんだいは とける */ }
+  }
+
+  /* ========== 学習用とけいの え ========== */
+  function clockSVG(h, m, opt = {}) {
+    const { learn = true, size = 200, cls = "clock" } = opt;
+    const C = 100;
+    // 学習用とけい：そとがわの わに「ふん」、うちがわに「じ」の すうじ
+    const R = learn ? 95 : 92;
+    const rMinNum = 86;
+    const rTickOut = learn ? 78 : 90;
+    const rTickIn = learn ? 66 : 79;
+    const rHourNum = learn ? 52 : 65;
+    const lenH = learn ? 38 : 44;
+    const lenM = learn ? 68 : 74;
+    const pt = (deg, r) => {
+      const a = (deg - 90) * Math.PI / 180;
+      return [C + r * Math.cos(a), C + r * Math.sin(a)];
+    };
+    let out = `<svg class="${cls}" viewBox="0 0 200 200" width="${size}" height="${size}" role="img" aria-label="とけい">`;
+    out += `<circle cx="100" cy="100" r="${R}" fill="var(--card-2)" stroke="var(--ink)" stroke-width="3"/>`;
+    for (let i = 0; i < 60; i++) {
+      const big = i % 5 === 0;
+      const [x1, y1] = pt(i * 6, big ? rTickIn : rTickOut - 5);
+      const [x2, y2] = pt(i * 6, rTickOut);
+      out += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${big ? "var(--ink)" : "var(--line)"}" stroke-width="${big ? 3 : 1.6}" stroke-linecap="round"/>`;
+    }
+    for (let i = 1; i <= 12; i++) {
+      const [x, y] = pt(i * 30, rHourNum);
+      out += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="M PLUS Rounded 1c, sans-serif" font-weight="800" font-size="21">${i}</text>`;
+    }
+    if (learn) {
+      for (let i = 0; i < 12; i++) {
+        const [x, y] = pt(i * 30, rMinNum);
+        out += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="var(--ai)" font-family="M PLUS Rounded 1c, sans-serif" font-weight="700" font-size="11">${i === 0 ? "0" : i * 5}</text>`;
+      }
+    }
+    const ha = ((h % 12) + m / 60) * 30, ma = m * 6;
+    out += `<g transform="rotate(${ha.toFixed(2)} 100 100)"><line x1="100" y1="108" x2="100" y2="${100 - lenH}" stroke="var(--shu)" stroke-width="8.5" stroke-linecap="round"/></g>`;
+    out += `<g transform="rotate(${ma.toFixed(2)} 100 100)"><line x1="100" y1="110" x2="100" y2="${100 - lenM}" stroke="var(--ai)" stroke-width="5.5" stroke-linecap="round"/></g>`;
+    out += `<circle cx="100" cy="100" r="5.5" fill="var(--ink)" stroke="none"/>`;
+    out += `</svg>`;
+    return out;
+  }
+
+  /* ========== 花まる ========== */
+  function maruSVG() {
+    const n = 8, R = 34, C = 50;
+    const p = (i) => {
+      const a = (i * 360 / n - 90) * Math.PI / 180;
+      return [C + R * Math.cos(a), C + R * Math.sin(a)];
+    };
+    const chord = 2 * R * Math.sin(Math.PI / n);
+    const rr = (chord * 0.62).toFixed(1);
+    let d = "";
+    for (let i = 0; i <= n; i++) {
+      const [x, y] = p(i);
+      d += i === 0 ? `M${x.toFixed(1)} ${y.toFixed(1)}` : `A${rr} ${rr} 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}`;
+    }
+    return `<svg class="maru" viewBox="0 0 100 100" aria-hidden="true">
+      <path class="flower" d="${d}Z"/>
+    </svg>`;
+  }
+
+  /* ========== もんだいを つくる ========== */
+  // 1) ひっさん
+  function makeCalc(lv) {
+    const ranges = {
+      1: [[10, 99], [10, 99]],
+      2: [[100, 999], Math.random() < 0.4 ? [10, 99] : [100, 999]],
+      3: [[1000, 9999], Math.random() < 0.4 ? [100, 999] : [1000, 9999]],
+    }[lv];
+    const op = Math.random() < 0.5 ? "+" : "-";
+    let a = rnd(ranges[0][0], ranges[0][1]);
+    let b = rnd(ranges[1][0], ranges[1][1]);
+    if (op === "-") {
+      if (b > a) [a, b] = [b, a];
+      if (a === b) a = Math.min(ranges[0][1], a + rnd(1, 9));
+    }
+    const answer = op === "+" ? a + b : a - b;
+    const cols = Math.max(String(a).length, String(b).length, String(answer).length);
+    const digits = (v) => String(v).padStart(cols, " ").split("")
+      .map((c) => `<span>${c === " " ? "" : c}</span>`).join("");
+    return {
+      kind: "calc",
+      ask: op === "+" ? "たしざんを しましょう。" : "ひきざんを しましょう。",
+      bodyHTML: `<div class="hz" style="--cols:${cols}">
+          <div class="hz-row"><span></span>${digits(a)}</div>
+          <div class="hz-row"><span class="hz-op">${op === "+" ? "＋" : "－"}</span>${digits(b)}</div>
+          <div class="hz-rule"></div>
+        </div>`,
+      input: "number",
+      maxLen: 5,
+      answer,
+      text: `${a} ${op === "+" ? "＋" : "－"} ${b}`,
+      answerText: String(answer),
+    };
+  }
+
+  // 2) ぶんしょうだい
+  const NAMES = ["あきら", "ゆい", "はると", "さくら", "けんた", "みさき", "そうた", "ひなた", "りく", "あおい"];
+  function twoNames() {
+    const a = pick(NAMES);
+    let b = pick(NAMES);
+    while (b === a) b = pick(NAMES);
+    return [a, b];
+  }
+  function wordRange(lv) {
+    return { 1: [4, 20], 2: [12, 99], 3: [120, 980] }[lv];
+  }
+  function pairSum(lv, cap) {
+    // たしても レベルの はんいを こえない ふたつの すうじ
+    const [lo, hi] = wordRange(lv);
+    const top = cap ?? hi;
+    const a = rnd(lo, Math.max(lo, Math.floor(top * 0.6)));
+    const b = rnd(lo, Math.max(lo, top - a));
+    return [a, b];
+  }
+  function pairDiff(lv) {
+    const [lo, hi] = wordRange(lv);
+    const a = rnd(Math.max(lo + 2, Math.floor(hi * 0.4)), hi);
+    const b = rnd(lo, a - 1);
+    return [a, b];
+  }
+  const money = (lv, v) => (lv === 1 ? v * 10 : v);
+
+  const WORD_TEMPLATES = [
+    // 合併（あわせて いくつ）
+    (lv) => { const [a, b] = pairSum(lv), [n1, n2] = twoNames();
+      return { text: `${n1}さんは どんぐりを ${a}こ、${n2}さんは ${b}こ ひろいました。ふたり あわせて なんこ ひろいましたか。`, answer: a + b, unit: "こ" }; },
+    (lv) => { const [a, b] = pairSum(lv);
+      return { text: `${money(lv, a)}円の パンと ${money(lv, b)}円の ぎゅうにゅうを かいます。あわせて なん円 ですか。`, answer: money(lv, a) + money(lv, b), unit: "円" }; },
+    (lv) => { const [a, b] = pairSum(lv), n = pick(NAMES);
+      return { text: `${n}さんは なわとびを きのう ${a}回、きょう ${b}回 とびました。あわせて なん回 とびましたか。`, answer: a + b, unit: "回" }; },
+    // 増加（ふえると いくつ）
+    (lv) => { const [a, b] = pairSum(lv);
+      return { text: `あめを ${a}こ もって いました。おかあさんから ${b}こ もらいました。あめは ぜんぶで なんこ に なりましたか。`, answer: a + b, unit: "こ" }; },
+    (lv) => { const [a, b] = pairSum(lv);
+      return { text: `バスに ${a}人 のって いました。ていりゅうじょで ${b}人 のって きました。バスに のって いるのは なん人 ですか。`, answer: a + b, unit: "人" }; },
+    (lv) => { const [a, b] = pairSum(lv);
+      return { text: `水そうに きんぎょが ${a}ひき います。あたらしく ${b}ひき いれました。きんぎょは なんひき に なりましたか。`, answer: a + b, unit: "ひき" }; },
+    // 求残（のこりは いくつ）
+    (lv) => { const [a, b] = pairDiff(lv);
+      return { text: `おりがみが ${a}まい ありました。つるを おるのに ${b}まい つかいました。のこりは なんまい ですか。`, answer: a - b, unit: "まい" }; },
+    (lv) => { const [a, b] = pairDiff(lv);
+      return { text: `${money(lv, a)}円 もって かいものに いきました。${money(lv, b)}円の おかしを かいました。のこりは なん円 ですか。`, answer: money(lv, a) - money(lv, b), unit: "円" }; },
+    (lv) => { const [a, b] = pairDiff(lv);
+      return { text: `ぜんぶで ${a}ページの 本を よんで います。きょうまでに ${b}ページ よみました。あと なんページ のこって いますか。`, answer: a - b, unit: "ページ" }; },
+    (lv) => { const [a, b] = pairDiff(lv);
+      return { text: `${a}cmの リボンから ${b}cm きりとりました。のこった リボンは なんcm ですか。`, answer: a - b, unit: "cm" }; },
+    (lv) => { const [a, b] = pairDiff(lv);
+      return { text: `バスに ${a}人 のって いました。ていりゅうじょで ${b}人 おりました。バスに のって いるのは なん人 ですか。`, answer: a - b, unit: "人" }; },
+    // 求差（ちがいは いくつ）
+    (lv) => { const [a, b] = pairDiff(lv), [n1, n2] = twoNames();
+      return { text: `${n1}さんの カードは ${a}まい、${n2}さんの カードは ${b}まい です。かずの ちがいは なんまい ですか。`, answer: a - b, unit: "まい" }; },
+    (lv) => { const [a, b] = pairDiff(lv);
+      return { text: `あかい 花が ${a}本、しろい 花が ${b}本 さいて います。あかい 花は しろい 花より なん本 おおいですか。`, answer: a - b, unit: "本" }; },
+    // 3つの たしざん
+    (lv) => { const [lo, hi] = wordRange(lv);
+      const t = Math.max(lo, Math.floor(hi / 3));
+      const a = rnd(lo, t), b = rnd(lo, t), c = rnd(lo, t);
+      return { text: `シールを おねえさんから ${a}まい、おにいさんから ${b}まい、おかあさんから ${c}まい もらいました。ぜんぶで なんまい ですか。`, answer: a + b + c, unit: "まい" }; },
+  ];
+
+  function makeWord(lv) {
+    const q = pick(WORD_TEMPLATES)(lv);
+    return {
+      kind: "word",
+      ask: q.text,
+      askSmall: true,
+      bodyHTML: "",
+      input: "number",
+      maxLen: 5,
+      unit: q.unit,
+      answer: q.answer,
+      text: q.text,
+      answerText: `${q.answer}${q.unit}`,
+    };
+  }
+
+  // 3) とけい
+  const jTime = (h, m) => `${h}じ${m === 0 ? "" : m + "ふん"}${m === 0 ? "ちょうど" : ""}`;
+  const addMin = (h, m, d) => {
+    let t = ((h % 12) * 60 + m + d) % 720;
+    if (t < 0) t += 720;
+    const hh = Math.floor(t / 60) || 12;
+    return [hh, t % 60];
+  };
+  function clockMinute(lv) {
+    if (lv === 1) return pick([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]);
+    if (lv === 2) return Math.random() < 0.55 ? pick([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]) : rnd(1, 59);
+    return rnd(0, 59);
+  }
+  function makeClockRead(lv) {
+    const h = rnd(1, 12), m = clockMinute(lv);
+    return {
+      kind: "clock",
+      ask: "いま なんじ なんぷん ですか。",
+      bodyHTML: `<div class="clockwrap">${clockSVG(h, m, { learn: lv < 3 })}
+        ${lv === 1 ? `<div class="legend"><b class="h"><i></i>みじかい はり＝なんじ</b><b class="m"><i></i>ながい はり＝なんぷん</b></div>` : ""}
+      </div>`,
+      input: "time",
+      answer: { h, m },
+      text: "とけいの よみとり",
+      answerText: jTime(h, m),
+    };
+  }
+  function makeClockShift(lv) {
+    const h = rnd(1, 12), m = lv === 3 ? pick([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]) : pick([0, 10, 15, 20, 30]);
+    const back = Math.random() < 0.35;
+    const d = pick(lv === 3 ? [10, 15, 20, 30, 40, 45] : [10, 15, 20, 30]);
+    const [ah, am] = addMin(h, m, back ? -d : d);
+    return {
+      kind: "clock",
+      ask: `この とけいの ${d}ふん${back ? "まえ" : "あと"}は なんじ なんぷん ですか。`,
+      bodyHTML: `<div class="clockwrap">${clockSVG(h, m, { learn: true })}</div>`,
+      input: "time",
+      answer: { h: ah, m: am },
+      text: `${jTime(h, m)}の ${d}ふん${back ? "まえ" : "あと"}`,
+      answerText: jTime(ah, am),
+    };
+  }
+  function makeClockChoice(lv) {
+    const h = rnd(1, 12), m = clockMinute(lv) || 5;
+    const right = { h, m };
+    const cands = [
+      { h: (h % 12) + 1, m },                       // とけいの はりを 1じかん ずらす
+      addPair(addMin(h, m, m >= 30 ? -15 : 15)),    // ながい はりを ずらす
+      { h: Math.max(1, Math.round(m / 5) || 12), m: (h % 12) * 5 }, // みじかい／ながい はりの とりちがえ
+      addPair(addMin(h, m, 30)),
+    ];
+    function addPair(p) { return { h: p[0], m: p[1] }; }
+    const same = (a, b) => a.h === b.h && a.m === b.m;
+    const wrong = [];
+    for (const c of shuffle(cands)) {
+      if (c.h < 1 || c.h > 12 || c.m < 0 || c.m > 59) continue;
+      if (same(c, right) || wrong.some((w) => same(w, c))) continue;
+      wrong.push(c);
+      if (wrong.length === 3) break;
+    }
+    while (wrong.length < 3) {
+      const c = { h: rnd(1, 12), m: pick([0, 5, 15, 20, 30, 40, 45, 50]) };
+      if (!same(c, right) && !wrong.some((w) => same(w, c))) wrong.push(c);
+    }
+    const opts = shuffle([right, ...wrong]);
+    return {
+      kind: "clock",
+      ask: `「${jTime(h, m)}」の とけいは どれですか。`,
+      bodyHTML: "",
+      input: "choice",
+      choices: opts.map((o, i) => ({
+        html: `${clockSVG(o.h, o.m, { learn: false, size: 120, cls: "" })}<span>${"アイウエ"[i]}</span>`,
+        correct: same(o, right),
+      })),
+      answer: right,
+      text: `「${jTime(h, m)}」の とけいえらび`,
+      answerText: jTime(h, m),
+    };
+  }
+  function makeClock(lv) {
+    if (lv === 1) return Math.random() < 0.75 ? makeClockRead(1) : makeClockChoice(1);
+    if (lv === 2) return Math.random() < 0.6 ? makeClockRead(2) : makeClockChoice(2);
+    return Math.random() < 0.5 ? makeClockRead(3) : makeClockShift(3);
+  }
+
+  function makeQuestion(mode, lv) {
+    if (mode === "mix") mode = pick(["calc", "word", "clock"]);
+    if (mode === "calc") return makeCalc(lv);
+    if (mode === "word") return makeWord(lv);
+    return makeClock(lv);
+  }
+
+  /* ========== ゲームの じょうたい ========== */
+  const S = {
+    mode: "calc",
+    lv: Number(store.get("sn-lv", "1")) || 1,
+    qs: [],
+    i: 0,
+    results: [],   // {q, ok, given}
+    buf: "",       // すうじにゅうりょく
+    tbuf: { h: "", m: "" },
+    tf: "h",       // いま えらんで いる とけいの ばしょ
+    locked: false,
+  };
+
+  /* ========== がめんの きりかえ ========== */
+  function show(name) {
+    for (const id of ["home", "quiz", "result"]) $(id).hidden = id !== name;
+    $("quit").hidden = name !== "quiz";
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  /* ========== 出題 ========== */
+  function startSet(mode) {
+    S.mode = mode;
+    S.qs = Array.from({ length: TOTAL }, () => makeQuestion(mode, S.lv));
+    S.i = 0;
+    S.results = [];
+    show("quiz");
+    renderQuestion();
+  }
+
+  function renderMarks() {
+    $("marks").innerHTML = S.qs.map((_, i) => {
+      const r = S.results[i];
+      const cls = r ? (r.ok ? "ok" : "ng") : (i === S.i ? "now" : "");
+      return `<div class="mark ${cls}"></div>`;
+    }).join("");
+  }
+
+  function renderQuestion() {
+    const q = S.qs[S.i];
+    document.querySelectorAll(".maru").forEach((el) => el.remove());
+    S.buf = "";
+    S.tbuf = { h: "", m: "" };
+    S.tf = "h";
+    S.locked = false;
+    $("judge").innerHTML = "";
+    $("qmode").textContent = MODE_NAME[S.mode] + (S.mode === "mix" ? "：" + MODE_NAME[q.kind] : "");
+    $("qnum").textContent = String(S.i + 1);
+    renderMarks();
+
+    $("ask").className = "ask" + (q.askSmall ? " small" : "");
+    $("ask").textContent = q.ask;
+    $("body").innerHTML = q.bodyHTML;
+    renderAnswerArea();
+  }
+
+  function renderFields() {
+    const q = S.qs[S.i];
+    if (q.input === "choice") return;
+    if (q.input === "time") {
+      $("answer").innerHTML = `<div class="ansrow">
+        <div class="field ${S.tf === "h" ? "on" : ""} ${S.tbuf.h ? "" : "empty"}" data-f="h" role="button" tabindex="0" aria-label="じ">${S.tbuf.h || ""}${S.tf === "h" ? '<span class="cursor"></span>' : ""}</div>
+        <span class="unit">じ</span>
+        <div class="field ${S.tf === "m" ? "on" : ""} ${S.tbuf.m ? "" : "empty"}" data-f="m" role="button" tabindex="0" aria-label="ふん">${S.tbuf.m || ""}${S.tf === "m" ? '<span class="cursor"></span>' : ""}</div>
+        <span class="unit">ふん</span>
+      </div>`;
+    } else {
+      $("answer").innerHTML = `<div class="ansrow">
+        <div class="field wide on">${S.buf}<span class="cursor"></span></div>
+        ${q.unit ? `<span class="unit">${q.unit}</span>` : ""}
+      </div>`;
+    }
+    updateGo();
+  }
+
+  function renderAnswerArea() {
+    const q = S.qs[S.i];
+    if (q.input === "choice") {
+      $("answer").innerHTML = "";
+      $("input").innerHTML = `<div class="picks">${q.choices.map((c, i) =>
+        `<button type="button" class="pick" data-c="${i}">${c.html}</button>`).join("")}</div>`;
+      return;
+    }
+    renderFields();
+    $("input").innerHTML = `<div class="pad">
+        ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button type="button" class="key" data-k="${n}">${n}</button>`).join("")}
+        <button type="button" class="key fn" data-k="clear">ぜんぶ<br>けす</button>
+        <button type="button" class="key" data-k="0">0</button>
+        <button type="button" class="key fn" data-k="back">ひとつ<br>けす</button>
+      </div>
+      <button type="button" class="go" id="go">こたえる</button>`;
+    updateGo();
+  }
+
+  function updateGo() {
+    const q = S.qs[S.i], go = $("go");
+    if (!go) return;
+    go.disabled = q.input === "time" ? !(S.tbuf.h && S.tbuf.m !== "") : S.buf === "";
+  }
+
+  function typeDigit(d) {
+    if (S.locked) return;
+    const q = S.qs[S.i];
+    if (q.input === "time") {
+      if (S.tf === "h") {
+        if (d === "0" && S.tbuf.h === "") return;          // 0じは ない
+        const next = S.tbuf.h + d;
+        if (Number(next) <= 12 && next.length <= 2) S.tbuf.h = next;
+        else S.tbuf.h = d;
+        if (Number(S.tbuf.h) > 1 || S.tbuf.h.length === 2) S.tf = "m";
+      } else {
+        const next = (S.tbuf.m + d).slice(-2);
+        S.tbuf.m = S.tbuf.m.length >= 2 ? d : (Number(next) <= 59 ? next : d);
+      }
+    } else if (S.buf.length < (q.maxLen || 5)) {
+      if (!(S.buf === "" && d === "0")) S.buf += d;
+      else S.buf = "0";
+    }
+    renderFields();
+  }
+
+  function backspace() {
+    if (S.locked) return;
+    const q = S.qs[S.i];
+    if (q.input === "time") {
+      if (S.tf === "m" && S.tbuf.m === "") { S.tf = "h"; S.tbuf.h = S.tbuf.h.slice(0, -1); }
+      else if (S.tf === "m") S.tbuf.m = S.tbuf.m.slice(0, -1);
+      else S.tbuf.h = S.tbuf.h.slice(0, -1);
+    } else S.buf = S.buf.slice(0, -1);
+    renderFields();
+  }
+
+  function clearAll() {
+    if (S.locked) return;
+    S.buf = ""; S.tbuf = { h: "", m: "" }; S.tf = "h";
+    renderFields();
+  }
+
+  /* ========== まるつけ ========== */
+  function submit() {
+    if (S.locked) return;
+    const q = S.qs[S.i];
+    let ok, given;
+    if (q.input === "time") {
+      if (!S.tbuf.h || S.tbuf.m === "") return;
+      const h = Number(S.tbuf.h) % 12 || 12, m = Number(S.tbuf.m);
+      ok = h === (q.answer.h % 12 || 12) && m === q.answer.m;
+      given = jTime(h, m);
+    } else {
+      if (S.buf === "") return;
+      given = S.buf;
+      ok = Number(S.buf) === q.answer;
+    }
+    judge(ok, given);
+  }
+
+  function judge(ok, given) {
+    S.locked = true;
+    S.results[S.i] = { q: S.qs[S.i], ok, given };
+    renderMarks();
+    beep(ok ? "ok" : "ng");
+
+    if (ok) {
+      $("sheet").insertAdjacentHTML("beforeend", maruSVG());
+    } else {
+      $("sheet").classList.add("shake");
+      setTimeout(() => $("sheet").classList.remove("shake"), 340);
+    }
+    const last = S.i === TOTAL - 1;
+    $("judge").innerHTML = `<div class="judge ${ok ? "" : "ng"}">
+      <div class="txt">
+        <strong>${ok ? "せいかい！" : "おしい…"}</strong>
+        <small>${ok ? "その ちょうし！" : `こたえは <b>${S.qs[S.i].answerText}</b>`}</small>
+      </div>
+      <button type="button" class="next" id="next">${last ? "けっかを みる" : "つぎの もんだい"}</button>
+    </div>`;
+    $("input").querySelectorAll("button").forEach((b) => { b.disabled = true; });
+    if (ok) setTimeout(nextQuestion, 1100);
+  }
+
+  function nextQuestion() {
+    if (!S.locked) return;
+    document.querySelectorAll(".maru").forEach((el) => el.remove());
+    if (S.i === TOTAL - 1) { showResult(); return; }
+    S.i++;
+    renderQuestion();
+  }
+
+  /* ========== けっか ========== */
+  function showResult() {
+    const n = S.results.filter((r) => r.ok).length;
+    const stars = n >= 10 ? 3 : n >= 8 ? 2 : n >= 5 ? 1 : 0;
+    const title = n >= 9 ? "よく できました" : n >= 6 ? "がんばりました" : "もういっかい";
+    $("stamp").innerHTML = `<div><div class="big">${title}</div><div class="sub">${n}<small>/${TOTAL}</small></div></div>`;
+    $("stars").innerHTML = [0, 1, 2].map((i) => i < stars ? "★" : "<span>★</span>").join("");
+    $("note").textContent = n === TOTAL
+      ? "ぜんもん せいかい！ はなまる 10こ ゲット。"
+      : `まちがえた ${TOTAL - n}もんを みなおして みよう。`;
+    const missed = S.results.filter((r) => !r.ok);
+    $("reviewbox").hidden = missed.length === 0;
+    $("review").innerHTML = missed.map((r) => `<li>
+        <span class="q">${r.q.text}</span>
+        <span class="a">${r.q.answerText}</span>
+      </li>`).join("");
+    show("result");
+  }
+
+  /* ========== そうさ ========== */
+  function setLevel(lv) {
+    S.lv = lv;
+    store.set("sn-lv", String(lv));
+    $("levels").querySelectorAll(".lv").forEach((b) => {
+      b.setAttribute("aria-pressed", String(Number(b.dataset.lv) === lv));
+    });
+  }
+
+  $("levels").addEventListener("click", (e) => {
+    const b = e.target.closest(".lv");
+    if (b) setLevel(Number(b.dataset.lv));
+  });
+  document.querySelectorAll(".mode").forEach((b) => {
+    b.addEventListener("click", () => startSet(b.dataset.mode));
+  });
+  $("input").addEventListener("click", (e) => {
+    const key = e.target.closest(".key");
+    if (key) {
+      const k = key.dataset.k;
+      if (k === "back") backspace();
+      else if (k === "clear") clearAll();
+      else typeDigit(k);
+      return;
+    }
+    if (e.target.closest("#go")) { submit(); return; }
+    const p = e.target.closest(".pick");
+    if (p && !S.locked) {
+      const c = S.qs[S.i].choices[Number(p.dataset.c)];
+      judge(!!c.correct, "");
+    }
+  });
+  $("answer").addEventListener("click", (e) => {
+    const f = e.target.closest(".field");
+    if (f && f.dataset.f && !S.locked) { S.tf = f.dataset.f; renderFields(); }
+  });
+  $("answer").addEventListener("keydown", (e) => {
+    const f = e.target.closest(".field");
+    if (f && f.dataset.f && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault(); S.tf = f.dataset.f; renderFields();
+    }
+  });
+  $("judge").addEventListener("click", (e) => {
+    if (e.target.closest("#next")) nextQuestion();
+  });
+  $("quit").addEventListener("click", () => show("home"));
+  $("again").addEventListener("click", () => startSet(S.mode));
+  $("tohome").addEventListener("click", () => show("home"));
+  $("sound").addEventListener("click", () => {
+    soundOn = !soundOn;
+    store.set("sn-sound", soundOn ? "1" : "0");
+    $("sound").setAttribute("aria-pressed", String(soundOn));
+    $("sound").textContent = soundOn ? "おと オン" : "おと オフ";
+    if (soundOn) beep("ok");
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if ($("quiz").hidden) return;
+    if (e.key >= "0" && e.key <= "9") { typeDigit(e.key); e.preventDefault(); }
+    else if (e.key === "Backspace") { backspace(); e.preventDefault(); }
+    else if (e.key === "Escape") { clearAll(); }
+    else if (e.key === "Enter") { S.locked ? nextQuestion() : submit(); e.preventDefault(); }
+    else if (e.key === "ArrowRight" && S.qs[S.i]?.input === "time") { S.tf = "m"; renderFields(); }
+    else if (e.key === "ArrowLeft" && S.qs[S.i]?.input === "time") { S.tf = "h"; renderFields(); }
+  });
+
+  /* ========== さいしょの ひょうじ ========== */
+  setLevel(S.lv);
+  $("sound").setAttribute("aria-pressed", String(soundOn));
+  $("sound").textContent = soundOn ? "おと オン" : "おと オフ";
+  $("peek-clock").innerHTML = clockSVG(3, 40, { learn: false, size: 78, cls: "" });
+  $("peek-mini").innerHTML = clockSVG(9, 20, { learn: false, size: 28, cls: "" });
+})();
+</script>
+</body>
+</html>
