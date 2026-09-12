@@ -116,6 +116,7 @@
   /* ---------- ホーム ---------- */
   .lead {
     font-family: var(--f-disp);
+    flex: 1;
     font-size: 1.02rem;
     line-height: 1.85;
     color: var(--ink-soft);
@@ -228,7 +229,12 @@
     text-wrap: balance;
   }
   .ask.small { font-size: .95rem; }
-  .ask { line-break: strict; }
+  /* わかち書きの すきまだけで ぎょうを おりかえす（「ケロちゃ/んの」の ように きれない） */
+  .ask, .lead, .bubble, .cheer, .done .q, .review .q, .peek-word {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
+  }
 
   /* 筆算 */
   .hz {
@@ -367,7 +373,7 @@
 
   /* ---------- けっか ---------- */
   .stamp {
-    width: 168px; height: 168px; margin: 6px auto 14px;
+    width: 188px; height: 188px; margin: 6px auto 14px;
     border: 4px double var(--shu);
     border-radius: 50%;
     display: grid; place-content: center; text-align: center;
@@ -376,12 +382,42 @@
     font-family: var(--f-disp);
     line-height: 1.45;
   }
-  .stamp .big { font-size: 1.3rem; letter-spacing: .06em; }
-  .stamp .sub { font-family: var(--f-num); font-weight: 800; font-size: 2.4rem; letter-spacing: -.02em; }
+  .stamp .big { font-size: 1.02rem; letter-spacing: .04em; white-space: nowrap; }
+  .stamp .sub { font-family: var(--f-num); font-weight: 800; font-size: 2.5rem; letter-spacing: -.02em; }
   .stamp .sub small { font-size: .95rem; letter-spacing: 0; }
   .stars { text-align: center; font-size: 1.7rem; color: var(--kin); letter-spacing: .18em; margin-bottom: 4px; }
   .stars span { color: var(--line); }
   .score-note { font-size: .84rem; color: var(--ink-soft); font-weight: 700; margin: 0 0 10px; }
+  .frogs { display: flex; gap: 16px; align-items: flex-end; justify-content: center; }
+  .frogs figure { margin: 0; display: grid; justify-items: center; gap: 1px; }
+  .frogs figcaption { font-size: .66rem; font-weight: 700; color: var(--ink-soft); letter-spacing: .02em; }
+  .frog { display: block; }
+  .cheer-lead { display: grid; justify-items: center; margin-top: 16px; }
+  .bubble {
+    position: relative;
+    background: var(--kin-soft);
+    border: 1.5px solid var(--kin);
+    border-radius: 18px;
+    padding: 12px 18px;
+    max-width: 300px;
+    text-align: center;
+    font-family: var(--f-disp);
+    font-size: 1.02rem; line-height: 1.75; letter-spacing: .03em;
+    margin-bottom: 13px;
+  }
+  .bubble::after {
+    content: ""; position: absolute; left: 50%; bottom: -8px;
+    width: 13px; height: 13px;
+    transform: translateX(-50%) rotate(45deg);
+    background: var(--kin-soft);
+    border-right: 1.5px solid var(--kin);
+    border-bottom: 1.5px solid var(--kin);
+    border-bottom-right-radius: 3px;
+  }
+  .hello { display: flex; align-items: center; gap: 13px; margin: 16px 0 22px; }
+  .hello .lead { margin: 0; }
+  .hello .frogs { gap: 9px; flex: 0 0 auto; }
+  .judge .frog { flex: 0 0 42px; }
   .cheers { display: grid; gap: 7px; margin-top: 14px; }
   .cheer {
     display: flex; align-items: center; gap: 9px;
@@ -441,7 +477,10 @@
 
   <!-- ======== ホーム ======== -->
   <main id="home">
-    <p class="lead">1・2ねんせいの さんすう。<br><em>10もん</em>ずつ ちょうせん しよう。</p>
+    <div class="hello">
+      <div class="frogs" id="hello-frogs" aria-hidden="true"></div>
+      <p class="lead">ケロちゃんと コロちゃんと いっしょに、<em>10もん</em>ずつ ちょうせん しよう。</p>
+    </div>
 
     <h2 class="sec-label">レベル</h2>
     <div class="levels" id="levels" role="group" aria-label="レベルをえらぶ">
@@ -468,7 +507,7 @@
           <p>くらしの なかの たしざん・ひきざん</p>
         </div>
         <div class="peek" aria-hidden="true">
-          <div class="peek-word">おりがみ <b>32まい</b>。<br><b>15まい</b> つかうと<br>のこりは…</div>
+          <div class="peek-word">ケロちゃんの<br>おりがみ <b>32まい</b>。<br><b>15まい</b> つかうと…</div>
         </div>
       </button>
 
@@ -517,6 +556,10 @@
     <section class="sheet">
       <div class="stamp" id="stamp"></div>
       <div class="stars" id="stars"></div>
+      <div class="cheer-lead">
+        <div class="bubble" id="bubble"></div>
+        <div class="frogs" id="result-frogs" aria-hidden="true"></div>
+      </div>
       <div class="cheers" id="cheers"></div>
       <div id="donebox" hidden>
         <h2 class="sec-label">できた もんだい</h2>
@@ -558,7 +601,8 @@
   };
 
   const TOTAL = 10;
-  const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！"];
+  const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
+    "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
   const MODE_NAME = { calc: "ひっさん", word: "ぶんしょうだい", clock: "とけい", mix: "ミックス" };
 
   /* ========== おと ========== */
@@ -626,6 +670,42 @@
     return out;
   }
 
+  /* ========== ケロちゃんと コロちゃん ========== */
+  // コーワの こうしきの えがらは つかわず、この アプリの ための オリジナルの カエル
+  function frogSVG(who, opt = {}) {
+    const { size = 56, mood = "happy", cls = "frog" } = opt;
+    const kero = who === "kero";
+    const skin = kero ? "#5fae55" : "#a3c53f";
+    const edge = kero ? "#3f8038" : "#7d9c2b";
+    const ribbon = kero ? "#e4523f" : "#2b6ca3";
+    const dark = "#233b22";
+    const eyes = mood === "happy"
+      ? `<path d="M25 30 Q32 21 39 30" fill="none" stroke="${dark}" stroke-width="3.4" stroke-linecap="round"/>
+         <path d="M61 30 Q68 21 75 30" fill="none" stroke="${dark}" stroke-width="3.4" stroke-linecap="round"/>`
+      : `<circle cx="32" cy="30" r="6.4" fill="${dark}"/><circle cx="68" cy="30" r="6.4" fill="${dark}"/>
+         <circle cx="34.4" cy="27.4" r="2.1" fill="#fff"/><circle cx="70.4" cy="27.4" r="2.1" fill="#fff"/>`;
+    const mouth = mood === "happy"
+      ? `<path d="M31 51 Q50 72 69 51" fill="none" stroke="${dark}" stroke-width="3.4" stroke-linecap="round"/>`
+      : `<path d="M36 56 Q50 66 64 56" fill="none" stroke="${dark}" stroke-width="3.4" stroke-linecap="round"/>`;
+    return `<svg class="${cls}" viewBox="0 0 100 96" width="${size}" height="${size * 0.96}" role="img" aria-label="${kero ? "ケロちゃん" : "コロちゃん"}">
+      <ellipse cx="50" cy="57" rx="33" ry="28" fill="${skin}"/>
+      <circle cx="32" cy="29" r="14" fill="#fff" stroke="${edge}" stroke-width="2.6"/>
+      <circle cx="68" cy="29" r="14" fill="#fff" stroke="${edge}" stroke-width="2.6"/>
+      ${eyes}
+      <circle cx="44.5" cy="45" r="1.9" fill="${edge}"/>
+      <circle cx="55.5" cy="45" r="1.9" fill="${edge}"/>
+      ${mouth}
+      <ellipse cx="24" cy="57" rx="6.2" ry="4.2" fill="#ff8f7e" opacity=".6"/>
+      <ellipse cx="76" cy="57" rx="6.2" ry="4.2" fill="#ff8f7e" opacity=".6"/>
+      <path d="M50 84 L36 78 L36 90 Z" fill="${ribbon}"/>
+      <path d="M50 84 L64 78 L64 90 Z" fill="${ribbon}"/>
+      <circle cx="50" cy="84" r="4.2" fill="${ribbon}"/>
+    </svg>`;
+  }
+  const frogPairHTML = (size = 58) => `
+    <figure>${frogSVG("kero", { size })}<figcaption>ケロちゃん</figcaption></figure>
+    <figure>${frogSVG("koro", { size })}<figcaption>コロちゃん</figcaption></figure>`;
+
   /* ========== 花まる ========== */
   function maruPath(n = 8) {
     const R = 34, C = 50;
@@ -684,8 +764,12 @@
   }
 
   // 2) ぶんしょうだい
-  const NAMES = ["あきら", "ゆい", "はると", "さくら", "けんた", "みさき", "そうた", "ひなた", "りく", "あおい"];
+  // ケロちゃんと コロちゃんが よく でて くる
+  const FROGS = ["ケロちゃん", "コロちゃん"];
+  const NAMES = [...FROGS, ...FROGS, "あきらさん", "ゆいさん", "はるとさん", "さくらさん",
+    "けんたさん", "みさきさん", "そうたさん", "ひなたさん", "りくさん", "あおいさん"];
   function twoNames() {
+    if (Math.random() < 0.55) return shuffle(FROGS);   // はんぶん くらいは カエルの ふたり
     const a = pick(NAMES);
     let b = pick(NAMES);
     while (b === a) b = pick(NAMES);
@@ -713,11 +797,11 @@
   const WORD_TEMPLATES = [
     // 合併（あわせて いくつ）
     (lv) => { const [a, b] = pairSum(lv), [n1, n2] = twoNames();
-      return { text: `${n1}さんは どんぐりを ${a}こ、${n2}さんは ${b}こ ひろいました。ふたり あわせて なんこ ひろいましたか。`, answer: a + b, unit: "こ" }; },
+      return { text: `${n1}は どんぐりを ${a}こ、${n2}は ${b}こ ひろいました。ふたり あわせて なんこ ひろいましたか。`, answer: a + b, unit: "こ" }; },
     (lv) => { const [a, b] = pairSum(lv);
       return { text: `${money(lv, a)}円の パンと ${money(lv, b)}円の ぎゅうにゅうを かいます。あわせて なん円 ですか。`, answer: money(lv, a) + money(lv, b), unit: "円" }; },
     (lv) => { const [a, b] = pairSum(lv), n = pick(NAMES);
-      return { text: `${n}さんは なわとびを きのう ${a}回、きょう ${b}回 とびました。あわせて なん回 とびましたか。`, answer: a + b, unit: "回" }; },
+      return { text: `${n}は なわとびを きのう ${a}回、きょう ${b}回 とびました。あわせて なん回 とびましたか。`, answer: a + b, unit: "回" }; },
     // 増加（ふえると いくつ）
     (lv) => { const [a, b] = pairSum(lv);
       return { text: `あめを ${a}こ もって いました。おかあさんから ${b}こ もらいました。あめは ぜんぶで なんこ に なりましたか。`, answer: a + b, unit: "こ" }; },
@@ -738,9 +822,16 @@
       return { text: `バスに ${a}人 のって いました。ていりゅうじょで ${b}人 おりました。バスに のって いるのは なん人 ですか。`, answer: a - b, unit: "人" }; },
     // 求差（ちがいは いくつ）
     (lv) => { const [a, b] = pairDiff(lv), [n1, n2] = twoNames();
-      return { text: `${n1}さんの カードは ${a}まい、${n2}さんの カードは ${b}まい です。かずの ちがいは なんまい ですか。`, answer: a - b, unit: "まい" }; },
+      return { text: `${n1}の カードは ${a}まい、${n2}の カードは ${b}まい です。かずの ちがいは なんまい ですか。`, answer: a - b, unit: "まい" }; },
     (lv) => { const [a, b] = pairDiff(lv);
       return { text: `あかい 花が ${a}本、しろい 花が ${b}本 さいて います。あかい 花は しろい 花より なん本 おおいですか。`, answer: a - b, unit: "本" }; },
+    // ケロちゃんと コロちゃん
+    (lv) => { const [a, b] = pairDiff(lv), [n1, n2] = shuffle(FROGS);
+      return { text: `${n1}は あめを ${a}こ もって います。${n2}に ${b}こ あげました。${n1}の あめは なんこ のこって いますか。`, answer: a - b, unit: "こ" }; },
+    (lv) => { const [a, b] = pairSum(lv), [n1, n2] = shuffle(FROGS);
+      return { text: `${n1}は はっぱを ${a}まい、${n2}は ${b}まい あつめました。ふたりの はっぱは あわせて なんまい ですか。`, answer: a + b, unit: "まい" }; },
+    (lv) => { const [a, b] = pairDiff(lv), [n1, n2] = shuffle(FROGS);
+      return { text: `いけで ${n1}は ${a}回、${n2}は ${b}回 およぎました。${n1}は ${n2}より なん回 おおく およぎましたか。`, answer: a - b, unit: "回" }; },
     // 3つの たしざん
     (lv) => { const [lo, hi] = wordRange(lv);
       const t = Math.max(lo, Math.floor(hi / 3));
@@ -1036,6 +1127,7 @@
     }
     const last = S.i === TOTAL - 1;
     $("judge").innerHTML = `<div class="judge ${ok ? "" : "ng"}">
+      ${frogSVG(S.i % 2 ? "koro" : "kero", { size: 42, mood: ok ? "happy" : "open" })}
       <div class="txt">
         <strong>${ok ? "せいかい！" : "おしい！"}</strong>
         <small>${ok ? praise : `こたえは <b>${S.qs[S.i].answerText}</b>`}</small>
@@ -1098,8 +1190,11 @@
     }
     if (n > prev) store.set(key, String(n));
 
-    $("cheers").innerHTML = cheers.map((t, i) =>
-      `<div class="cheer${i === 0 ? " top" : ""}">${maruMark()}<span>${t}</span></div>`).join("");
+    // さいしょの ひとことは ケロちゃんと コロちゃんの ふきだしに
+    $("bubble").textContent = cheers[0];
+    $("result-frogs").innerHTML = frogPairHTML(58);
+    $("cheers").innerHTML = cheers.slice(1).map((t) =>
+      `<div class="cheer">${maruMark()}<span>${t}</span></div>`).join("");
 
     // できた もんだいを ならべる
     $("donebox").hidden = n === 0;
@@ -1191,6 +1286,7 @@
   $("sound").textContent = soundOn ? "おと オン" : "おと オフ";
   $("peek-clock").innerHTML = clockSVG(3, 40, { learn: false, size: 78, cls: "" });
   $("peek-mini").innerHTML = clockSVG(9, 20, { learn: false, size: 28, cls: "" });
+  $("hello-frogs").innerHTML = `${frogSVG("kero", { size: 52, mood: "open" })}${frogSVG("koro", { size: 52, mood: "open" })}`;
 })();
 </script>
 </body>
