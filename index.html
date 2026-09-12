@@ -252,7 +252,7 @@
   .flat i { color: var(--shu); font-style: normal; padding: 0 .2em; }
 
   /* こたえ欄 */
-  .ansrow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .ansrow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; margin-left: var(--ansshift, 0); }
   .field {
     min-width: 3.4ch; min-height: 56px;
     border: 2.5px dashed var(--line);
@@ -346,9 +346,9 @@
 
   /* 花まる */
   .maru {
-    position: absolute; left: 50%; bottom: -4px;
+    position: absolute; left: 50%; bottom: 4px;
     transform: translateX(-50%);
-    width: min(184px, 54%); height: auto;
+    width: min(216px, 62%); height: 100px;
     pointer-events: none; z-index: 2;
   }
   .maru path { fill: none; stroke: var(--shu); stroke-width: 3.6; stroke-linecap: round; }
@@ -557,12 +557,13 @@
     const C = 100;
     // 学習用とけい：そとがわの わに「ふん」、うちがわに「じ」の すうじ
     const R = learn ? 95 : 92;
-    const rMinNum = 86;
-    const rTickOut = learn ? 78 : 90;
-    const rTickIn = learn ? 66 : 79;
-    const rHourNum = learn ? 52 : 65;
-    const lenH = learn ? 38 : 44;
-    const lenM = learn ? 68 : 74;
+    const rMinNum = 88;
+    const rTickOut = learn ? 80 : 90;
+    const rTickIn = learn ? 68 : 79;
+    const rHourNum = learn ? 56 : 65;
+    const rHourFont = learn ? 18.5 : 21;
+    const lenH = learn ? 40 : 44;
+    const lenM = learn ? 72 : 74;
     const pt = (deg, r) => {
       const a = (deg - 90) * Math.PI / 180;
       return [C + r * Math.cos(a), C + r * Math.sin(a)];
@@ -577,7 +578,7 @@
     }
     for (let i = 1; i <= 12; i++) {
       const [x, y] = pt(i * 30, rHourNum);
-      out += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="M PLUS Rounded 1c, sans-serif" font-weight="800" font-size="21">${i}</text>`;
+      out += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="M PLUS Rounded 1c, sans-serif" font-weight="800" font-size="${rHourFont}">${i}</text>`;
     }
     if (learn) {
       for (let i = 0; i < 12; i++) {
@@ -607,8 +608,8 @@
       const [x, y] = p(i);
       d += i === 0 ? `M${x.toFixed(1)} ${y.toFixed(1)}` : `A${rr} ${rr} 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}`;
     }
-    return `<svg class="maru" viewBox="0 0 100 100" aria-hidden="true">
-      <path class="flower" d="${d}Z"/>
+    return `<svg class="maru" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path class="flower" d="${d}Z" vector-effect="non-scaling-stroke"/>
     </svg>`;
   }
 
@@ -831,10 +832,12 @@
     tbuf: { h: "", m: "" },
     tf: "h",       // いま えらんで いる とけいの ばしょ
     locked: false,
+    timer: 0,      // せいかいの ときの じどうおくり
   };
 
   /* ========== がめんの きりかえ ========== */
   function show(name) {
+    clearTimeout(S.timer);
     for (const id of ["home", "quiz", "result"]) $(id).hidden = id !== name;
     $("quit").hidden = name !== "quiz";
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -870,6 +873,7 @@
     $("qnum").textContent = String(S.i + 1);
     renderMarks();
 
+    $("sheet").style.setProperty("--ansshift", q.kind === "calc" ? "1.7ch" : "0");
     $("ask").className = "ask" + (q.askSmall ? " small" : "");
     $("ask").textContent = q.ask;
     $("body").innerHTML = q.bodyHTML;
@@ -997,10 +1001,12 @@
       <button type="button" class="next" id="next">${last ? "けっかを みる" : "つぎの もんだい"}</button>
     </div>`;
     $("input").querySelectorAll("button").forEach((b) => { b.disabled = true; });
-    if (ok) setTimeout(nextQuestion, 1100);
+    clearTimeout(S.timer);
+    if (ok) S.timer = setTimeout(nextQuestion, 1100);
   }
 
   function nextQuestion() {
+    clearTimeout(S.timer);
     if (!S.locked) return;
     document.querySelectorAll(".maru").forEach((el) => el.remove());
     if (S.i === TOTAL - 1) { showResult(); return; }
