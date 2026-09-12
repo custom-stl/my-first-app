@@ -381,11 +381,37 @@
   .stamp .sub small { font-size: .95rem; letter-spacing: 0; }
   .stars { text-align: center; font-size: 1.7rem; color: var(--kin); letter-spacing: .18em; margin-bottom: 4px; }
   .stars span { color: var(--line); }
-  .score-note { text-align: center; font-size: .86rem; color: var(--ink-soft); font-weight: 700; margin: 0 0 6px; }
+  .score-note { font-size: .84rem; color: var(--ink-soft); font-weight: 700; margin: 0 0 10px; }
+  .cheers { display: grid; gap: 7px; margin-top: 14px; }
+  .cheer {
+    display: flex; align-items: center; gap: 9px;
+    background: var(--shu-soft);
+    border-radius: var(--r-m);
+    padding: 10px 13px;
+    font-size: .88rem; font-weight: 700; line-height: 1.6;
+  }
+  .cheer.top {
+    background: var(--kin-soft);
+    font-family: var(--f-disp); font-size: 1.02rem; font-weight: 400;
+    letter-spacing: .03em;
+  }
+  .mk { flex: 0 0 18px; width: 18px; height: 18px; }
+  .done .mk { margin-top: 3px; }
+  .cheer.top .mk { flex-basis: 20px; width: 20px; height: 20px; }
+  .done { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .done li {
+    display: flex; gap: 9px; align-items: flex-start;
+    border-top: 1px dashed var(--line); padding-top: 8px;
+    font-size: .88rem; line-height: 1.7;
+  }
+  .done li:first-child { border-top: 0; }
+  .done .q { flex: 1; }
+  .done .a { font-family: var(--f-num); font-weight: 800; color: var(--ink); white-space: nowrap; }
+  #donebox { margin-top: 18px; }
   #reviewbox { margin-top: 18px; }
   .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .review li {
-    display: flex; gap: 10px; align-items: baseline;
+    display: flex; gap: 10px; align-items: flex-start;
     border-top: 1px dashed var(--line); padding-top: 8px;
     font-size: .88rem; line-height: 1.7;
   }
@@ -491,9 +517,14 @@
     <section class="sheet">
       <div class="stamp" id="stamp"></div>
       <div class="stars" id="stars"></div>
-      <p class="score-note" id="note"></p>
+      <div class="cheers" id="cheers"></div>
+      <div id="donebox" hidden>
+        <h2 class="sec-label">できた もんだい</h2>
+        <ul class="done" id="done"></ul>
+      </div>
       <div id="reviewbox" hidden>
         <h2 class="sec-label">みなおし</h2>
+        <p class="score-note" id="note"></p>
         <ul class="review" id="review"></ul>
       </div>
     </section>
@@ -527,6 +558,7 @@
   };
 
   const TOTAL = 10;
+  const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！"];
   const MODE_NAME = { calc: "ひっさん", word: "ぶんしょうだい", clock: "とけい", mix: "ミックス" };
 
   /* ========== おと ========== */
@@ -595,8 +627,8 @@
   }
 
   /* ========== 花まる ========== */
-  function maruSVG() {
-    const n = 8, R = 34, C = 50;
+  function maruPath(n = 8) {
+    const R = 34, C = 50;
     const p = (i) => {
       const a = (i * 360 / n - 90) * Math.PI / 180;
       return [C + R * Math.cos(a), C + R * Math.sin(a)];
@@ -608,10 +640,13 @@
       const [x, y] = p(i);
       d += i === 0 ? `M${x.toFixed(1)} ${y.toFixed(1)}` : `A${rr} ${rr} 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}`;
     }
-    return `<svg class="maru" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <path class="flower" d="${d}Z" vector-effect="non-scaling-stroke"/>
-    </svg>`;
+    return d + "Z";
   }
+  const maruSVG = () => `<svg class="maru" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path class="flower" d="${maruPath()}" vector-effect="non-scaling-stroke"/>
+    </svg>`;
+  // ほめる ぶんの あたまに つける ちいさな 花まる
+  const maruMark = () => `<svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><path d="${maruPath(5)}" fill="none" stroke="var(--shu)" stroke-width="10" stroke-linecap="round"/></svg>`;
 
   /* ========== もんだいを つくる ========== */
   // 1) ひっさん
@@ -833,6 +868,8 @@
     tf: "h",       // いま えらんで いる とけいの ばしょ
     locked: false,
     timer: 0,      // せいかいの ときの じどうおくり
+    streak: 0,     // れんぞく せいかい
+    best: 0,
   };
 
   /* ========== がめんの きりかえ ========== */
@@ -849,6 +886,8 @@
     S.qs = Array.from({ length: TOTAL }, () => makeQuestion(mode, S.lv));
     S.i = 0;
     S.results = [];
+    S.streak = 0;
+    S.best = 0;
     show("quiz");
     renderQuestion();
   }
@@ -983,6 +1022,9 @@
   function judge(ok, given) {
     S.locked = true;
     S.results[S.i] = { q: S.qs[S.i], ok, given };
+    S.streak = ok ? S.streak + 1 : 0;
+    S.best = Math.max(S.best, S.streak);
+    const praise = S.streak >= 3 ? `${S.streak}もん れんぞく せいかい！` : pick(PRAISE);
     renderMarks();
     beep(ok ? "ok" : "ng");
 
@@ -995,8 +1037,8 @@
     const last = S.i === TOTAL - 1;
     $("judge").innerHTML = `<div class="judge ${ok ? "" : "ng"}">
       <div class="txt">
-        <strong>${ok ? "せいかい！" : "おしい…"}</strong>
-        <small>${ok ? "その ちょうし！" : `こたえは <b>${S.qs[S.i].answerText}</b>`}</small>
+        <strong>${ok ? "せいかい！" : "おしい！"}</strong>
+        <small>${ok ? praise : `こたえは <b>${S.qs[S.i].answerText}</b>`}</small>
       </div>
       <button type="button" class="next" id="next">${last ? "けっかを みる" : "つぎの もんだい"}</button>
     </div>`;
@@ -1016,16 +1058,60 @@
 
   /* ========== けっか ========== */
   function showResult() {
-    const n = S.results.filter((r) => r.ok).length;
-    const stars = n >= 10 ? 3 : n >= 8 ? 2 : n >= 5 ? 1 : 0;
-    const title = n >= 9 ? "よく できました" : n >= 6 ? "がんばりました" : "もういっかい";
+    const oks = S.results.filter((r) => r.ok);
+    const missed = S.results.filter((r) => !r.ok);
+    const n = oks.length;
+    const stars = n >= 9 ? 3 : n >= 6 ? 2 : n >= 1 ? 1 : 0;
+    const title = n === TOTAL ? "はなまる まんてん"
+      : n >= 8 ? "よく できました"
+      : n >= 6 ? "がんばったね"
+      : n >= 3 ? "よく がんばった"
+      : n >= 1 ? "ここまで できたね"
+      : "やりきったね";
     $("stamp").innerHTML = `<div><div class="big">${title}</div><div class="sub">${n}<small>/${TOTAL}</small></div></div>`;
     $("stars").innerHTML = [0, 1, 2].map((i) => i < stars ? "★" : "<span>★</span>").join("");
-    $("note").textContent = n === TOTAL
-      ? "ぜんもん せいかい！ はなまる 10こ ゲット。"
-      : `まちがえた ${TOTAL - n}もんを みなおして みよう。`;
-    const missed = S.results.filter((r) => !r.ok);
+
+    // できた ことを ほめる
+    const cheers = [];
+    cheers.push(n === TOTAL ? "ぜんもん せいかい！ すばらしい！"
+      : n >= 8 ? `${n}もん せいかい！ すごいね！`
+      : n >= 6 ? `${n}もん せいかい！ いいぞ！`
+      : n >= 3 ? `${n}もん せいかい！ がんばったね！`
+      : n >= 1 ? `${n}もん せいかい！ できたね！`
+      : "10もん ぜんぶ ちょうせん したね！");
+    if (n === 0) cheers.push("さいごまで やったのが えらい！");
+
+    const KETA = { 1: "2", 2: "3", 3: "4" }[S.lv];
+    const LABEL = { calc: `${KETA}けたの ひっさん`, word: "ぶんしょうだい", clock: "とけいの もんだい" };
+    for (const kind of ["calc", "word", "clock"]) {
+      const c = oks.filter((r) => r.q.kind === kind).length;
+      if (c > 0) cheers.push(`${LABEL[kind]}が ${c}もん せいかい！`);
+    }
+    if (S.best >= 3) cheers.push(`${S.best}もん れんぞくで せいかい！`);
+
+    // じぶんの きろくと くらべる
+    const key = `sn-best-${S.mode}-${S.lv}`;
+    const prev = Number(store.get(key, "-1"));
+    if (prev >= 0 && n > prev) {
+      cheers.push("じぶんの さいこう きろく！");
+      cheers.push(`まえより ${n - prev}もん おおく できたよ！`);
+    }
+    if (n > prev) store.set(key, String(n));
+
+    $("cheers").innerHTML = cheers.map((t, i) =>
+      `<div class="cheer${i === 0 ? " top" : ""}">${maruMark()}<span>${t}</span></div>`).join("");
+
+    // できた もんだいを ならべる
+    $("donebox").hidden = n === 0;
+    $("done").innerHTML = oks.map((r) => `<li>
+        ${maruMark()}
+        <span class="q">${r.q.text}</span>
+        <span class="a">${r.q.answerText}</span>
+      </li>`).join("");
+
+    // まちがえた もんだいの みなおし
     $("reviewbox").hidden = missed.length === 0;
+    $("note").textContent = `つぎは この ${missed.length}もんに ちょうせん しよう。`;
     $("review").innerHTML = missed.map((r) => `<li>
         <span class="q">${r.q.text}</span>
         <span class="a">${r.q.answerText}</span>
