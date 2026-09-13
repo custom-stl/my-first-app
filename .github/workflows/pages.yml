@@ -1,7 +1,11 @@
 # GitHub Pages に公開して、ログインなしで使えるようにする。
-# configure-pages の enablement: true が Pages 自体を有効にするので、
-# リポジトリ側の設定変更は不要。main に push するたび
-# https://<ユーザー名>.github.io/my-first-app/ が更新される。
+# main に push するたび https://<ユーザー名>.github.io/my-first-app/ が更新される。
+#
+# 注意: 無料プランでは public リポジトリでしか Pages を使えない。
+# private のままだと configure-pages が
+# "Create Pages site failed. Resource not accessible by integration" で失敗する。
+# public にすれば enablement: true により自動で有効化される。
+# 有効にならない場合は Settings → Pages → Source を「GitHub Actions」にする。
 name: Deploy to GitHub Pages
 
 on:

@@ -15,11 +15,14 @@ npx http-server . -p 8080
 
 サーバーもアカウントも使わない静的なページなので、**認証なしで動きます**（通信するのは Google Fonts の読み込みだけで、それが遮断されても端末の書体で問題なく動きます）。方法は3つあります。
 
-### 1. GitHub Pages で公開する（おすすめ）
+### 1. GitHub Pages で公開する
 
-`.github/workflows/pages.yml` が `main` への push で自動的にデプロイします（`configure-pages` の `enablement: true` により、Pages の有効化もワークフロー側で行うので設定変更は不要です）。
+`.github/workflows/pages.yml` を用意してあり、`main` への push で自動デプロイします。公開先は `https://<ユーザー名>.github.io/my-first-app/` です。
 
-公開先は `https://<ユーザー名>.github.io/my-first-app/` です。実際のURLは Actions の実行結果、またはリポジトリの Settings → Pages で確認できます。
+**ただし、このリポジトリは現在 private です。** GitHub Pages を private リポジトリで使うには GitHub Pro などの有料プランが必要で、無料プランでは公開リポジトリからしか公開できません（2026年9月時点でデプロイは `Create Pages site failed. Resource not accessible by integration` で失敗します）。
+
+- **リポジトリを public にする場合**: public にして `main` に push すれば、`configure-pages` の `enablement: true` により Pages が自動で有効になります。有効にならない場合だけ、一度 **Settings → Pages → Source** を **「GitHub Actions」** にしてください。ソースコードも公開される点にご注意ください。
+- **private のままにしたい場合**: 下の方法2・3を使うか、GitHub Pro 等に加入してください。
 
 URLを開くだけで使えます。スマホ・タブレットのブラウザメニューから**「ホーム画面に追加」**すると、アイコン付きでアプリのように全画面で起動します。
 
@@ -29,9 +32,9 @@ URLを開くだけで使えます。スマホ・タブレットのブラウザ�
 
 `index.html` を端末に保存してブラウザで開くだけです。ネット接続も不要で、機内モードでも動きます。アイコンも使いたい場合は `index.html` / `manifest.webmanifest` / `icon.svg` / `icon-192.png` / `icon-512.png` / `icon-180.png` を同じフォルダに置いてください。
 
-### 3. そのほか
+### 3. 無料の静的ホスティングに置く（private のままでOK）
 
-フォルダごと Netlify Drop などの静的ホスティングにドラッグしても公開できます（ビルド不要）。
+フォルダごと [Netlify Drop](https://app.netlify.com/drop) にドラッグするだけで、ログイン不要の公開URLがもらえます（ビルド不要、リポジトリを公開する必要もありません）。Cloudflare Pages や Vercel でも同様です。
 
 記録は端末のブラウザに保存される（`localStorage`）ため、公開URLで使っても**他の人に自分の記録は見えません**。逆に、同じ端末の同じブラウザでないと記録は引き継がれません。
 
