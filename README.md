@@ -17,11 +17,9 @@ npx http-server . -p 8080
 
 ### 1. GitHub Pages で公開する（おすすめ）
 
-`.github/workflows/pages.yml` を用意してあります。
+`.github/workflows/pages.yml` が `main` への push で自動的にデプロイします（`configure-pages` の `enablement: true` により、Pages の有効化もワークフロー側で行うので設定変更は不要です）。
 
-1. このブランチを `main` にマージする
-2. GitHub のリポジトリで **Settings → Pages → Build and deployment → Source** を **「GitHub Actions」** に変更する
-3. 数十秒後に `https://<ユーザー名>.github.io/my-first-app/` で開けるようになる（以後 `main` に push するたび自動更新）
+公開先は `https://<ユーザー名>.github.io/my-first-app/` です。実際のURLは Actions の実行結果、またはリポジトリの Settings → Pages で確認できます。
 
 URLを開くだけで使えます。スマホ・タブレットのブラウザメニューから**「ホーム画面に追加」**すると、アイコン付きでアプリのように全画面で起動します。
 

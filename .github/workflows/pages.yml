@@ -1,6 +1,7 @@
 # GitHub Pages に公開して、ログインなしで使えるようにする。
-# 使い方: リポジトリの Settings → Pages → Source を「GitHub Actions」にする。
-# 以後 main に push するたび https://<ユーザー名>.github.io/my-first-app/ が更新される。
+# configure-pages の enablement: true が Pages 自体を有効にするので、
+# リポジトリ側の設定変更は不要。main に push するたび
+# https://<ユーザー名>.github.io/my-first-app/ が更新される。
 name: Deploy to GitHub Pages
 
 on:
@@ -26,6 +27,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
