@@ -1,0 +1,16 @@
+name = "sansu-note-api"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+# D1（SQLite）。database_id は `npx wrangler d1 create sansu-note` の しゅつりょくを はりつける。
+[[d1_databases]]
+binding = "DB"
+database_name = "sansu-note"
+database_id = "ここに database_id を はりつける"
+
+[vars]
+# アプリを おく URL だけ かきこみを うけたい ばあいに かえる（例: "https://custom-stl.github.io"）
+ALLOW_ORIGIN = "*"
+
+# あいことば（APP_KEY）は vars に かかず、シークレットとして いれる:
+#   npx wrangler secret put APP_KEY

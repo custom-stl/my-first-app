@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=M+PLUS+Rounded+1c:wght@700;800&display=swap">
+<script src="config.js"></script>
 <style>
   :root {
     --paper: #f4f7fb;
@@ -80,6 +81,9 @@
   }
 
   * { box-sizing: border-box; }
+  /* display を じぶんで きめて いる ようそでも hidden が きくように
+     （.pform の display:flex などが UA の [hidden] を うわがきして しまう） */
+  [hidden] { display: none !important; }
   html, body { min-height: 100%; }
   body {
     margin: 0;
@@ -477,6 +481,69 @@
   }
   .btn.primary { background: var(--shu); color: #fff; border-color: var(--shu); box-shadow: 0 3px 0 color-mix(in srgb, var(--shu) 70%, #000); }
   .btn:active { transform: translateY(2px); box-shadow: none; }
+  /* ---------- だれが やる？ ---------- */
+  .players { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+  .pchip {
+    border: 1.5px solid var(--line); background: var(--card);
+    border-radius: 999px; padding: 9px 16px;
+    font-family: var(--f-disp); font-size: .98rem;
+  }
+  .pchip[aria-pressed="true"] {
+    border-color: var(--shu); background: var(--shu-soft); color: var(--shu);
+    box-shadow: inset 0 0 0 1px var(--shu);
+  }
+  .pchip.add { font-family: var(--f-body); font-size: .82rem; font-weight: 700; color: var(--ink-soft); }
+  .pform { display: flex; gap: 7px; margin: -14px 0 22px; flex-wrap: wrap; }
+  .pform input {
+    flex: 1; min-width: 120px;
+    border: 1.5px solid var(--ai); border-radius: var(--r-m);
+    background: var(--card); color: var(--ink);
+    font: inherit; font-size: 1rem; padding: 10px 12px;
+  }
+  .pform button {
+    border: 0; border-radius: var(--r-m); padding: 10px 16px;
+    font-weight: 700; font-size: .88rem;
+    background: var(--ai); color: #fff;
+  }
+  .pform button.ghost { background: none; color: var(--ink-soft); border: 1.5px solid var(--line); }
+  .whoami { font-size: .72rem; font-weight: 700; color: var(--ink-soft); }
+  .whoami b { color: var(--ink); font-size: .82rem; }
+
+  /* ---------- サーバー（みんなの きろく） ---------- */
+  .field-row { display: grid; gap: 5px; margin-bottom: 10px; }
+  .field-row label { font-size: .72rem; font-weight: 700; color: var(--ink-soft); letter-spacing: .04em; }
+  .field-row input {
+    border: 1.5px solid var(--line); border-radius: var(--r-m);
+    background: var(--card-2); color: var(--ink);
+    font: inherit; font-size: .88rem; padding: 10px 12px;
+  }
+  .field-row input:focus { outline: 2px solid var(--ai); outline-offset: 1px; }
+  .srv-msg { font-size: .78rem; font-weight: 700; line-height: 1.7; margin: 0 0 10px; }
+  .srv-msg.ok { color: var(--chart-ok); }
+  .srv-msg.ng { color: var(--chart-ng); }
+  .srv-msg.idle { color: var(--ink-soft); }
+  .mini-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mini-btns button {
+    border: 1.5px solid var(--line); background: var(--card);
+    border-radius: var(--r-m); padding: 9px 14px;
+    font-size: .82rem; font-weight: 700;
+  }
+  .mini-btns button.go2 { background: var(--ai); color: #fff; border-color: var(--ai); }
+  .person { margin-bottom: 14px; }
+  .person .tiles { margin-bottom: 4px; }
+  .person .tile { box-shadow: none; background: var(--card-2); }
+  .person-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 11px; }
+  .person-h strong { font-family: var(--f-disp); font-size: 1.16rem; font-weight: 400; }
+  .person-h span { margin-left: auto; font-size: .74rem; font-weight: 700; color: var(--ink-soft); }
+  .person-h span b { font-family: var(--f-num); font-size: .92rem; color: var(--ink); }
+  .plist { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+  .plist li { display: flex; align-items: center; gap: 8px; font-size: .84rem; font-weight: 700; }
+  .plist li span { flex: 1; }
+  .plist li button {
+    border: 1.5px solid var(--line); background: var(--card);
+    border-radius: 999px; padding: 5px 12px; font-size: .74rem; font-weight: 700; color: var(--ink-soft);
+  }
+
   /* ---------- きろく ---------- */
   .page-title {
     font-family: var(--f-disp); font-size: 1.3rem; margin: 16px 0 12px;
@@ -579,6 +646,14 @@
       <p class="lead">ケロちゃんと コロちゃんと いっしょに、<em>10もん</em>ずつ ちょうせん しよう。</p>
     </div>
 
+    <h2 class="sec-label">だれが やる？</h2>
+    <div class="players" id="players" role="group" aria-label="やる人を えらぶ"></div>
+    <form class="pform" id="pform" hidden>
+      <input id="pname" maxlength="12" placeholder="なまえ（ニックネーム）" autocomplete="off" enterkeyhint="done">
+      <button type="submit">ついか</button>
+      <button type="button" class="ghost" id="pcancel">やめる</button>
+    </form>
+
     <h2 class="sec-label">レベル</h2>
     <div class="levels" id="levels" role="group" aria-label="レベルをえらぶ">
       <button type="button" class="lv" data-lv="1"><span>やさしい</span><small>2けた・5ふん</small></button>
@@ -640,6 +715,7 @@
     <div class="marks" id="marks" aria-hidden="true"></div>
     <div class="qmeta">
       <span id="qmode">ひっさん</span>
+      <span class="whoami" id="whoami"></span>
       <span><span class="n" id="qnum">1</span> / 10もん</span>
     </div>
 
@@ -697,10 +773,40 @@
       <h3 class="sec-label">日ごとの きろく</h3>
       <div id="days"></div>
     </section>
+    <section class="sheet">
+      <h3 class="sec-label">サーバー（みんなの きろく）</h3>
+      <p class="srv-msg idle" id="srv-msg"></p>
+      <div class="field-row">
+        <label for="srv-url">サーバーの URL</label>
+        <input id="srv-url" type="url" inputmode="url" placeholder="https://……workers.dev" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field-row">
+        <label for="srv-key">あいことば（サーバーで せっていした ばあい）</label>
+        <input id="srv-key" type="password" placeholder="なければ からで OK" autocomplete="off">
+      </div>
+      <div class="mini-btns">
+        <button type="button" class="go2" id="srv-save">ほぞんして ためす</button>
+        <button type="button" id="srv-send">いま おくる</button>
+        <button type="button" id="to-team">みんなの きろくを みる</button>
+      </div>
+      <h3 class="sec-label" style="margin-top:18px">この たんまつの 人</h3>
+      <ul class="plist" id="plist"></ul>
+    </section>
     <div class="btnrow">
       <button type="button" class="btn" id="hist-back">ホームへ</button>
     </div>
     <div class="wipe" id="wipe"></div>
+  </main>
+
+  <!-- ======== みんなの きろく（サーバー） ======== -->
+  <main id="team" hidden>
+    <h2 class="page-title">みんなの きろく</h2>
+    <p class="srv-msg idle" id="team-msg"></p>
+    <div id="team-list"></div>
+    <div class="btnrow">
+      <button type="button" class="btn" id="team-reload">さいしんに する</button>
+      <button type="button" class="btn" id="team-back">もどる</button>
+    </div>
   </main>
 
 </div>
@@ -1073,6 +1179,123 @@
     return makeClock(lv);
   }
 
+  /* ========== だれが やって いるか ========== */
+  // ログインは つかわない。なまえを えらぶ だけ。
+  // player_id は なまえから きめるので、べつの たんまつで おなじ なまえを えらべば
+  // サーバー側で 1人ぶんに まとまる（なまえを かえると べつの人に なる）。
+  const PLAYERS_KEY = "sn-players", CURRENT_KEY = "sn-current";
+  const MAX_PLAYERS = 8, MAX_NAME = 12;
+  const playerId = (name) => "n:" + String(name).trim().toLowerCase();
+
+  function loadPlayers() {
+    try {
+      const v = JSON.parse(store.get(PLAYERS_KEY, "[]"));
+      return Array.isArray(v) ? v.filter((x) => typeof x === "string" && x.trim()).slice(0, MAX_PLAYERS) : [];
+    } catch { return []; }
+  }
+  const savePlayers = (list) => store.set(PLAYERS_KEY, JSON.stringify(list.slice(0, MAX_PLAYERS)));
+  function currentPlayer() {
+    const list = loadPlayers();
+    const cur = store.get(CURRENT_KEY, "");
+    return list.includes(cur) ? cur : (list[0] || "");
+  }
+  function setCurrentPlayer(name) {
+    store.set(CURRENT_KEY, name);
+    renderPlayers();
+    teaseHistory();
+  }
+  function addPlayer(raw) {
+    const name = String(raw).trim().slice(0, MAX_NAME);
+    if (!name) return false;
+    const list = loadPlayers();
+    if (!list.includes(name)) {
+      if (list.length >= MAX_PLAYERS) return false;
+      list.push(name);
+      savePlayers(list);
+    }
+    setCurrentPlayer(name);
+    return true;
+  }
+  function removePlayer(name) {
+    savePlayers(loadPlayers().filter((n) => n !== name));
+    if (store.get(CURRENT_KEY, "") === name) store.set(CURRENT_KEY, "");
+    renderPlayers();
+    renderPlist();
+    teaseHistory();
+  }
+  function renderPlayers() {
+    const list = loadPlayers(), cur = currentPlayer();
+    $("players").innerHTML = list.map((n) =>
+      `<button type="button" class="pchip" data-name="${esc(n)}" aria-pressed="${n === cur}">${esc(n)}</button>`).join("")
+      + (list.length < MAX_PLAYERS ? `<button type="button" class="pchip add" id="padd">＋ ひとを ふやす</button>` : "");
+    $("whoami").innerHTML = cur ? `<b>${esc(cur)}</b>` : "";
+  }
+  function renderPlist() {
+    const list = loadPlayers();
+    $("plist").innerHTML = list.length === 0
+      ? `<li><span>まだ いません</span></li>`
+      : list.map((n) => `<li><span>${esc(n)}</span><button type="button" data-del="${esc(n)}">この たんまつから けす</button></li>`).join("");
+  }
+  // なまえは がめんに そのまま だすので、タグとして よまれないように する
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  /* ========== サーバーへの そうしん ========== */
+  const SRV_KEY = "sn-server", OUTBOX_KEY = "sn-outbox", OUTBOX_MAX = 200;
+  const CONFIG = (typeof window !== "undefined" && window.SANSU_CONFIG) || {};
+  const rid = () => (crypto?.randomUUID?.() || `r-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
+
+  function srvCfg() {
+    try {
+      const v = JSON.parse(store.get(SRV_KEY, "null"));
+      if (v && typeof v.url === "string") return { url: v.url, key: typeof v.key === "string" ? v.key : "" };
+    } catch { /* こわれて いたら きていちを つかう */ }
+    return { url: String(CONFIG.serverUrl || ""), key: String(CONFIG.appKey || "") };
+  }
+  const setSrvCfg = (url, key) => store.set(SRV_KEY, JSON.stringify({
+    url: String(url).trim().replace(/\/+$/, ""), key: String(key).trim(),
+  }));
+
+  function loadOutbox() {
+    try { const v = JSON.parse(store.get(OUTBOX_KEY, "[]")); return Array.isArray(v) ? v : []; } catch { return []; }
+  }
+  const saveOutbox = (box) => store.set(OUTBOX_KEY, JSON.stringify(box.slice(-OUTBOX_MAX)));
+  function queueRun(run) {
+    const box = loadOutbox();
+    box.push(run);
+    saveOutbox(box);
+  }
+
+  // たまって いる きろくを じゅんばんに おくる。おくれなければ また こんど。
+  let flushing = false;
+  async function flushOutbox() {
+    if (flushing) return { busy: true };
+    const { url, key } = srvCfg();
+    if (!url) return { skipped: "no-url" };
+    const box = loadOutbox();
+    if (box.length === 0) return { sent: 0, left: 0 };
+    flushing = true;
+    let sent = 0, error = null;
+    try {
+      for (const run of [...box]) {
+        let res;
+        try {
+          res = await fetch(`${url}/api/runs`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(key ? { key, run } : { run }),
+          });
+        } catch { error = "サーバーに つながりません"; break; }
+        if (res.status === 401) { error = "あいことばが ちがいます"; break; }
+        // 400（データが おかしい）は なんど おくっても だめなので すすめる
+        if (!res.ok && res.status !== 400) { error = `サーバーが エラーを かえしました (${res.status})`; break; }
+        const left = loadOutbox().filter((r) => r.id !== run.id);
+        saveOutbox(left);
+        sent++;
+      }
+    } finally { flushing = false; }
+    return { sent, left: loadOutbox().length, error };
+  }
+
   /* ========== きろく（日ごとの じっせき） ========== */
   const LOG_KEY = "sn-log-v1";
   const LOG_MAX = 300;              // ふるい セットから きえていく
@@ -1085,17 +1308,32 @@
   function loadLog() {
     try {
       const v = JSON.parse(store.get(LOG_KEY, "[]"));
-      return Array.isArray(v) ? v : [];
+      if (!Array.isArray(v)) return [];
+      // いま えらんで いる 人の ぶん（p が ない ふるい きろくは だれの ものとも しないで のこす）
+      const cur = currentPlayer();
+      return cur ? v.filter((r) => !r.p || r.p === cur) : v;
     } catch { return []; }
+  }
+  function loadLogAll() {
+    try { const v = JSON.parse(store.get(LOG_KEY, "[]")); return Array.isArray(v) ? v : []; } catch { return []; }
   }
   function recordSet(score) {
     const now = new Date();
+    const player = currentPlayer();
+    const qs = S.results.map((r) => ({ q: r.q.text, a: r.q.answerText, g: r.given || "", o: r.ok ? 1 : 0 }));
     const list = loadLog();
-    list.push({
-      d: ymd(now), t: now.getTime(), m: S.mode, lv: S.lv, n: score,
-      qs: S.results.map((r) => ({ q: r.q.text, a: r.q.answerText, g: r.given || "", o: r.ok ? 1 : 0 })),
-    });
+    list.push({ d: ymd(now), t: now.getTime(), m: S.mode, lv: S.lv, n: score, p: player, qs });
     store.set(LOG_KEY, JSON.stringify(list.slice(-LOG_MAX)));
+
+    // サーバーにも のこす（なまえが きまって いる ときだけ）
+    if (player) {
+      queueRun({
+        id: rid(), player_id: playerId(player), player_name: player,
+        day: ymd(now), ts: now.getTime(), mode: S.mode, level: S.lv,
+        total: qs.length, correct: score, detail: qs,
+      });
+      flushOutbox();      // おくれなくても、つぎに ひらいた ときに おくる
+    }
   }
 
   // 日ごとに まとめる（あたらしい日が さき）
@@ -1130,31 +1368,41 @@
     return `${base}（${wd}）`;
   }
 
-  /* ---------- 2しゅうかんの ぼうグラフ ---------- */
-  let chartDays = [];
-  function buildChart(list) {
+  /* ---------- 2しゅうかんの ぼうグラフ（この たんまつ用・みんな用 きょうつう） ---------- */
+  const CHARTS = new Map();     // キャプションの id -> 日ごとの データ
+
+  // この たんまつの きろくから 14日ぶんの データを つくる
+  function dailySeries(list, days = 14) {
     const agg = new Map(byDay(list).map((e) => [e.d, e]));
     const today = new Date();
-    chartDays = [];
-    for (let i = 13; i >= 0; i--) {
+    const out = [];
+    for (let i = days - 1; i >= 0; i--) {
       const key = ymd(shiftDay(today, -i));
       const e = agg.get(key);
-      chartDays.push({ d: key, q: e ? e.q : 0, ok: e ? e.ok : 0 });
+      out.push({ d: key, q: e ? e.q : 0, ok: e ? e.ok : 0 });
     }
+    return out;
+  }
+  // サーバーの まとめ（daily）を おなじ かたちに
+  const serverSeries = (daily) => (daily || []).map((v) => ({ d: v.day, q: v.total, ok: v.correct }));
+
+  function barChart(series, capId, opt = {}) {
+    CHARTS.set(capId, series);
     const x0 = 30, x1 = 318, yTop = 14, yBase = 100;
-    const slot = (x1 - x0) / chartDays.length;
+    const slot = (x1 - x0) / series.length;
     const bw = Math.min(14, slot - 6.5);
-    const max = Math.max(10, ...chartDays.map((v) => v.q));
+    // みんなの きろくでは、人ごとの グラフの たてじくを そろえて くらべられるように する
+    const max = Math.max(10, opt.max || 0, ...series.map((v) => v.q));
     const h = (v) => (v / max) * (yBase - yTop);
 
-    let g = `<svg class="chart" viewBox="0 0 324 126" role="img" aria-label="この 2しゅうかんの もんだいすう">`;
+    let g = `<svg class="chart" viewBox="0 0 324 126" data-cap="${capId}" role="img" aria-label="この 2しゅうかんの もんだいすう">`;
     // めもり（グラフが とどく あたいだけ）
     g += `<line x1="${x0}" y1="${yTop}" x2="${x1}" y2="${yTop}" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 3"/>`;
     g += `<line x1="${x0}" y1="${yBase}" x2="${x1}" y2="${yBase}" stroke="var(--line)" stroke-width="1.5"/>`;
     for (const [v, y] of [[max, yTop], [0, yBase]]) {
       g += `<text x="${x0 - 6}" y="${y}" text-anchor="end" dominant-baseline="central" fill="var(--ink-soft)" font-family="M PLUS Rounded 1c, sans-serif" font-weight="700" font-size="9">${v}</text>`;
     }
-    chartDays.forEach((v, i) => {
+    series.forEach((v, i) => {
       const xc = x0 + slot * i + slot / 2;
       const x = xc - bw / 2;
       if (v.q === 0) {
@@ -1167,7 +1415,7 @@
           g += `<rect x="${x.toFixed(1)}" y="${(yBase - okH - 2 - ngH).toFixed(1)}" width="${bw.toFixed(1)}" height="${ngH.toFixed(1)}" rx="3.5" fill="var(--chart-ng)"/>`;
         }
       }
-      if (i === chartDays.length - 1) {
+      if (i === series.length - 1) {
         g += `<rect x="${(xc - 5).toFixed(1)}" y="${yBase + 2.5}" width="10" height="2.5" rx="1.25" fill="var(--kin)"/>`;
       }
       if (i % 2 === 1) {
@@ -1179,12 +1427,22 @@
     g += `</svg>`;
     return g;
   }
-  function chartCaption(i) {
-    const v = chartDays[i];
-    if (!v) return;
-    $("chart-cap").innerHTML = v.q === 0
+  function chartCaption(capId, i) {
+    const v = CHARTS.get(capId)?.[i];
+    const el = $(capId);
+    if (!v || !el) return;
+    el.innerHTML = v.q === 0
       ? `${dayLabel(v.d)}　おやすみ`
       : `${dayLabel(v.d)}　<b>${v.q}</b>もん・せいかい <b>${v.ok}</b>もん`;
+  }
+  // どの グラフでも、さわった ところの 日を したの ぶんに だす
+  for (const ev of ["pointerover", "click", "focusin"]) {
+    document.addEventListener(ev, (e) => {
+      const hit = e.target.closest?.(".hit");
+      if (!hit) return;
+      const cap = hit.closest("svg")?.dataset.cap;
+      if (cap) chartCaption(cap, Number(hit.dataset.i));
+    });
   }
 
   /* ---------- きろく がめん ---------- */
@@ -1208,8 +1466,9 @@
       return;
     }
     $("chartbox").hidden = false;
-    $("chart").innerHTML = buildChart(list);
-    chartCaption(13);
+    const series = dailySeries(list);
+    $("chart").innerHTML = barChart(series, "chart-cap");
+    chartCaption("chart-cap", series.length - 1);
 
     $("days").innerHTML = days.map((e) => `
       <div class="day">
@@ -1247,6 +1506,95 @@
     $("hist-teaser").innerHTML = `${t ? `きょう <b>${t.q}</b>もん` : "きょうは まだ"}${st > 1 ? `・れんぞく <b>${st}</b>日` : ""}`;
   }
 
+  /* ========== サーバーせってい の がめん ========== */
+  function srvMsg(text, kind = "idle", id = "srv-msg") {
+    const el = $(id);
+    if (!el) return;
+    el.className = `srv-msg ${kind}`;
+    el.innerHTML = text;
+  }
+  function renderSrvBox() {
+    const { url, key } = srvCfg();
+    $("srv-url").value = url;
+    $("srv-key").value = key;
+    renderPlist();
+    const left = loadOutbox().length;
+    if (!url) srvMsg("サーバーの URL を いれると、みんなの きろくを まとめられます。<br>いれなくても この たんまつの きろくは のこります。");
+    else if (left > 0) srvMsg(`おくれて いない きろくが <b>${left}</b>件 あります。「いま おくる」を おしてください。`, "ng");
+    else srvMsg(`サーバー: ${esc(url)}`, "ok");
+  }
+  async function testServer() {
+    const { url, key } = srvCfg();
+    if (!url) { srvMsg("URL を いれて ください。", "ng"); return; }
+    srvMsg("たしかめて います…");
+    try {
+      const u = new URL(`${url}/api/summary`);
+      u.searchParams.set("today", ymd(new Date()));
+      if (key) u.searchParams.set("key", key);
+      const res = await fetch(u, { cache: "no-store" });
+      if (res.status === 401) { srvMsg("あいことばが ちがいます。", "ng"); return; }
+      if (!res.ok) { srvMsg(`サーバーが エラーを かえしました (${res.status})`, "ng"); return; }
+      const data = await res.json();
+      const n = (data.players || []).length;
+      srvMsg(`つながりました。いま <b>${n}</b>人ぶんの きろくが あります。`, "ok");
+      const out = await flushOutbox();
+      if (out.sent) srvMsg(`つながりました。たまって いた <b>${out.sent}</b>件を おくりました。`, "ok");
+    } catch { srvMsg("サーバーに つながりません。URL を たしかめて ください。", "ng"); }
+  }
+
+  /* ========== みんなの きろく（サーバーの まとめ） ========== */
+  async function renderTeam() {
+    const { url, key } = srvCfg();
+    $("team-list").innerHTML = "";
+    if (!url) {
+      srvMsg("サーバーが まだ せっていされて いません。<br>「きろく」がめんの サーバーらんに URL を いれて ください。", "idle", "team-msg");
+      return;
+    }
+    srvMsg("よみこんで います…", "idle", "team-msg");
+    await flushOutbox();
+    let data;
+    try {
+      const u = new URL(`${url}/api/summary`);
+      u.searchParams.set("today", ymd(new Date()));
+      if (key) u.searchParams.set("key", key);
+      const res = await fetch(u, { cache: "no-store" });
+      if (res.status === 401) { srvMsg("あいことばが ちがいます。", "ng", "team-msg"); return; }
+      if (!res.ok) { srvMsg(`サーバーが エラーを かえしました (${res.status})`, "ng", "team-msg"); return; }
+      data = await res.json();
+    } catch { srvMsg("サーバーに つながりません。", "ng", "team-msg"); return; }
+
+    const players = data.players || [];
+    if (players.length === 0) {
+      srvMsg("まだ だれの きろくも ありません。", "idle", "team-msg");
+      return;
+    }
+    const cur = currentPlayer();
+    // たてじくは いちばん おおい 人に あわせる（人どうしを くらべられる ように）
+    const axisMax = Math.max(10, ...players.flatMap((p) => (p.daily || []).map((d) => d.total)));
+    srvMsg(`${players.length}人・ぜんぶで ${data.sets}セット`, "ok", "team-msg");
+    $("team-list").innerHTML = players.map((p, i) => {
+      const cap = `team-cap-${i}`;
+      const series = serverSeries(p.daily);
+      return `<section class="sheet person">
+        <div class="person-h">
+          <strong>${esc(p.name)}${p.id === playerId(cur) ? "（じぶん）" : ""}</strong>
+          <span>きょう <b>${p.today.total}</b>もん</span>
+        </div>
+        <div class="tiles">
+          <div class="tile"><div class="v">${p.today.correct}<small>/${p.today.total}</small></div><div class="k">きょう せいかい</div></div>
+          <div class="tile"><div class="v">${p.streak}<small>日</small></div><div class="k">れんぞく</div></div>
+          <div class="tile"><div class="v">${p.correct}<small>/${p.total}</small></div><div class="k">つうさん せいかい</div></div>
+        </div>
+        ${barChart(series, cap, { max: axisMax })}
+        <p class="chart-cap" id="${cap}"></p>
+        <div class="legend2" aria-hidden="true">
+          <b><i class="ok"></i>せいかい</b><b><i class="ng"></i>まちがい</b>
+        </div>
+      </section>`;
+    }).join("");
+    players.forEach((p, i) => chartCaption(`team-cap-${i}`, (p.daily || []).length - 1));
+  }
+
   /* ========== ゲームの じょうたい ========== */
   const S = {
     mode: "calc",
@@ -1267,7 +1615,7 @@
   /* ========== がめんの きりかえ ========== */
   function show(name) {
     clearTimeout(S.timer);
-    for (const id of ["home", "quiz", "result", "history"]) $(id).hidden = id !== name;
+    for (const id of ["home", "quiz", "result", "history", "team"]) $(id).hidden = id !== name;
     $("quit").hidden = name !== "quiz";
     window.scrollTo({ top: 0, behavior: "instant" });
   }
@@ -1485,7 +1833,7 @@
     if (S.best >= 3) cheers.push(`${S.best}もん れんぞくで せいかい！`);
 
     // じぶんの きろくと くらべる
-    const key = `sn-best-${S.mode}-${S.lv}`;
+    const key = `sn-best-${currentPlayer()}-${S.mode}-${S.lv}`;
     const prev = Number(store.get(key, "-1"));
     if (prev >= 0 && n > prev) {
       cheers.push("じぶんの さいこう きろく！");
@@ -1563,7 +1911,48 @@
     if (e.target.closest("#next")) nextQuestion();
   });
   $("quit").addEventListener("click", () => show("home"));
-  function openHistory() { renderHistory(); show("history"); }
+  function openHistory() { renderHistory(); renderSrvBox(); show("history"); }
+  function openTeam() { show("team"); renderTeam(); }
+
+  // だれが やる？
+  $("players").addEventListener("click", (e) => {
+    if (e.target.closest("#padd")) {
+      $("pform").hidden = false;
+      $("pname").value = "";
+      $("pname").focus();
+      return;
+    }
+    const chip = e.target.closest(".pchip");
+    if (chip && chip.dataset.name) setCurrentPlayer(chip.dataset.name);
+  });
+  $("pform").addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (addPlayer($("pname").value)) $("pform").hidden = true;
+  });
+  $("pcancel").addEventListener("click", () => { $("pform").hidden = true; });
+  $("plist").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-del]");
+    if (!b) return;
+    if (b.dataset.confirm === "1") removePlayer(b.dataset.del);
+    else { b.dataset.confirm = "1"; b.textContent = "ほんとうに けす？"; }
+  });
+
+  // サーバー
+  $("srv-save").addEventListener("click", () => {
+    setSrvCfg($("srv-url").value, $("srv-key").value);
+    testServer();
+  });
+  $("srv-send").addEventListener("click", async () => {
+    setSrvCfg($("srv-url").value, $("srv-key").value);
+    srvMsg("おくって います…");
+    const out = await flushOutbox();
+    if (out.skipped) srvMsg("URL を いれて ください。", "ng");
+    else if (out.error) srvMsg(`${out.error}（のこり ${out.left}件）`, "ng");
+    else srvMsg(`${out.sent}件 おくりました。`, "ok");
+  });
+  $("to-team").addEventListener("click", openTeam);
+  $("team-back").addEventListener("click", () => { renderSrvBox(); show("history"); });
+  $("team-reload").addEventListener("click", renderTeam);
   $("to-history").addEventListener("click", openHistory);
   $("to-history2").addEventListener("click", openHistory);
   $("hist-back").addEventListener("click", () => { teaseHistory(); show("home"); });
@@ -1608,7 +1997,9 @@
   $("sound").textContent = soundOn ? "おと オン" : "おと オフ";
   $("peek-clock").innerHTML = clockSVG(3, 40, { learn: false, size: 78, cls: "" });
   $("peek-mini").innerHTML = clockSVG(9, 20, { learn: false, size: 28, cls: "" });
+  renderPlayers();
   teaseHistory();
+  flushOutbox();      // まえに おくれなかった きろくを おくる
   $("hello-frogs").innerHTML = `${frogSVG("kero", { size: 52, mood: "open" })}${frogSVG("koro", { size: 52, mood: "open" })}`;
 })();
 </script>
