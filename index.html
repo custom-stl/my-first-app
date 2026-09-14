@@ -513,6 +513,11 @@
   /* ---------- サーバー（みんなの きろく） ---------- */
   .field-row { display: grid; gap: 5px; margin-bottom: 10px; }
   .field-row label { font-size: .72rem; font-weight: 700; color: var(--ink-soft); letter-spacing: .04em; }
+  .field-row select {
+    border: 1.5px solid var(--line); border-radius: var(--r-m);
+    background: var(--card-2); color: var(--ink);
+    font: inherit; font-size: .88rem; padding: 10px 12px;
+  }
   .field-row input {
     border: 1.5px solid var(--line); border-radius: var(--r-m);
     background: var(--card-2); color: var(--ink);
@@ -777,6 +782,19 @@
       <div id="days"></div>
     </section>
     <section class="sheet">
+      <h3 class="sec-label">ケロと コロの こえ</h3>
+      <div class="field-row">
+        <label for="voice-sel">こえの しゅるい（この たんまつに ある もの）</label>
+        <select id="voice-sel"></select>
+      </div>
+      <div class="mini-btns">
+        <button type="button" class="go2" id="try-kero">ケロで ためす</button>
+        <button type="button" id="try-koro">コロで ためす</button>
+      </div>
+      <p class="srv-msg idle" id="voice-note"></p>
+    </section>
+
+    <section class="sheet">
       <h3 class="sec-label">サーバー（みんなの きろく）</h3>
       <p class="srv-msg idle" id="srv-msg"></p>
       <div class="field-row">
@@ -866,18 +884,35 @@
   // たんまつに はいって いる 日本語の こえ（Web Speech API）を つかう。
   // おとの ファイルは いらない。日本語の こえが ない たんまつでは
   // こえは でないので、これまでの こうかおんだけに なる。
-  const VOICE_KEY = "sn-voice";
+  const VOICE_KEY = "sn-voice", VOICE_NAME_KEY = "sn-voice-name";
   let voiceOn = store.get(VOICE_KEY, "1") === "1";
   const synth = typeof speechSynthesis !== "undefined" ? speechSynthesis : null;
-  let jaVoices = [];
+  let jaVoices = [];                       // つかえる 日本語の こえ（かわいい じゅん）
+  let voiceFor = { kero: null, koro: null };
+
+  // かわいく きこえる こえを さきに。おとこの こえは うしろに まわす。
+  const CUTE_JA = [/kyoko/i, /o-?ren/i, /nanami/i, /ayumi/i, /haruka/i, /sayaka/i, /mizuki/i, /google/i];
+  const MALE_JA = [/otoya/i, /ichiro/i, /keita/i, /hattori/i, /takumi/i];
 
   function pickVoices() {
     if (!synth) return;
     try {
-      const all = synth.getVoices() || [];
-      // おとこ・おんなを えらべるなら、ケロと コロで ちがう こえに する
-      jaVoices = all.filter((v) => /^ja/i.test(v.lang || ""));
-    } catch { jaVoices = []; }
+      const ja = (synth.getVoices() || []).filter((v) => /^ja/i.test(v.lang || ""));
+      const score = (v) => {
+        const n = String(v.name || "");
+        if (MALE_JA.some((re) => re.test(n))) return 0;    // おとこの こえは さいごの てだん
+        if (CUTE_JA.some((re) => re.test(n))) return 2;
+        return 1;
+      };
+      jaVoices = ja.map((v) => ({ v, s: score(v) })).sort((a, b) => b.s - a.s).map((x) => x.v);
+      const good = jaVoices.filter((v) => !MALE_JA.some((re) => re.test(String(v.name || ""))));
+      // 手で えらんで いれば それを ゆうせん
+      const chosen = jaVoices.find((v) => v.name === store.get(VOICE_NAME_KEY, ""));
+      voiceFor = {
+        kero: chosen || good[0] || jaVoices[0] || null,
+        koro: chosen || good[1] || good[0] || jaVoices[0] || null,
+      };
+    } catch { jaVoices = []; voiceFor = { kero: null, koro: null }; }
   }
   if (synth) {
     pickVoices();
@@ -885,25 +920,53 @@
   }
   const voiceReady = () => Boolean(synth) && (jaVoices.length > 0 || (synth.getVoices?.() || []).length === 0);
 
-  // ケロは ちょっと ゆっくり、コロは すこし たかく はやく
+  // ピッチは しようの うわげん 2.0 まで。ケロは あまえた かんじで ゆっくり、
+  // コロは うわげんまで あげて はずんだ かんじに。
   const VOICE_STYLE = {
-    kero: { pitch: 1.5, rate: 0.95 },
-    koro: { pitch: 1.9, rate: 1.08 },
+    kero: { pitch: 1.85, rate: 0.88 },
+    koro: { pitch: 2.0, rate: 1.12 },
   };
-  function speak(text, who = "kero") {
+  function speak(text, who = "kero", opt = {}) {
     if (!voiceOn || !synth || !voiceReady()) return false;
     try {
       const u = new SpeechSynthesisUtterance(String(text));
       u.lang = "ja-JP";
-      if (jaVoices.length) u.voice = jaVoices[who === "kero" ? 0 : Math.min(1, jaVoices.length - 1)];
+      if (voiceFor[who]) u.voice = voiceFor[who];
       const st = VOICE_STYLE[who] || VOICE_STYLE.kero;
       u.pitch = st.pitch;
       u.rate = st.rate;
-      synth.cancel();          // まえの こえが のこって いたら とめる
+      if (!opt.queue) synth.cancel();       // まえの こえが のこって いたら とめる
       synth.speak(u);
       return true;
     } catch { return false; }
   }
+
+  // カエルの なきごえ（ケロッ）。こえの まえに ちょこんと ならす。
+  function chirp(who = "kero") {
+    if (!soundOn) return false;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const up = who === "kero" ? 1 : 1.3;
+      const t = actx.currentTime;
+      for (const [f, at, dur] of [[520 * up, 0, 0.075], [700 * up, 0.07, 0.12]]) {
+        const o = actx.createOscillator(), g = actx.createGain();
+        o.type = "triangle";
+        o.frequency.setValueAtTime(f, t + at);
+        o.frequency.exponentialRampToValueAtTime(f * 1.14, t + at + dur * 0.45);
+        o.frequency.exponentialRampToValueAtTime(f * 0.86, t + at + dur);
+        g.gain.setValueAtTime(0.0001, t + at);
+        g.gain.exponentialRampToValueAtTime(0.13, t + at + 0.018);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + at + dur);
+        o.connect(g); g.connect(actx.destination);
+        o.start(t + at); o.stop(t + at + dur + 0.02);
+      }
+      return true;
+    } catch { return false; }
+  }
+
+  // ケロは「〜ケロ！」、コロは「〜コロ！」で しゃべる
+  const SAY_OK = ["せいかい", "やったね", "すごい", "ばっちり", "だいせいかい", "よく できた", "はなまる"];
+  const suffixOf = (who) => (who === "kero" ? "ケロ" : "コロ");
 
   /* ========== 学習用とけいの え ========== */
   function clockSVG(h, m, opt = {}) {
@@ -1559,6 +1622,24 @@
     el.className = `srv-msg ${kind}`;
     el.innerHTML = text;
   }
+  function renderVoiceBox() {
+    pickVoices();
+    const sel = $("voice-sel");
+    if (jaVoices.length === 0) {
+      sel.innerHTML = `<option value="">（この たんまつには 日本語の こえが ありません）</option>`;
+      sel.disabled = true;
+      srvMsg("この たんまつには 日本語の こえが ないので、こうかおんだけに なります。", "idle", "voice-note");
+      return;
+    }
+    sel.disabled = false;
+    const chosen = store.get(VOICE_NAME_KEY, "");
+    sel.innerHTML = `<option value="">おまかせ（かわいい こえを えらびます）</option>`
+      + jaVoices.map((v) => `<option value="${esc(v.name)}"${v.name === chosen ? " selected" : ""}>${esc(v.name)}</option>`).join("");
+    srvMsg(voiceOn
+      ? `いま: ${esc(voiceFor.kero?.name || "—")}（ケロ）／ ${esc(voiceFor.koro?.name || "—")}（コロ）`
+      : "「こえ オフ」に なって います。ヘッダーの ボタンで オンに できます。", "idle", "voice-note");
+  }
+
   function renderSrvBox() {
     const { url, key } = srvCfg();
     $("srv-url").value = url;
@@ -1822,10 +1903,13 @@
     const praise = S.streak >= 3 ? `${S.streak}もん れんぞく せいかい！` : pick(PRAISE);
     // がめんに でて いる カエルと おなじ 子が しゃべる
     const who = S.i % 2 ? "koro" : "kero";
-    speak(ok ? `${pick(["せいかい！", "まるー！", "あたり！"])} ${praise}`
-             : `おしい！ こたえは ${sayable(S.qs[S.i].answerText)} だよ`, who);
+    const sfx = suffixOf(who);
+    const line = ok
+      ? (S.streak >= 3 ? `${S.streak}もん れんぞく せいかい${sfx}ー！` : `${pick(SAY_OK)}${sfx}ー！`)
+      : `おしい${sfx}。こたえは ${sayable(S.qs[S.i].answerText)} だよー`;
+    if (speak(line, who)) chirp(who);      // こえが でる ときは なきごえも
+    else beep(ok ? "ok" : "ng");           // こえが でない たんまつは これまでの こうかおん
     renderMarks();
-    beep(ok ? "ok" : "ng");
 
     if (ok) {
       $("sheet").insertAdjacentHTML("beforeend", maruSVG());
@@ -1901,7 +1985,8 @@
 
     // さいしょの ひとことは ケロちゃんと コロちゃんの ふきだしに
     $("bubble").textContent = cheers[0];
-    speak(cheers[0], "kero");
+    // 「すごいね！ケロー！」と ！ が かさならないように おしまいの ！ を とる
+    if (speak(`${cheers[0].replace(/[！!]+$/, "")}ケロー！`, "kero")) chirp("kero");
     $("result-frogs").innerHTML = frogPairHTML(58);
     $("cheers").innerHTML = cheers.slice(1).map((t) =>
       `<div class="cheer">${maruMark()}<span>${t}</span></div>`).join("");
@@ -1970,7 +2055,7 @@
     if (e.target.closest("#next")) nextQuestion();
   });
   $("quit").addEventListener("click", () => show("home"));
-  function openHistory() { renderHistory(); renderSrvBox(); show("history"); }
+  function openHistory() { renderHistory(); renderVoiceBox(); renderSrvBox(); show("history"); }
   function openTeam() { show("team"); renderTeam(); }
 
   // だれが やる？
@@ -1994,6 +2079,22 @@
     if (!b) return;
     if (b.dataset.confirm === "1") removePlayer(b.dataset.del);
     else { b.dataset.confirm = "1"; b.textContent = "ほんとうに けす？"; }
+  });
+
+  // こえ
+  $("voice-sel").addEventListener("change", () => {
+    store.set(VOICE_NAME_KEY, $("voice-sel").value);
+    pickVoices();
+    renderVoiceBox();
+    if (speak("この こえで いいケロー？", "kero")) chirp("kero");
+  });
+  $("try-kero").addEventListener("click", () => {
+    if (speak("ケロだよー！ せいかいケロー！", "kero")) chirp("kero");
+    else srvMsg("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
+  });
+  $("try-koro").addEventListener("click", () => {
+    if (speak("コロだよー！ やったねコロー！", "koro")) chirp("koro");
+    else srvMsg("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
   });
 
   // サーバー
@@ -2039,7 +2140,10 @@
     $("voice").textContent = voiceOn ? "こえ オン" : "こえ オフ";
     if (voiceOn) {
       pickVoices();
-      if (!speak("ケロだよ。こえで おしえるね！", "kero")) {
+      if (speak("ケロだよー！", "kero")) {
+        chirp("kero");
+        speak("コロだよー！ いっしょに がんばろうケロー！", "koro", { queue: true });
+      } else {
         $("voice").textContent = "こえ なし";   // 日本語の こえが ない たんまつ
       }
     } else if (synth) { synth.cancel(); }
