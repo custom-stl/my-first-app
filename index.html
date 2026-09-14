@@ -110,7 +110,7 @@
   }
 
   /* ---------- ヘッダー ---------- */
-  .bar { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+  .bar { display: flex; align-items: center; gap: 8px; min-height: 40px; flex-wrap: wrap; }
   .brand {
     font-family: var(--f-disp);
     font-size: 1.15rem;
@@ -118,7 +118,8 @@
     margin: 0;
   }
   .brand b { color: var(--shu); font-weight: 500; }
-  .bar-sp { flex: 1; }
+  /* せまい がめんでは 3つ まとめて つぎの ぎょうに おりかえす */
+  .bar-btns { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
   .chip-btn {
     border: 1.5px solid var(--line);
     background: var(--card);
@@ -634,9 +635,11 @@
 
   <div class="bar">
     <h1 class="brand">さんすう<b>ノート</b></h1>
-    <div class="bar-sp"></div>
-    <button type="button" class="chip-btn" id="sound" aria-pressed="true">おと オン</button>
-    <button type="button" class="chip-btn" id="quit" hidden>やめる</button>
+    <div class="bar-btns">
+      <button type="button" class="chip-btn" id="voice" aria-pressed="true">こえ オン</button>
+      <button type="button" class="chip-btn" id="sound" aria-pressed="true">おと オン</button>
+      <button type="button" class="chip-btn" id="quit" hidden>やめる</button>
+    </div>
   </div>
 
   <!-- ======== ホーム ======== -->
@@ -857,6 +860,49 @@
         o.start(t); o.stop(t + 0.24);
       });
     } catch { /* おとが でなくても もんだいは とける */ }
+  }
+
+  /* ========== ケロと コロの こえ ========== */
+  // たんまつに はいって いる 日本語の こえ（Web Speech API）を つかう。
+  // おとの ファイルは いらない。日本語の こえが ない たんまつでは
+  // こえは でないので、これまでの こうかおんだけに なる。
+  const VOICE_KEY = "sn-voice";
+  let voiceOn = store.get(VOICE_KEY, "1") === "1";
+  const synth = typeof speechSynthesis !== "undefined" ? speechSynthesis : null;
+  let jaVoices = [];
+
+  function pickVoices() {
+    if (!synth) return;
+    try {
+      const all = synth.getVoices() || [];
+      // おとこ・おんなを えらべるなら、ケロと コロで ちがう こえに する
+      jaVoices = all.filter((v) => /^ja/i.test(v.lang || ""));
+    } catch { jaVoices = []; }
+  }
+  if (synth) {
+    pickVoices();
+    if ("onvoiceschanged" in synth) synth.onvoiceschanged = pickVoices;
+  }
+  const voiceReady = () => Boolean(synth) && (jaVoices.length > 0 || (synth.getVoices?.() || []).length === 0);
+
+  // ケロは ちょっと ゆっくり、コロは すこし たかく はやく
+  const VOICE_STYLE = {
+    kero: { pitch: 1.5, rate: 0.95 },
+    koro: { pitch: 1.9, rate: 1.08 },
+  };
+  function speak(text, who = "kero") {
+    if (!voiceOn || !synth || !voiceReady()) return false;
+    try {
+      const u = new SpeechSynthesisUtterance(String(text));
+      u.lang = "ja-JP";
+      if (jaVoices.length) u.voice = jaVoices[who === "kero" ? 0 : Math.min(1, jaVoices.length - 1)];
+      const st = VOICE_STYLE[who] || VOICE_STYLE.kero;
+      u.pitch = st.pitch;
+      u.rate = st.rate;
+      synth.cancel();          // まえの こえが のこって いたら とめる
+      synth.speak(u);
+      return true;
+    } catch { return false; }
   }
 
   /* ========== 学習用とけいの え ========== */
@@ -1760,12 +1806,24 @@
     judge(ok, given);
   }
 
+  // こえで よむ ための ととのえ（すうじと たんいの あいだを すこし あける）
+  function sayable(text) {
+    return String(text)
+      .replace(/(\d+)じ(\d+)ふん/, "$1じ $2ふん")
+      .replace(/(\d+)(こ|まい|本|人|円|ページ|回|ひき|cm)/, "$1 $2")
+      .replace(/cm/, "センチ");
+  }
+
   function judge(ok, given) {
     S.locked = true;
     S.results[S.i] = { q: S.qs[S.i], ok, given };
     S.streak = ok ? S.streak + 1 : 0;
     S.best = Math.max(S.best, S.streak);
     const praise = S.streak >= 3 ? `${S.streak}もん れんぞく せいかい！` : pick(PRAISE);
+    // がめんに でて いる カエルと おなじ 子が しゃべる
+    const who = S.i % 2 ? "koro" : "kero";
+    speak(ok ? `${pick(["せいかい！", "まるー！", "あたり！"])} ${praise}`
+             : `おしい！ こたえは ${sayable(S.qs[S.i].answerText)} だよ`, who);
     renderMarks();
     beep(ok ? "ok" : "ng");
 
@@ -1843,6 +1901,7 @@
 
     // さいしょの ひとことは ケロちゃんと コロちゃんの ふきだしに
     $("bubble").textContent = cheers[0];
+    speak(cheers[0], "kero");
     $("result-frogs").innerHTML = frogPairHTML(58);
     $("cheers").innerHTML = cheers.slice(1).map((t) =>
       `<div class="cheer">${maruMark()}<span>${t}</span></div>`).join("");
@@ -1973,6 +2032,18 @@
   }
   $("again").addEventListener("click", () => startSet(S.mode));
   $("tohome").addEventListener("click", () => { teaseHistory(); show("home"); });
+  $("voice").addEventListener("click", () => {
+    voiceOn = !voiceOn;
+    store.set(VOICE_KEY, voiceOn ? "1" : "0");
+    $("voice").setAttribute("aria-pressed", String(voiceOn));
+    $("voice").textContent = voiceOn ? "こえ オン" : "こえ オフ";
+    if (voiceOn) {
+      pickVoices();
+      if (!speak("ケロだよ。こえで おしえるね！", "kero")) {
+        $("voice").textContent = "こえ なし";   // 日本語の こえが ない たんまつ
+      }
+    } else if (synth) { synth.cancel(); }
+  });
   $("sound").addEventListener("click", () => {
     soundOn = !soundOn;
     store.set("sn-sound", soundOn ? "1" : "0");
@@ -1995,6 +2066,8 @@
   setLevel(S.lv);
   $("sound").setAttribute("aria-pressed", String(soundOn));
   $("sound").textContent = soundOn ? "おと オン" : "おと オフ";
+  $("voice").setAttribute("aria-pressed", String(voiceOn));
+  $("voice").textContent = voiceOn ? "こえ オン" : "こえ オフ";
   $("peek-clock").innerHTML = clockSVG(3, 40, { learn: false, size: 78, cls: "" });
   $("peek-mini").innerHTML = clockSVG(9, 20, { learn: false, size: 28, cls: "" });
   renderPlayers();
