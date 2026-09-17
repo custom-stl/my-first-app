@@ -542,6 +542,22 @@
   .person-h strong { font-family: var(--f-disp); font-size: 1.16rem; font-weight: 400; }
   .person-h span { margin-left: auto; font-size: .74rem; font-weight: 700; color: var(--ink-soft); }
   .person-h span b { font-family: var(--f-num); font-size: .92rem; color: var(--ink); }
+  .hist-who { margin-bottom: 14px; }
+  .hist-who .pchip { padding: 7px 14px; font-size: .9rem; }
+  .genre { display: grid; gap: 9px; }
+  .g-row { display: flex; align-items: center; gap: 10px; font-size: .84rem; font-weight: 700; }
+  .g-name { flex: 0 0 7.2em; }
+  .g-bar { flex: 1; height: 9px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .g-bar i { display: block; height: 100%; background: var(--chart-ok); border-radius: 999px; }
+  .g-num { flex: 0 0 auto; font-family: var(--f-num); font-weight: 800; color: var(--ink-soft); }
+  .g-num b { color: var(--ink); }
+  .person-more {
+    width: 100%; margin-top: 12px;
+    border: 1.5px solid var(--line); background: var(--card-2);
+    border-radius: var(--r-m); padding: 11px 0;
+    font-size: .86rem; font-weight: 700;
+  }
+  .qs.empty { font-size: .78rem; color: var(--ink-soft); font-weight: 700; padding: 2px 12px 11px; margin: 0; }
   .plist { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
   .plist li { display: flex; align-items: center; gap: 8px; font-size: .84rem; font-weight: 700; }
   .plist li span { flex: 1; }
@@ -767,6 +783,7 @@
   <!-- ======== きろく ======== -->
   <main id="history" hidden>
     <h2 class="page-title">きろく</h2>
+    <div class="players hist-who" id="hist-who" role="group" aria-label="だれの きろくを みるか" hidden></div>
     <div class="tiles" id="tiles"></div>
     <section class="sheet" id="chartbox">
       <h3 class="sec-label">この 2しゅうかん</h3>
@@ -817,6 +834,32 @@
       <button type="button" class="btn" id="hist-back">ホームへ</button>
     </div>
     <div class="wipe" id="wipe"></div>
+  </main>
+
+  <!-- ======== ひとりぶんの くわしい きろく ======== -->
+  <main id="child" hidden>
+    <h2 class="page-title" id="child-name">きろく</h2>
+    <p class="srv-msg idle" id="child-msg"></p>
+    <div class="tiles" id="child-tiles"></div>
+    <section class="sheet" id="child-chartbox">
+      <h3 class="sec-label">この 2しゅうかん</h3>
+      <div id="child-chart"></div>
+      <p class="chart-cap" id="child-cap"></p>
+      <div class="legend2" aria-hidden="true">
+        <b><i class="ok"></i>せいかい</b><b><i class="ng"></i>まちがい</b>
+      </div>
+    </section>
+    <section class="sheet">
+      <h3 class="sec-label">しゅるいべつの せいかい</h3>
+      <div id="child-genre"></div>
+    </section>
+    <section class="sheet">
+      <h3 class="sec-label">日ごとの きろく</h3>
+      <div id="child-days"></div>
+    </section>
+    <div class="btnrow">
+      <button type="button" class="btn" id="child-back">みんなの きろくへ</button>
+    </div>
   </main>
 
   <!-- ======== みんなの きろく（サーバー） ======== -->
@@ -1414,14 +1457,20 @@
   const ymd = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
   const shiftDay = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 
-  function loadLog() {
+  // who を わたすと その 人の ぶんだけ。p が ない ふるい きろくは どの 人でも みえる。
+  function loadLog(who) {
+    const target = who === undefined ? currentPlayer() : who;
     try {
       const v = JSON.parse(store.get(LOG_KEY, "[]"));
       if (!Array.isArray(v)) return [];
-      // いま えらんで いる 人の ぶん（p が ない ふるい きろくは だれの ものとも しないで のこす）
-      const cur = currentPlayer();
-      return cur ? v.filter((r) => !r.p || r.p === cur) : v;
+      return target ? v.filter((r) => !r.p || r.p === target) : v;
     } catch { return []; }
+  }
+  // この たんまつに きろくが ある 人（けした 人の きろくも のこって いる ことが ある）
+  function playersInLog() {
+    const names = new Set(loadPlayers());
+    for (const r of loadLogAll()) if (r.p) names.add(r.p);
+    return [...names];
   }
   function loadLogAll() {
     try { const v = JSON.parse(store.get(LOG_KEY, "[]")); return Array.isArray(v) ? v : []; } catch { return []; }
@@ -1430,7 +1479,9 @@
     const now = new Date();
     const player = currentPlayer();
     const qs = S.results.map((r) => ({ q: r.q.text, a: r.q.answerText, g: r.given || "", o: r.ok ? 1 : 0 }));
-    const list = loadLog();
+    // ほぞんの ときは ぜんいんぶんを よむ。
+    // ここで 人で しぼった ものを かきもどすと、ほかの 子の きろくが きえて しまう。
+    const list = loadLogAll();
     list.push({ d: ymd(now), t: now.getTime(), m: S.mode, lv: S.lv, n: score, p: player, qs });
     store.set(LOG_KEY, JSON.stringify(list.slice(-LOG_MAX)));
 
@@ -1557,7 +1608,13 @@
   /* ---------- きろく がめん ---------- */
   function renderHistory() {
     renderWipe(false);
-    const list = loadLog();
+    const who = S.histPlayer || currentPlayer();
+    const names = playersInLog();
+    // 人が ふたり いじょう いる ときだけ えらぶ ところを だす
+    $("hist-who").hidden = names.length < 2;
+    $("hist-who").innerHTML = names.map((n) =>
+      `<button type="button" class="pchip" data-who="${esc(n)}" aria-pressed="${n === who}">${esc(n)}</button>`).join("");
+    const list = loadLog(who);
     const days = byDay(list);
     const today = ymd(new Date());
     const t = days.find((e) => e.d === today);
@@ -1579,36 +1636,61 @@
     $("chart").innerHTML = barChart(series, "chart-cap");
     chartCaption("chart-cap", series.length - 1);
 
-    $("days").innerHTML = days.map((e) => `
+    $("days").innerHTML = daysHTML(days);
+  }
+
+  // 日ごとの きろく（セットを ひらくと 1もんごとの なかみ）。
+  // この たんまつの きろくと、サーバーから とってきた きろくの りょうほうで つかう。
+  function daysHTML(days) {
+    return days.map((e) => `
       <div class="day">
         <div class="day-h">
           <span class="day-d">${dayLabel(e.d)}</span>
           <span class="day-n">せいかい <b>${e.ok}</b>/${e.q}もん</span>
         </div>
-        ${e.sets.map((set) => `
-          <details class="set">
+        ${e.sets.map((set) => {
+          const total = set.total ?? set.qs.length;
+          return `<details class="set">
             <summary>
-              <span>${MODE_NAME[set.m]}・${LV_NAME[set.lv]}</span>
-              <span class="sc">${set.n}/${set.qs.length}</span>
+              <span>${MODE_NAME[set.m] || "もんだい"}・${LV_NAME[set.lv] || "?"}</span>
+              <span class="sc">${set.n}/${total}</span>
               <span class="tm">${new Date(set.t).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}</span>
             </summary>
-            <ul class="qs">
-              ${set.qs.map((q) => q.o
-                ? `<li class="ok">${maruMark()}<span class="q">${q.q}</span><span class="a">${q.a}</span></li>`
-                : `<li class="ng"><span class="x">✕</span><span class="q">${q.q}</span><span class="a">${q.a}${q.g ? `<span class="mine">かいた こたえ ${q.g}</span>` : ""}</span></li>`).join("")}
-            </ul>
-          </details>`).join("")}
+            ${set.qs.length === 0
+              ? `<p class="qs empty">1もんごとの なかみは のこって いません</p>`
+              : `<ul class="qs">${set.qs.map((q) => q.o
+                  ? `<li class="ok">${maruMark()}<span class="q">${esc(q.q)}</span><span class="a">${esc(q.a)}</span></li>`
+                  : `<li class="ng"><span class="x">✕</span><span class="q">${esc(q.q)}</span><span class="a">${esc(q.a)}${q.g ? `<span class="mine">かいた こたえ ${esc(q.g)}</span>` : ""}</span></li>`).join("")}</ul>`}
+          </details>`;
+        }).join("")}
       </div>`).join("");
   }
+
+  // しゅるいべつの せいかいりつ
+  function genreHTML(sets) {
+    const rows = ["calc", "word", "clock"].map((m) => {
+      const mine = sets.filter((x) => x.m === m);
+      const total = mine.reduce((a, x) => a + (x.total ?? x.qs.length), 0);
+      const ok = mine.reduce((a, x) => a + x.n, 0);
+      return { m, total, ok };
+    }).filter((r) => r.total > 0);
+    if (rows.length === 0) return `<p class="empty">まだ きろくが ありません。</p>`;
+    return `<div class="genre">${rows.map((r) => `
+      <div class="g-row">
+        <span class="g-name">${MODE_NAME[r.m]}</span>
+        <span class="g-bar"><i style="width:${Math.round((r.ok / r.total) * 100)}%"></i></span>
+        <span class="g-num"><b>${r.ok}</b>/${r.total}</span>
+      </div>`).join("")}</div>`;
+  }
   function renderWipe(asking) {
-    $("wipe").innerHTML = loadLog().length === 0 ? "" : asking
+    $("wipe").innerHTML = loadLogAll().length === 0 ? "" : asking
       ? `<span class="ask2">きろくを ぜんぶ けしますか？</span>
          <button type="button" class="yes" id="wipe-yes">けす</button>
          <button type="button" class="no" id="wipe-no">やめる</button>`
       : `<button type="button" id="wipe-ask">きろくを ぜんぶ けす</button>`;
   }
   function teaseHistory() {
-    const list = loadLog();
+    const list = loadLog(currentPlayer());
     if (list.length === 0) { $("hist-teaser").textContent = "まだ ありません"; return; }
     const t = byDay(list).find((e) => e.d === ymd(new Date()));
     const st = streakDays(list);
@@ -1648,7 +1730,7 @@
     const left = loadOutbox().length;
     if (!url) srvMsg("サーバーの URL を いれると、みんなの きろくを まとめられます。<br>いれなくても この たんまつの きろくは のこります。");
     else if (left > 0) srvMsg(`おくれて いない きろくが <b>${left}</b>件 あります。「いま おくる」を おしてください。`, "ng");
-    else srvMsg(`サーバー: ${esc(url)}`, "ok");
+    else srvMsg(`サーバー: ${esc(url)}`, "idle");
   }
   async function testServer() {
     const { url, key } = srvCfg();
@@ -1670,6 +1752,7 @@
   }
 
   /* ========== みんなの きろく（サーバーの まとめ） ========== */
+  let lastTeam = [];
   async function renderTeam() {
     const { url, key } = srvCfg();
     $("team-list").innerHTML = "";
@@ -1691,6 +1774,7 @@
     } catch { srvMsg("サーバーに つながりません。", "ng", "team-msg"); return; }
 
     const players = data.players || [];
+    lastTeam = players;
     if (players.length === 0) {
       srvMsg("まだ だれの きろくも ありません。", "idle", "team-msg");
       return;
@@ -1717,9 +1801,55 @@
         <div class="legend2" aria-hidden="true">
           <b><i class="ok"></i>せいかい</b><b><i class="ng"></i>まちがい</b>
         </div>
+        <button type="button" class="person-more" data-child="${esc(p.id)}">${esc(p.name)}の きろくを くわしく みる</button>
       </section>`;
     }).join("");
     players.forEach((p, i) => chartCaption(`team-cap-${i}`, (p.daily || []).length - 1));
+  }
+
+  /* ========== ひとりぶんの くわしい きろく（サーバーから） ========== */
+  // サーバーの きろくを、この たんまつの きろくと おなじ かたちに そろえる
+  const serverRunsToSets = (runs) => (runs || []).map((r) => ({
+    d: r.day, t: r.ts, m: r.mode, lv: r.level, n: r.correct, total: r.total,
+    qs: (r.detail || []).map((q) => ({ q: q.q, a: q.a, g: q.g, o: q.o })),
+  }));
+
+  async function openChild(id) {
+    const p = lastTeam.find((x) => x.id === id);
+    if (!p) return;
+    show("child");
+    $("child-name").textContent = `${p.name}の きろく`;
+    $("child-tiles").innerHTML = `
+      <div class="tile"><div class="v">${p.today.correct}<small>/${p.today.total}</small></div><div class="k">きょう せいかい</div></div>
+      <div class="tile"><div class="v">${p.streak}<small>日</small></div><div class="k">れんぞく</div></div>
+      <div class="tile"><div class="v">${p.correct}<small>/${p.total}</small></div><div class="k">つうさん せいかい</div></div>`;
+    const series = serverSeries(p.daily);
+    $("child-chart").innerHTML = barChart(series, "child-cap");
+    chartCaption("child-cap", series.length - 1);
+    $("child-genre").innerHTML = "";
+    $("child-days").innerHTML = "";
+    srvMsg("よみこんで います…", "idle", "child-msg");
+
+    const { url, key } = srvCfg();
+    try {
+      const u = new URL(`${url}/api/runs`);
+      u.searchParams.set("player", id);
+      u.searchParams.set("limit", "200");
+      if (key) u.searchParams.set("key", key);
+      const res = await fetch(u, { cache: "no-store" });
+      if (!res.ok) { srvMsg(`きろくを よめませんでした (${res.status})`, "ng", "child-msg"); return; }
+      const data = await res.json();
+      const sets = serverRunsToSets(data.runs);
+      if (sets.length === 0) {
+        srvMsg("まだ きろくが ありません。", "idle", "child-msg");
+        $("child-days").innerHTML = `<p class="empty">まだ きろくが ありません。</p>`;
+        $("child-genre").innerHTML = `<p class="empty">まだ きろくが ありません。</p>`;
+        return;
+      }
+      srvMsg(`${sets.length}セットぶん（あたらしい じゅん）`, "idle", "child-msg");
+      $("child-genre").innerHTML = genreHTML(sets);
+      $("child-days").innerHTML = daysHTML(byDay(sets));
+    } catch { srvMsg("サーバーに つながりません。", "ng", "child-msg"); }
   }
 
   /* ========== ゲームの じょうたい ========== */
@@ -1737,12 +1867,13 @@
     streak: 0,     // れんぞく せいかい
     best: 0,
     saved: false,  // この セットを きろくに のこしたか
+    histPlayer: "", // きろく がめんで みて いる 人
   };
 
   /* ========== がめんの きりかえ ========== */
   function show(name) {
     clearTimeout(S.timer);
-    for (const id of ["home", "quiz", "result", "history", "team"]) $(id).hidden = id !== name;
+    for (const id of ["home", "quiz", "result", "history", "team", "child"]) $(id).hidden = id !== name;
     $("quit").hidden = name !== "quiz";
     window.scrollTo({ top: 0, behavior: "instant" });
   }
@@ -2055,7 +2186,22 @@
     if (e.target.closest("#next")) nextQuestion();
   });
   $("quit").addEventListener("click", () => show("home"));
-  function openHistory() { renderHistory(); renderVoiceBox(); renderSrvBox(); show("history"); }
+  function openHistory() {
+    S.histPlayer = currentPlayer();      // ひらいた ときは いま やって いる 人
+    renderHistory(); renderVoiceBox(); renderSrvBox(); show("history");
+  }
+  // きろく がめんで だれの ぶんを みるか
+  $("hist-who").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-who]");
+    if (!b) return;
+    S.histPlayer = b.dataset.who;
+    renderHistory();
+  });
+  $("team-list").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-child]");
+    if (b) openChild(b.dataset.child);
+  });
+  $("child-back").addEventListener("click", () => show("team"));
   function openTeam() { show("team"); renderTeam(); }
 
   // だれが やる？
