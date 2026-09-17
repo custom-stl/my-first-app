@@ -3,20 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>さんすうノート</title>
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon-180.png">
+<title>えいごノート</title>
+<link rel="manifest" href="manifest-en.webmanifest">
+<link rel="icon" href="icon-en.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-en-180.png">
 <meta name="theme-color" content="#f4f7fb">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="さんすうノート">
+<meta name="apple-mobile-web-app-title" content="えいごノート">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=M+PLUS+Rounded+1c:wght@700;800&display=swap">
-<script src="config.js"></script>
 <style>
+
   :root {
     --paper: #f4f7fb;
     --grid: #dbe6f1;
@@ -255,61 +255,6 @@
     line-break: strict;
   }
 
-  /* 筆算 */
-  .hz {
-    font-family: var(--f-num); font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    display: grid; justify-content: center;
-    gap: 2px;
-    font-size: clamp(2rem, 12vw, 2.9rem);
-    line-height: 1.15;
-  }
-  .hz-row { display: grid; grid-template-columns: 1.7ch repeat(var(--cols), 1.15ch); }
-  .hz-row span { text-align: center; }
-  .hz-op { color: var(--shu); font-size: .82em; }
-  .hz-rule { height: 4px; background: var(--ink); border-radius: 2px; margin: 4px 0 6px; }
-  .flat {
-    font-family: var(--f-num); font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    text-align: center;
-    font-size: clamp(1.7rem, 9vw, 2.3rem);
-  }
-  .flat i { color: var(--shu); font-style: normal; padding: 0 .2em; }
-
-  /* こたえ欄 */
-  .ansrow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; margin-left: var(--ansshift, 0); }
-  .field {
-    min-width: 3.4ch; min-height: 56px;
-    border: 2.5px dashed var(--line);
-    border-radius: var(--r-m);
-    background: var(--card-2);
-    font-family: var(--f-num); font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    font-size: clamp(1.6rem, 8vw, 2.1rem);
-    display: flex; align-items: center; justify-content: flex-end;
-    padding: 0 12px;
-    color: var(--ink);
-  }
-  .field.wide { min-width: 5.6ch; }
-  .field.on { border-style: solid; border-color: var(--shu); background: var(--shu-soft); }
-  .field .cursor {
-    display: inline-block; width: 3px; height: 1.1em; background: var(--shu);
-    margin-left: 3px; border-radius: 2px;
-    animation: blink 1s steps(2, start) infinite;
-  }
-  .field.empty { color: var(--ink-soft); }
-  @keyframes blink { 50% { opacity: 0; } }
-  .unit { font-size: 1.15rem; font-weight: 700; }
-
-  /* とけい */
-  .clockwrap { display: grid; justify-items: center; gap: 10px; }
-  .clock { width: min(258px, 68vw); height: auto; }
-  .legend { display: flex; gap: 14px; font-size: .72rem; font-weight: 700; color: var(--ink-soft); }
-  .legend b { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; }
-  .legend i { width: 16px; height: 5px; border-radius: 3px; display: inline-block; }
-  .legend .h i { background: var(--shu); width: 11px; }
-  .legend .m i { background: var(--ai); }
-
   /* 4たくのとけい */
   .picks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .pick {
@@ -321,19 +266,6 @@
   .pick span { font-family: var(--f-num); font-weight: 800; font-size: .8rem; color: var(--ink-soft); }
   .pick:hover { border-color: var(--ai); }
 
-  /* キーパッド */
-  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .key {
-    border: 1.5px solid var(--line);
-    background: var(--card);
-    border-radius: var(--r-m);
-    padding: 14px 0 13px;
-    font-family: var(--f-num); font-weight: 800; font-size: 1.5rem;
-    box-shadow: 0 2px 0 var(--line);
-    font-variant-numeric: tabular-nums;
-  }
-  .key:active { transform: translateY(2px); box-shadow: none; }
-  .key.fn { font-family: var(--f-body); font-size: .92rem; color: var(--ink-soft); }
   .go {
     margin-top: 10px; width: 100%;
     border: 0; border-radius: var(--r-m);
@@ -620,7 +552,6 @@
     padding: 13px 15px; margin-top: 12px; text-align: left;
   }
   a.hist-link { color: inherit; text-decoration: none; }
-  .app-link { margin-top: 10px; }
   .hist-link strong { font-family: var(--f-disp); font-size: 1.02rem; font-weight: 400; }
   .hist-link span { margin-left: auto; font-size: .76rem; font-weight: 700; color: var(--ink-soft); }
   .hist-link span b { font-family: var(--f-num); font-size: .92rem; color: var(--ink); }
@@ -635,13 +566,133 @@
   .wipe .yes { color: var(--shu); text-decoration: none; border: 1.5px solid var(--shu); border-radius: 999px; padding: 6px 14px; }
   .wipe .no { text-decoration: none; border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 14px; }
   .foot { margin-top: 26px; font-size: .68rem; color: var(--ink-soft); text-align: center; line-height: 1.8; }
+
+  /* ---------- えいごノートで つかう ぶぶん ---------- */
+  :root { --f-en: "M PLUS Rounded 1c", "Verdana", system-ui, sans-serif; }
+
+  /* もんだいの え・もじ */
+  .bigpic {
+    text-align: center;
+    font-size: clamp(3.4rem, 23vw, 5rem);
+    line-height: 1.2;
+    margin: 2px 0 0;
+  }
+  .bigpic .sw {
+    display: inline-block; width: 94px; height: 94px;
+    border-radius: 24px; background: var(--sw);
+    border: 3px solid var(--line);
+  }
+  .bigpic .num { font-family: var(--f-num); font-weight: 800; }
+  .picname {
+    text-align: center; font-family: var(--f-disp);
+    font-size: 1.02rem; color: var(--ink-soft);
+    margin: 4px 0 12px;
+  }
+  .phrase {
+    text-align: center; font-family: var(--f-en); font-weight: 800;
+    font-size: clamp(1.35rem, 7.4vw, 1.85rem); line-height: 1.55;
+    margin: 4px 0 6px; overflow-wrap: break-word;
+  }
+  .letter {
+    text-align: center; font-family: var(--f-en); font-weight: 800;
+    font-size: clamp(2.9rem, 17vw, 4.1rem); letter-spacing: .12em;
+    line-height: 1.25; margin: 6px 0 10px;
+  }
+  .letter i { color: var(--shu); font-style: normal; }
+  .hint {
+    text-align: center; font-size: .84rem; font-weight: 700;
+    color: var(--ink-soft); margin: 10px 0 0; line-height: 1.7;
+  }
+  .hint b { font-family: var(--f-en); font-size: .95rem; color: var(--ink); }
+
+  /* きく ボタン */
+  .playbtn {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    width: 100%; margin: 10px 0 0;
+    border: 2px solid var(--ai); background: var(--ai-soft); color: var(--ai);
+    border-radius: var(--r-m); padding: 13px 10px;
+    font-family: var(--f-disp); font-size: 1.02rem; letter-spacing: .04em;
+  }
+  .playbtn:active { transform: translateY(2px); }
+  .playbtn .spk { font-size: 1.25rem; line-height: 1; }
+  .playbtn[disabled] { border-color: var(--line); background: var(--card-2); color: var(--ink-soft); cursor: default; }
+
+  /* えらぶ ボタン */
+  .picks.one { grid-template-columns: 1fr; }
+  .pick {
+    padding: 12px 8px 11px; min-height: 86px;
+    align-content: center; gap: 4px;
+    transition: transform .1s ease;
+  }
+  .pick:active { transform: translateY(2px); }
+  .pick .pemoji { font-size: clamp(2.1rem, 11vw, 2.7rem); line-height: 1.25; }
+  .pick .pjp {
+    font-family: var(--f-body); font-size: .82rem; font-weight: 700;
+    color: var(--ink-soft); line-height: 1.5;
+  }
+  .pick .pjp.big {
+    font-family: var(--f-disp); font-weight: 400; font-size: 1.04rem;
+    color: var(--ink); line-height: 1.7;
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+  .pick .pen {
+    font-family: var(--f-en); font-weight: 800; font-size: 1.32rem;
+    color: var(--ink); letter-spacing: .01em; line-height: 1.4;
+    overflow-wrap: break-word;
+  }
+  .pick .pletter { font-family: var(--f-en); font-weight: 800; font-size: 2.3rem; line-height: 1.2; }
+  .pick .pnum { font-family: var(--f-num); font-weight: 800; font-size: 2.2rem; line-height: 1.2; }
+  .pick .pswatch {
+    width: 56px; height: 56px; border-radius: 16px;
+    background: var(--sw); border: 2px solid var(--line);
+  }
+  .pick.ans { border-color: var(--shu); background: var(--shu-soft); box-shadow: inset 0 0 0 1px var(--shu); }
+  .pick.miss { border-color: var(--ai); background: var(--ai-soft); }
+  /* どれが せいかいだったか ひとめで わかるように */
+  .pick.ans::after, .pick.miss::after {
+    position: absolute; top: 4px; right: 9px;
+    font-size: .95rem; font-weight: 900; line-height: 1;
+  }
+  .pick.ans::after { content: "○"; color: var(--shu); }
+  .pick.miss::after { content: "✕"; color: var(--ai); }
+  .pick[disabled] { cursor: default; }
+  .pick[disabled]:active { transform: none; }
+  .picknum {
+    position: absolute; top: 5px; left: 8px;
+    font-size: .62rem; font-weight: 900; color: var(--ink-soft);
+  }
+  .pick { position: relative; }
+
+  /* ホームの みほん */
+  .peek-en {
+    font-family: var(--f-en); font-weight: 800; font-size: .92rem;
+    color: var(--ink-soft); line-height: 1.6; text-align: center;
+  }
+  .peek-en em { font-style: normal; font-size: 1.5rem; display: block; }
+  .peek-en b { color: var(--shu); }
+  .peek-emoji { font-size: 1.6rem; line-height: 1.35; text-align: center; }
+
+  /* 花まるは シートの まんなかに（したの「きく」ボタンに かぶらない ように） */
+  .maru {
+    top: 50%; bottom: auto;
+    transform: translate(-50%, -50%);
+    width: min(232px, 66%); height: 118px;
+    opacity: .9;
+  }
+
+  /* こたえあわせ */
+  .judge .en {
+    font-family: var(--f-en); font-weight: 800; font-size: 1.05rem; color: var(--ink);
+  }
+  .done .a, .review .a, .qs .a { font-family: var(--f-en); }
+  .app-link { margin-top: 10px; }
 </style>
 </head>
 <body>
 <div class="app">
 
   <div class="bar">
-    <h1 class="brand">さんすう<b>ノート</b></h1>
+    <h1 class="brand">えいご<b>ノート</b></h1>
     <div class="bar-btns">
       <button type="button" class="chip-btn" id="voice" aria-pressed="true">こえ オン</button>
       <button type="button" class="chip-btn" id="sound" aria-pressed="true">おと オン</button>
@@ -653,7 +704,7 @@
   <main id="home">
     <div class="hello">
       <div class="frogs" id="hello-frogs" aria-hidden="true"></div>
-      <p class="lead">ケロちゃんと コロちゃんと いっしょに、<em>10もん</em>ずつ ちょうせん しよう。</p>
+      <p class="lead">ケロちゃんと コロちゃんと <em>えいご</em>で あそぼう。<br>きいて、えらぶ だけ。10もん ずつだよ。</p>
     </div>
 
     <h2 class="sec-label">だれが やる？</h2>
@@ -666,48 +717,60 @@
 
     <h2 class="sec-label">レベル</h2>
     <div class="levels" id="levels" role="group" aria-label="レベルをえらぶ">
-      <button type="button" class="lv" data-lv="1"><span>やさしい</span><small>2けた・5ふん</small></button>
-      <button type="button" class="lv" data-lv="2"><span>ふつう</span><small>3けた・1ふん</small></button>
-      <button type="button" class="lv" data-lv="3"><span>むずかしい</span><small>4けた・なんぷんご</small></button>
+      <button type="button" class="lv" data-lv="1"><span>やさしい</span><small>大もじ・みぢかな ことば</small></button>
+      <button type="button" class="lv" data-lv="2"><span>ふつう</span><small>小もじ・ことばを ふやす</small></button>
+      <button type="button" class="lv" data-lv="3"><span>むずかしい</span><small>にた もじ・ながい ことば</small></button>
     </div>
 
     <h2 class="sec-label">もんだいを えらぶ</h2>
     <div class="modes">
-      <button type="button" class="mode" data-mode="calc" style="--accent: var(--shu)">
+      <button type="button" class="mode" data-mode="listen" style="--accent: var(--shu)">
         <div>
-          <h3>ひっさん</h3>
-          <p>たしざん・ひきざん（4けたまで）</p>
+          <h3>ききとり</h3>
+          <p>えいごを きいて、えを えらぶ</p>
         </div>
         <div class="peek" aria-hidden="true">
-          <div class="peek-calc">1 2 3 4<br><u>+&nbsp; 5 6 7</u></div>
+          <div class="peek-en"><em>🔊</em>🐱 🍎 🚌</div>
         </div>
       </button>
 
       <button type="button" class="mode" data-mode="word" style="--accent: var(--ai)">
         <div>
-          <h3>ぶんしょうだい</h3>
-          <p>くらしの なかの たしざん・ひきざん</p>
+          <h3>えいたんご</h3>
+          <p>えを みて、えいごの つづりを えらぶ</p>
         </div>
         <div class="peek" aria-hidden="true">
-          <div class="peek-word">ケロちゃんの<br>おりがみ <b>32まい</b>。<br><b>15まい</b> つかうと…</div>
+          <div class="peek-en"><em>🍎</em><b>apple</b></div>
         </div>
       </button>
 
-      <button type="button" class="mode" data-mode="clock" style="--accent: var(--kin)">
+      <button type="button" class="mode" data-mode="talk" style="--accent: var(--kin)">
         <div>
-          <h3>とけい</h3>
-          <p>なんじ なんぷん／なんぷんご</p>
+          <h3>あいさつ</h3>
+          <p>えいごの いいかたの いみを えらぶ</p>
         </div>
-        <div class="peek" id="peek-clock" aria-hidden="true"></div>
+        <div class="peek" aria-hidden="true">
+          <div class="peek-en">Good<br>morning.<br><span class="peek-emoji">🌞</span></div>
+        </div>
+      </button>
+
+      <button type="button" class="mode" data-mode="abc" style="--accent: #6f8f3c">
+        <div>
+          <h3>アルファベット</h3>
+          <p>A・a の かたちと じゅんばん</p>
+        </div>
+        <div class="peek" aria-hidden="true">
+          <div class="peek-en">A a<br>B b<br>C c</div>
+        </div>
       </button>
 
       <button type="button" class="mode" data-mode="mix" style="--accent: var(--ink-soft)">
         <div>
           <h3>ミックス</h3>
-          <p>3しゅるいを まとめて 10もん</p>
+          <p>4しゅるいを まとめて 10もん</p>
         </div>
         <div class="peek peek-mix" aria-hidden="true">
-          <span class="peek-calc">＋</span><span class="peek-calc">－</span><span id="peek-mini"></span>
+          <div class="peek-en">🔊<br>A<br>🍎</div>
         </div>
       </button>
     </div>
@@ -717,19 +780,19 @@
       <span id="hist-teaser"></span>
     </button>
 
-    <a class="hist-link app-link" href="english.html">
-      <strong>えいごノートへ</strong>
-      <span>ききとり・ABC</span>
+    <a class="hist-link app-link" href="index.html">
+      <strong>さんすうノートへ</strong>
+      <span>ひっさん・とけい</span>
     </a>
 
-    <p class="foot">こたえは すうじの ボタンで にゅうりょく します。<br>パソコンでは キーボードの すうじ・Enter も つかえます。</p>
+    <p class="foot">こたえは えを タップ するだけ。<br>パソコンでは キーボードの 1〜4・Enter・スペース（もういちど きく）も つかえます。</p>
   </main>
 
   <!-- ======== 出題 ======== -->
   <main id="quiz" hidden>
     <div class="marks" id="marks" aria-hidden="true"></div>
     <div class="qmeta">
-      <span id="qmode">ひっさん</span>
+      <span id="qmode">ききとり</span>
       <span class="whoami" id="whoami"></span>
       <span><span class="n" id="qnum">1</span> / 10もん</span>
     </div>
@@ -737,7 +800,6 @@
     <section class="sheet" id="sheet">
       <p class="ask" id="ask"></p>
       <div id="body"></div>
-      <div id="answer"></div>
     </section>
 
     <div id="input"></div>
@@ -789,33 +851,26 @@
       <div id="days"></div>
     </section>
     <section class="sheet">
-      <h3 class="sec-label">ケロと コロの こえ</h3>
+      <h3 class="sec-label">えいごの こえ</h3>
+      <p class="srv-msg idle" id="en-note"></p>
       <div class="field-row">
-        <label for="voice-sel">こえの しゅるい（この たんまつに ある もの）</label>
+        <label for="en-sel">えいごの こえ（この たんまつに ある もの）</label>
+        <select id="en-sel"></select>
+      </div>
+      <div class="mini-btns">
+        <button type="button" class="go2" id="try-en">えいごで ためす</button>
+      </div>
+    </section>
+    <section class="sheet">
+      <h3 class="sec-label">ケロと コロの こえ</h3>
+      <p class="srv-msg idle" id="voice-note"></p>
+      <div class="field-row">
+        <label for="voice-sel">にほんごの こえ</label>
         <select id="voice-sel"></select>
       </div>
       <div class="mini-btns">
         <button type="button" class="go2" id="try-kero">ケロで ためす</button>
         <button type="button" id="try-koro">コロで ためす</button>
-      </div>
-      <p class="srv-msg idle" id="voice-note"></p>
-    </section>
-
-    <section class="sheet">
-      <h3 class="sec-label">サーバー（みんなの きろく）</h3>
-      <p class="srv-msg idle" id="srv-msg"></p>
-      <div class="field-row">
-        <label for="srv-url">サーバーの URL</label>
-        <input id="srv-url" type="url" inputmode="url" placeholder="https://……workers.dev" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="field-row">
-        <label for="srv-key">あいことば（サーバーで せっていした ばあい）</label>
-        <input id="srv-key" type="password" placeholder="なければ からで OK" autocomplete="off">
-      </div>
-      <div class="mini-btns">
-        <button type="button" class="go2" id="srv-save">ほぞんして ためす</button>
-        <button type="button" id="srv-send">いま おくる</button>
-        <button type="button" id="to-team">みんなの きろくを みる</button>
       </div>
       <h3 class="sec-label" style="margin-top:18px">この たんまつの 人</h3>
       <ul class="plist" id="plist"></ul>
@@ -824,17 +879,6 @@
       <button type="button" class="btn" id="hist-back">ホームへ</button>
     </div>
     <div class="wipe" id="wipe"></div>
-  </main>
-
-  <!-- ======== みんなの きろく（サーバー） ======== -->
-  <main id="team" hidden>
-    <h2 class="page-title">みんなの きろく</h2>
-    <p class="srv-msg idle" id="team-msg"></p>
-    <div id="team-list"></div>
-    <div class="btnrow">
-      <button type="button" class="btn" id="team-reload">さいしんに する</button>
-      <button type="button" class="btn" id="team-back">もどる</button>
-    </div>
   </main>
 
 </div>
@@ -859,11 +903,203 @@
     get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch { /* 非対応でも動く */ } },
   };
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
-  const MODE_NAME = { calc: "ひっさん", word: "ぶんしょうだい", clock: "とけい", mix: "ミックス" };
+  const MODE_NAME = { listen: "ききとり", word: "えいたんご", talk: "あいさつ", abc: "アルファベット", mix: "ミックス" };
+
+  /* ========== えいごの ことば ==========
+     w=えいご / j=にほんご / k=カタカナの よみ / c=なかま / lv=レベル
+     え は e（えもじ）・sw（いろ）・t（すうじ）の どれか */
+  const WORDS = [
+    // どうぶつ
+    { w: "cat", j: "ねこ", k: "キャット", e: "🐱", c: "animal", lv: 1 },
+    { w: "dog", j: "いぬ", k: "ドッグ", e: "🐶", c: "animal", lv: 1 },
+    { w: "bird", j: "とり", k: "バード", e: "🐦", c: "animal", lv: 1 },
+    { w: "fish", j: "さかな", k: "フィッシュ", e: "🐟", c: "animal", lv: 1 },
+    { w: "rabbit", j: "うさぎ", k: "ラビット", e: "🐰", c: "animal", lv: 1 },
+    { w: "bear", j: "くま", k: "ベア", e: "🐻", c: "animal", lv: 1 },
+    { w: "pig", j: "ぶた", k: "ピッグ", e: "🐷", c: "animal", lv: 1 },
+    { w: "frog", j: "かえる", k: "フロッグ", e: "🐸", c: "animal", lv: 1 },
+    { w: "monkey", j: "さる", k: "モンキー", e: "🐵", c: "animal", lv: 1 },
+    { w: "duck", j: "あひる", k: "ダック", e: "🦆", c: "animal", lv: 1 },
+    { w: "panda", j: "パンダ", k: "パンダ", e: "🐼", c: "animal", lv: 1 },
+    { w: "mouse", j: "ねずみ", k: "マウス", e: "🐭", c: "animal", lv: 2 },
+    { w: "elephant", j: "ぞう", k: "エレファント", e: "🐘", c: "animal", lv: 2 },
+    { w: "lion", j: "ライオン", k: "ライオン", e: "🦁", c: "animal", lv: 2 },
+    { w: "horse", j: "うま", k: "ホース", e: "🐴", c: "animal", lv: 2 },
+    { w: "cow", j: "うし", k: "カウ", e: "🐮", c: "animal", lv: 2 },
+    { w: "sheep", j: "ひつじ", k: "シープ", e: "🐑", c: "animal", lv: 2 },
+    { w: "penguin", j: "ペンギン", k: "ペンギン", e: "🐧", c: "animal", lv: 2 },
+    { w: "tiger", j: "とら", k: "タイガー", e: "🐯", c: "animal", lv: 2 },
+    { w: "turtle", j: "かめ", k: "タートル", e: "🐢", c: "animal", lv: 3 },
+
+    // くだもの
+    { w: "apple", j: "りんご", k: "アップル", e: "🍎", c: "fruit", lv: 1 },
+    { w: "banana", j: "バナナ", k: "バナナ", e: "🍌", c: "fruit", lv: 1 },
+    { w: "orange", j: "みかん", k: "オレンジ", e: "🍊", c: "fruit", lv: 1 },
+    { w: "grapes", j: "ぶどう", k: "グレープス", e: "🍇", c: "fruit", lv: 1 },
+    { w: "strawberry", j: "いちご", k: "ストロベリー", e: "🍓", c: "fruit", lv: 1 },
+    { w: "peach", j: "もも", k: "ピーチ", e: "🍑", c: "fruit", lv: 2 },
+    { w: "lemon", j: "レモン", k: "レモン", e: "🍋", c: "fruit", lv: 2 },
+    { w: "melon", j: "メロン", k: "メロン", e: "🍈", c: "fruit", lv: 2 },
+    { w: "cherry", j: "さくらんぼ", k: "チェリー", e: "🍒", c: "fruit", lv: 2 },
+    { w: "watermelon", j: "すいか", k: "ウォーターメロン", e: "🍉", c: "fruit", lv: 3 },
+    { w: "pineapple", j: "パイナップル", k: "パイナップル", e: "🍍", c: "fruit", lv: 3 },
+    { w: "kiwi", j: "キウイ", k: "キウイ", e: "🥝", c: "fruit", lv: 3 },
+
+    // いろ
+    { w: "red", j: "あか", k: "レッド", sw: "#e0392c", c: "color", lv: 1 },
+    { w: "blue", j: "あお", k: "ブルー", sw: "#2f6fd0", c: "color", lv: 1 },
+    { w: "yellow", j: "きいろ", k: "イエロー", sw: "#f0c418", c: "color", lv: 1 },
+    { w: "green", j: "みどり", k: "グリーン", sw: "#46a648", c: "color", lv: 1 },
+    { w: "black", j: "くろ", k: "ブラック", sw: "#24303f", c: "color", lv: 1 },
+    { w: "white", j: "しろ", k: "ホワイト", sw: "#ffffff", c: "color", lv: 1 },
+    { w: "orange", j: "オレンジいろ", k: "オレンジ", sw: "#ef8a1f", c: "color", lv: 2, alt: 1 },
+    { w: "pink", j: "ピンク", k: "ピンク", sw: "#f58fb0", c: "color", lv: 2 },
+    { w: "purple", j: "むらさき", k: "パープル", sw: "#8a5bd6", c: "color", lv: 3 },
+    { w: "brown", j: "ちゃいろ", k: "ブラウン", sw: "#8b5e3c", c: "color", lv: 3 },
+
+    // かず
+    { w: "one", j: "1", k: "ワン", t: "1", c: "number", lv: 1 },
+    { w: "two", j: "2", k: "トゥー", t: "2", c: "number", lv: 1 },
+    { w: "three", j: "3", k: "スリー", t: "3", c: "number", lv: 1 },
+    { w: "four", j: "4", k: "フォー", t: "4", c: "number", lv: 1 },
+    { w: "five", j: "5", k: "ファイブ", t: "5", c: "number", lv: 1 },
+    { w: "six", j: "6", k: "シックス", t: "6", c: "number", lv: 1 },
+    { w: "seven", j: "7", k: "セブン", t: "7", c: "number", lv: 1 },
+    { w: "eight", j: "8", k: "エイト", t: "8", c: "number", lv: 1 },
+    { w: "nine", j: "9", k: "ナイン", t: "9", c: "number", lv: 1 },
+    { w: "ten", j: "10", k: "テン", t: "10", c: "number", lv: 1 },
+    { w: "eleven", j: "11", k: "イレブン", t: "11", c: "number", lv: 2 },
+    { w: "twelve", j: "12", k: "トゥエルブ", t: "12", c: "number", lv: 2 },
+    { w: "thirteen", j: "13", k: "サーティーン", t: "13", c: "number", lv: 3 },
+    { w: "fifteen", j: "15", k: "フィフティーン", t: "15", c: "number", lv: 3 },
+    { w: "twenty", j: "20", k: "トゥエンティ", t: "20", c: "number", lv: 3 },
+
+    // たべもの
+    { w: "bread", j: "パン", k: "ブレッド", e: "🍞", c: "food", lv: 2 },
+    { w: "milk", j: "ぎゅうにゅう", k: "ミルク", e: "🥛", c: "food", lv: 2 },
+    { w: "egg", j: "たまご", k: "エッグ", e: "🥚", c: "food", lv: 2 },
+    { w: "rice", j: "ごはん", k: "ライス", e: "🍚", c: "food", lv: 2 },
+    { w: "cake", j: "ケーキ", k: "ケーキ", e: "🍰", c: "food", lv: 2 },
+    { w: "juice", j: "ジュース", k: "ジュース", e: "🧃", c: "food", lv: 2 },
+    { w: "pizza", j: "ピザ", k: "ピザ", e: "🍕", c: "food", lv: 2 },
+    { w: "candy", j: "あめ", k: "キャンディー", e: "🍬", c: "food", lv: 2 },
+    { w: "water", j: "みず", k: "ウォーター", e: "💧", c: "food", lv: 3 },
+    { w: "soup", j: "スープ", k: "スープ", e: "🍲", c: "food", lv: 3 },
+    { w: "noodles", j: "めん", k: "ヌードルズ", e: "🍜", c: "food", lv: 3 },
+    { w: "ice cream", j: "アイスクリーム", k: "アイスクリーム", e: "🍦", c: "food", lv: 3 },
+
+    // がっこう
+    { w: "pencil", j: "えんぴつ", k: "ペンシル", e: "✏️", c: "school", lv: 2 },
+    { w: "book", j: "ほん", k: "ブック", e: "📕", c: "school", lv: 2 },
+    { w: "bag", j: "かばん", k: "バッグ", e: "🎒", c: "school", lv: 2 },
+    { w: "ball", j: "ボール", k: "ボール", e: "⚽", c: "school", lv: 2 },
+    { w: "clock", j: "とけい", k: "クロック", e: "⏰", c: "school", lv: 2 },
+    { w: "crayon", j: "クレヨン", k: "クレヨン", e: "🖍️", c: "school", lv: 3 },
+    { w: "scissors", j: "はさみ", k: "シザーズ", e: "✂️", c: "school", lv: 3 },
+    { w: "ruler", j: "ものさし", k: "ルーラー", e: "📏", c: "school", lv: 3 },
+    { w: "notebook", j: "ノート", k: "ノートブック", e: "📓", c: "school", lv: 3 },
+
+    // からだ
+    { w: "hand", j: "て", k: "ハンド", e: "✋", c: "body", lv: 2 },
+    { w: "eye", j: "め", k: "アイ", e: "👁️", c: "body", lv: 2 },
+    { w: "ear", j: "みみ", k: "イヤー", e: "👂", c: "body", lv: 2 },
+    { w: "nose", j: "はな", k: "ノーズ", e: "👃", c: "body", lv: 2 },
+    { w: "mouth", j: "くち", k: "マウス", e: "👄", c: "body", lv: 3 },
+    { w: "foot", j: "あし", k: "フット", e: "🦶", c: "body", lv: 3 },
+    { w: "tooth", j: "は", k: "トゥース", e: "🦷", c: "body", lv: 3 },
+
+    // のりもの
+    { w: "car", j: "くるま", k: "カー", e: "🚗", c: "ride", lv: 2 },
+    { w: "bus", j: "バス", k: "バス", e: "🚌", c: "ride", lv: 2 },
+    { w: "train", j: "でんしゃ", k: "トレイン", e: "🚆", c: "ride", lv: 2 },
+    { w: "bike", j: "じてんしゃ", k: "バイク", e: "🚲", c: "ride", lv: 2 },
+    { w: "ship", j: "ふね", k: "シップ", e: "🚢", c: "ride", lv: 3 },
+    { w: "airplane", j: "ひこうき", k: "エアプレイン", e: "✈️", c: "ride", lv: 3 },
+
+    // しぜん
+    { w: "sun", j: "たいよう", k: "サン", e: "☀️", c: "nature", lv: 2 },
+    { w: "rain", j: "あめ（天気）", k: "レイン", e: "🌧️", c: "nature", lv: 3 },
+    { w: "snow", j: "ゆき", k: "スノー", e: "❄️", c: "nature", lv: 3 },
+    { w: "cloud", j: "くも", k: "クラウド", e: "☁️", c: "nature", lv: 3 },
+    { w: "star", j: "ほし", k: "スター", e: "⭐", c: "nature", lv: 2 },
+    { w: "moon", j: "つき", k: "ムーン", e: "🌙", c: "nature", lv: 2 },
+    { w: "rainbow", j: "にじ", k: "レインボー", e: "🌈", c: "nature", lv: 3 },
+    { w: "tree", j: "き", k: "ツリー", e: "🌳", c: "nature", lv: 2 },
+    { w: "flower", j: "はな", k: "フラワー", e: "🌷", c: "nature", lv: 2 },
+    { w: "sea", j: "うみ", k: "シー", e: "🌊", c: "nature", lv: 3 },
+
+    // かぞく
+    { w: "mother", j: "おかあさん", k: "マザー", e: "👩", c: "family", lv: 3 },
+    { w: "father", j: "おとうさん", k: "ファーザー", e: "👨", c: "family", lv: 3 },
+    { w: "sister", j: "しまい", k: "シスター", e: "👧", c: "family", lv: 3 },
+    { w: "brother", j: "きょうだい", k: "ブラザー", e: "👦", c: "family", lv: 3 },
+    { w: "baby", j: "あかちゃん", k: "ベイビー", e: "👶", c: "family", lv: 3 },
+
+    // うごき
+    { w: "run", j: "はしる", k: "ラン", e: "🏃", c: "act", lv: 3 },
+    { w: "walk", j: "あるく", k: "ウォーク", e: "🚶", c: "act", lv: 3 },
+    { w: "swim", j: "およぐ", k: "スイム", e: "🏊", c: "act", lv: 3 },
+    { w: "sing", j: "うたう", k: "シング", e: "🎤", c: "act", lv: 3 },
+    { w: "sleep", j: "ねる", k: "スリープ", e: "😴", c: "act", lv: 3 },
+    { w: "dance", j: "おどる", k: "ダンス", e: "💃", c: "act", lv: 3 },
+  ];
+
+  /* ========== あいさつ・いいかた ==========
+     g（なかま）が おなじ ものは、ひとつの もんだいに いっしょに ださない */
+  const TALKS = [
+    { a: "Hello.", k: "ハロー", j: "こんにちは", g: "hello", lv: 1 },
+    { a: "Good morning.", k: "グッド モーニング", j: "おはよう ございます", g: "morning", lv: 1 },
+    { a: "Good night.", k: "グッド ナイト", j: "おやすみなさい", g: "night", lv: 1 },
+    { a: "Goodbye.", k: "グッバイ", j: "さようなら", g: "bye", lv: 1 },
+    { a: "Thank you.", k: "サンキュー", j: "ありがとう", g: "thanks", lv: 1 },
+    { a: "I'm sorry.", k: "アイム ソーリー", j: "ごめんなさい", g: "sorry", lv: 1 },
+    { a: "Yes.", k: "イエス", j: "はい", g: "yes", lv: 1 },
+    { a: "No.", k: "ノー", j: "いいえ", g: "no", lv: 1 },
+    { a: "See you.", k: "シー ユー", j: "またね", g: "bye2", lv: 1 },
+    { a: "Good afternoon.", k: "グッド アフタヌーン", j: "こんにちは（ひるすぎ）", g: "afternoon", lv: 2 },
+    { a: "How are you?", k: "ハウ アー ユー", j: "げんき？", g: "how", lv: 2 },
+    { a: "I'm fine, thank you.", k: "アイム ファイン サンキュー", j: "げんきだよ、ありがとう", g: "fine", lv: 2 },
+    { a: "Nice to meet you.", k: "ナイス トゥ ミート ユー", j: "はじめまして", g: "nice", lv: 2 },
+    { a: "What's your name?", k: "ワッツ ユア ネーム", j: "なまえは なに？", g: "nameask", lv: 2 },
+    { a: "My name is Kero.", k: "マイ ネーム イズ ケロ", j: "わたしの なまえは ケロです", g: "namesay", lv: 2 },
+    { a: "You're welcome.", k: "ユア ウェルカム", j: "どういたしまして", g: "welcome", lv: 2 },
+    { a: "Excuse me.", k: "エクスキューズ ミー", j: "すみません", g: "excuse", lv: 2 },
+    { a: "Here you are.", k: "ヒア ユー アー", j: "はい、どうぞ", g: "here", lv: 2 },
+    { a: "Let's play.", k: "レッツ プレイ", j: "あそぼう", g: "play", lv: 2 },
+    { a: "Happy birthday!", k: "ハッピー バースデー", j: "おたんじょうび おめでとう", g: "birthday", lv: 2 },
+    { a: "How old are you?", k: "ハウ オールド アー ユー", j: "なんさい？", g: "ageask", lv: 3 },
+    { a: "I'm seven years old.", k: "アイム セブン イヤーズ オールド", j: "7さいです", g: "agesay", lv: 3 },
+    { a: "What color is it?", k: "ワット カラー イズ イット", j: "なにいろ？", g: "colorask", lv: 3 },
+    { a: "It's red.", k: "イッツ レッド", j: "あかです", g: "colorsay", lv: 3 },
+    { a: "What's this?", k: "ワッツ ジス", j: "これは なに？", g: "thisask", lv: 3 },
+    { a: "It's a cat.", k: "イッツ ア キャット", j: "ねこです", g: "thissay", lv: 3 },
+    { a: "I like apples.", k: "アイ ライク アップルズ", j: "りんごが すきです", g: "like", lv: 3 },
+    { a: "Do you like dogs?", k: "ドゥ ユー ライク ドッグス", j: "いぬは すき？", g: "likeask", lv: 3 },
+    { a: "Can you swim?", k: "キャン ユー スイム", j: "およげる？", g: "can", lv: 3 },
+    { a: "Help me, please.", k: "ヘルプ ミー プリーズ", j: "たすけて ください", g: "help", lv: 3 },
+    { a: "Let's go.", k: "レッツ ゴー", j: "いこう", g: "go", lv: 3 },
+    { a: "I'm hungry.", k: "アイム ハングリー", j: "おなかが すいた", g: "hungry", lv: 3 },
+  ];
+
+  /* ========== アルファベット ========== */
+  const ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const ABC_KANA = {
+    A: "エー", B: "ビー", C: "シー", D: "ディー", E: "イー", F: "エフ", G: "ジー", H: "エイチ", I: "アイ",
+    J: "ジェー", K: "ケー", L: "エル", M: "エム", N: "エヌ", O: "オー", P: "ピー", Q: "キュー", R: "アール",
+    S: "エス", T: "ティー", U: "ユー", V: "ブイ", W: "ダブリュー", X: "エックス", Y: "ワイ", Z: "ゼット",
+  };
+  // かたちが にて いる もじ（むずかしい レベルの えらびかたに つかう）
+  const LOOKALIKE = [
+    ["b", "d", "p", "q"], ["m", "n", "h", "r"], ["i", "l", "j", "t"], ["u", "v", "w", "y"],
+    ["a", "c", "e", "o"], ["f", "t", "k", "x"], ["g", "q", "y", "p"], ["s", "z", "x", "c"],
+    ["C", "G", "O", "Q"], ["E", "F", "B", "P"], ["M", "N", "W", "V"], ["I", "J", "L", "T"],
+    ["U", "V", "Y", "W"], ["S", "Z", "X", "K"], ["D", "O", "Q", "G"], ["R", "P", "B", "K"],
+  ];
 
   /* ========== おと ========== */
   let soundOn = store.get("sn-sound", "1") === "1";
@@ -887,54 +1123,67 @@
     } catch { /* おとが でなくても もんだいは とける */ }
   }
 
-  /* ========== ケロと コロの こえ ========== */
-  // たんまつに はいって いる 日本語の こえ（Web Speech API）を つかう。
-  // おとの ファイルは いらない。日本語の こえが ない たんまつでは
-  // こえは でないので、これまでの こうかおんだけに なる。
-  const VOICE_KEY = "sn-voice", VOICE_NAME_KEY = "sn-voice-name";
+  /* ========== こえ ==========
+     ・えいごの ことばは たんまつに ある えいごの こえ（Web Speech API）で よむ
+     ・ケロちゃん・コロちゃんの あいづちは にほんごの こえで よむ
+     こえが ない たんまつでは カタカナの よみを だすので、もんだいは とける。 */
+  const VOICE_KEY = "sn-voice", JA_NAME_KEY = "sn-voice-name", EN_NAME_KEY = "eg-voice-en";
   let voiceOn = store.get(VOICE_KEY, "1") === "1";
   const synth = typeof speechSynthesis !== "undefined" ? speechSynthesis : null;
-  let jaVoices = [];                       // つかえる 日本語の こえ（かわいい じゅん）
-  let voiceFor = { kero: null, koro: null };
+  let jaVoices = [], enVoices = [];
+  let voiceFor = { kero: null, koro: null }, enVoice = null;
 
-  // かわいく きこえる こえを さきに。おとこの こえは うしろに まわす。
   const CUTE_JA = [/kyoko/i, /o-?ren/i, /nanami/i, /ayumi/i, /haruka/i, /sayaka/i, /mizuki/i, /google/i];
   const MALE_JA = [/otoya/i, /ichiro/i, /keita/i, /hattori/i, /takumi/i];
+  // こどもに ききとりやすい えいごの こえを さきに。おとこの こえは うしろに まわす。
+  const CUTE_EN = [/samantha/i, /karen/i, /moira/i, /tessa/i, /fiona/i, /allison/i, /ava/i, /susan/i,
+    /zira/i, /aria/i, /jenny/i, /google us english/i, /google uk english female/i];
+  const MALE_EN = [/daniel/i, /alex/i, /fred/i, /tom\b/i, /aaron/i, /arthur/i, /oliver/i, /david/i, /guy/i, /mark/i, /male/i];
 
   function pickVoices() {
     if (!synth) return;
     try {
-      const ja = (synth.getVoices() || []).filter((v) => /^ja/i.test(v.lang || ""));
-      const score = (v) => {
+      const all = synth.getVoices() || [];
+      const ja = all.filter((v) => /^ja/i.test(v.lang || ""));
+      const jaScore = (v) => {
         const n = String(v.name || "");
-        if (MALE_JA.some((re) => re.test(n))) return 0;    // おとこの こえは さいごの てだん
+        if (MALE_JA.some((re) => re.test(n))) return 0;
         if (CUTE_JA.some((re) => re.test(n))) return 2;
         return 1;
       };
-      jaVoices = ja.map((v) => ({ v, s: score(v) })).sort((a, b) => b.s - a.s).map((x) => x.v);
-      const good = jaVoices.filter((v) => !MALE_JA.some((re) => re.test(String(v.name || ""))));
-      // 手で えらんで いれば それを ゆうせん
-      const chosen = jaVoices.find((v) => v.name === store.get(VOICE_NAME_KEY, ""));
+      jaVoices = ja.map((v) => ({ v, s: jaScore(v) })).sort((a, b) => b.s - a.s).map((x) => x.v);
+      const goodJa = jaVoices.filter((v) => !MALE_JA.some((re) => re.test(String(v.name || ""))));
+      const chosenJa = jaVoices.find((v) => v.name === store.get(JA_NAME_KEY, ""));
       voiceFor = {
-        kero: chosen || good[0] || jaVoices[0] || null,
-        koro: chosen || good[1] || good[0] || jaVoices[0] || null,
+        kero: chosenJa || goodJa[0] || jaVoices[0] || null,
+        koro: chosenJa || goodJa[1] || goodJa[0] || jaVoices[0] || null,
       };
-    } catch { jaVoices = []; voiceFor = { kero: null, koro: null }; }
+
+      const en = all.filter((v) => /^en/i.test(v.lang || ""));
+      const enScore = (v) => {
+        const n = String(v.name || "");
+        let s = 1;
+        if (MALE_EN.some((re) => re.test(n))) s = 0;
+        else if (CUTE_EN.some((re) => re.test(n))) s = 3;
+        if (/^en[-_]us/i.test(v.lang || "")) s += 0.5;      // まずは アメリカえいご
+        else if (/^en[-_]gb/i.test(v.lang || "")) s += 0.25;
+        return s;
+      };
+      enVoices = en.map((v) => ({ v, s: enScore(v) })).sort((a, b) => b.s - a.s).map((x) => x.v);
+      enVoice = enVoices.find((v) => v.name === store.get(EN_NAME_KEY, "")) || enVoices[0] || null;
+    } catch { jaVoices = []; enVoices = []; voiceFor = { kero: null, koro: null }; enVoice = null; }
   }
   if (synth) {
     pickVoices();
-    if ("onvoiceschanged" in synth) synth.onvoiceschanged = pickVoices;
+    if ("onvoiceschanged" in synth) synth.onvoiceschanged = () => { pickVoices(); refreshVoiceUI(); };
   }
-  const voiceReady = () => Boolean(synth) && (jaVoices.length > 0 || (synth.getVoices?.() || []).length === 0);
+  const jaReady = () => Boolean(synth) && (jaVoices.length > 0 || (synth.getVoices?.() || []).length === 0);
+  // えいごの こえは じっさいに ある ときだけ つかう（にほんごの こえで えいごを よむと へんに なる）
+  const enReady = () => Boolean(synth) && voiceOn && enVoices.length > 0;
 
-  // ピッチは しようの うわげん 2.0 まで。ケロは あまえた かんじで ゆっくり、
-  // コロは うわげんまで あげて はずんだ かんじに。
-  const VOICE_STYLE = {
-    kero: { pitch: 1.85, rate: 0.88 },
-    koro: { pitch: 2.0, rate: 1.12 },
-  };
+  const VOICE_STYLE = { kero: { pitch: 1.85, rate: 0.88 }, koro: { pitch: 2.0, rate: 1.12 } };
   function speak(text, who = "kero", opt = {}) {
-    if (!voiceOn || !synth || !voiceReady()) return false;
+    if (!voiceOn || !synth || !jaReady()) return false;
     try {
       const u = new SpeechSynthesisUtterance(String(text));
       u.lang = "ja-JP";
@@ -942,13 +1191,31 @@
       const st = VOICE_STYLE[who] || VOICE_STYLE.kero;
       u.pitch = st.pitch;
       u.rate = st.rate;
-      if (!opt.queue) synth.cancel();       // まえの こえが のこって いたら とめる
+      if (!opt.queue) synth.cancel();
       synth.speak(u);
       return true;
     } catch { return false; }
   }
 
-  // カエルの なきごえ（ケロッ）。こえの まえに ちょこんと ならす。
+  // えいごは ゆっくり・はっきり。2かい つづけて よむ ことも できる。
+  function speakEn(text, opt = {}) {
+    if (!enReady()) return false;
+    try {
+      const say = () => {
+        const u = new SpeechSynthesisUtterance(String(text));
+        u.lang = enVoice?.lang || "en-US";
+        u.voice = enVoice;
+        u.pitch = 1.05;
+        u.rate = opt.rate || 0.72;
+        synth.speak(u);
+      };
+      if (!opt.queue) synth.cancel();
+      say();
+      if (opt.twice) setTimeout(say, 0);
+      return true;
+    } catch { return false; }
+  }
+
   function chirp(who = "kero") {
     if (!soundOn) return false;
     try {
@@ -971,55 +1238,10 @@
     } catch { return false; }
   }
 
-  // ケロは「〜ケロ！」、コロは「〜コロ！」で しゃべる
   const SAY_OK = ["せいかい", "やったね", "すごい", "ばっちり", "だいせいかい", "よく できた", "はなまる"];
   const suffixOf = (who) => (who === "kero" ? "ケロ" : "コロ");
 
-  /* ========== 学習用とけいの え ========== */
-  function clockSVG(h, m, opt = {}) {
-    const { learn = true, size = 200, cls = "clock" } = opt;
-    const C = 100;
-    // 学習用とけい：そとがわの わに「ふん」、うちがわに「じ」の すうじ
-    const R = learn ? 95 : 92;
-    const rMinNum = 88;
-    const rTickOut = learn ? 80 : 90;
-    const rTickIn = learn ? 68 : 79;
-    const rHourNum = learn ? 56 : 65;
-    const rHourFont = learn ? 18.5 : 21;
-    const lenH = learn ? 40 : 44;
-    const lenM = learn ? 72 : 74;
-    const pt = (deg, r) => {
-      const a = (deg - 90) * Math.PI / 180;
-      return [C + r * Math.cos(a), C + r * Math.sin(a)];
-    };
-    let out = `<svg class="${cls}" viewBox="0 0 200 200" width="${size}" height="${size}" role="img" aria-label="とけい">`;
-    out += `<circle cx="100" cy="100" r="${R}" fill="var(--card-2)" stroke="var(--ink)" stroke-width="3"/>`;
-    for (let i = 0; i < 60; i++) {
-      const big = i % 5 === 0;
-      const [x1, y1] = pt(i * 6, big ? rTickIn : rTickOut - 5);
-      const [x2, y2] = pt(i * 6, rTickOut);
-      out += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${big ? "var(--ink)" : "var(--line)"}" stroke-width="${big ? 3 : 1.6}" stroke-linecap="round"/>`;
-    }
-    for (let i = 1; i <= 12; i++) {
-      const [x, y] = pt(i * 30, rHourNum);
-      out += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="M PLUS Rounded 1c, sans-serif" font-weight="800" font-size="${rHourFont}">${i}</text>`;
-    }
-    if (learn) {
-      for (let i = 0; i < 12; i++) {
-        const [x, y] = pt(i * 30, rMinNum);
-        out += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="var(--ai)" font-family="M PLUS Rounded 1c, sans-serif" font-weight="700" font-size="11">${i === 0 ? "0" : i * 5}</text>`;
-      }
-    }
-    const ha = ((h % 12) + m / 60) * 30, ma = m * 6;
-    out += `<g transform="rotate(${ha.toFixed(2)} 100 100)"><line x1="100" y1="108" x2="100" y2="${100 - lenH}" stroke="var(--shu)" stroke-width="8.5" stroke-linecap="round"/></g>`;
-    out += `<g transform="rotate(${ma.toFixed(2)} 100 100)"><line x1="100" y1="110" x2="100" y2="${100 - lenM}" stroke="var(--ai)" stroke-width="5.5" stroke-linecap="round"/></g>`;
-    out += `<circle cx="100" cy="100" r="5.5" fill="var(--ink)" stroke="none"/>`;
-    out += `</svg>`;
-    return out;
-  }
-
   /* ========== ケロちゃんと コロちゃん ========== */
-  // コーワの こうしきの えがらは つかわず、この アプリの ための オリジナルの カエル
   function frogSVG(who, opt = {}) {
     const { size = 56, mood = "happy", cls = "frog" } = opt;
     const kero = who === "kero";
@@ -1073,235 +1295,192 @@
   const maruSVG = () => `<svg class="maru" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
       <path class="flower" d="${maruPath()}" vector-effect="non-scaling-stroke"/>
     </svg>`;
-  // ほめる ぶんの あたまに つける ちいさな 花まる
   const maruMark = () => `<svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><path d="${maruPath(5)}" fill="none" stroke="var(--shu)" stroke-width="10" stroke-linecap="round"/></svg>`;
 
   /* ========== もんだいを つくる ========== */
-  // 1) ひっさん
-  function makeCalc(lv) {
-    const ranges = {
-      1: [[10, 99], [10, 99]],
-      2: [[100, 999], Math.random() < 0.4 ? [10, 99] : [100, 999]],
-      3: [[1000, 9999], Math.random() < 0.4 ? [100, 999] : [1000, 9999]],
-    }[lv];
-    const op = Math.random() < 0.5 ? "+" : "-";
-    let a = rnd(ranges[0][0], ranges[0][1]);
-    let b = rnd(ranges[1][0], ranges[1][1]);
-    if (op === "-") {
-      if (b > a) [a, b] = [b, a];
-      if (a === b) a = Math.min(ranges[0][1], a + rnd(1, 9));
+  const wordsFor = (lv) => WORDS.filter((w) => w.lv <= lv);
+
+  // えらぶ ボタンに おく え（えもじ・いろ・すうじ）
+  function picTile(w) {
+    if (w.sw) return `<span class="pswatch" style="--sw:${esc(w.sw)}"></span><span class="pjp">${esc(w.j)}</span>`;
+    if (w.t) return `<span class="pnum">${esc(w.t)}</span>`;
+    return `<span class="pemoji">${w.e}</span><span class="pjp">${esc(w.j)}</span>`;
+  }
+  function picBig(w) {
+    if (w.sw) return `<div class="bigpic"><span class="sw" style="--sw:${esc(w.sw)}"></span></div>`;
+    if (w.t) return `<div class="bigpic"><span class="num">${esc(w.t)}</span></div>`;
+    return `<div class="bigpic">${w.e}</div>`;
+  }
+  const picText = (w) => (w.t ? w.t : w.j);
+
+  // つづりの にかた（むずかしい レベルの えらびかたに つかう）
+  function simScore(a, b) {
+    let s = 0;
+    if (a[0] === b[0]) s += 2;
+    if (a.length === b.length) s += 1;
+    if (a.slice(0, 2) === b.slice(0, 2)) s += 1.5;
+    if (a.slice(-2) === b.slice(-2)) s += 1;
+    const setB = new Set(b);
+    for (const ch of new Set(a)) if (setB.has(ch)) s += 0.35;
+    return s;
+  }
+
+  /** まちがいの せんたくしを えらぶ。
+   *  やさしい＝ちがう なかまから、ふつう＝おなじ なかまから、
+   *  むずかしい＝つづりが にて いる ものから。 */
+  function distract(ans, pool, lv, n, keyFn = (w) => w.w) {
+    const key = keyFn(ans);
+    const cand = pool.filter((w) => w.w !== ans.w && keyFn(w) !== key && w.j !== ans.j);
+    let ranked;
+    if (lv === 1) ranked = shuffle(cand.filter((w) => w.c !== ans.c));
+    else if (lv === 2) ranked = shuffle(cand.filter((w) => w.c === ans.c));
+    else {
+      ranked = cand
+        .map((w) => ({ w, s: simScore(w.w, ans.w) + (w.c === ans.c ? 0.8 : 0) }))
+        .sort((a, b) => b.s - a.s)
+        .slice(0, 7)
+        .map((x) => x.w);
     }
-    const answer = op === "+" ? a + b : a - b;
-    const cols = Math.max(String(a).length, String(b).length, String(answer).length);
-    const digits = (v) => String(v).padStart(cols, " ").split("")
-      .map((c) => `<span>${c === " " ? "" : c}</span>`).join("");
+    const out = shuffle(ranked).slice(0, n);
+    if (out.length < n) out.push(...shuffle(cand.filter((w) => !out.includes(w))).slice(0, n - out.length));
+    return out;
+  }
+
+  // 1) ききとり：えいごを きいて えを えらぶ
+  function makeListen(lv) {
+    const pool = wordsFor(lv);
+    const ans = pick(pool);
+    const cs = shuffle([ans, ...distract(ans, pool, lv, 3, (w) => w.k)]);
     return {
-      kind: "calc",
-      ask: op === "+" ? "たしざんを しましょう。" : "ひきざんを しましょう。",
-      bodyHTML: `<div class="hz" style="--cols:${cols}">
-          <div class="hz-row"><span></span>${digits(a)}</div>
-          <div class="hz-row"><span class="hz-op">${op === "+" ? "＋" : "－"}</span>${digits(b)}</div>
-          <div class="hz-rule"></div>
-        </div>`,
-      input: "number",
-      maxLen: 5,
-      answer,
-      text: `${a} ${op === "+" ? "＋" : "－"} ${b}`,
-      answerText: String(answer),
+      ask: "きこえた ことばの えは どれ？",
+      say: ans.w, after: ans.w, kana: ans.k,
+      hideKana: true,                       // こえが でる ときは カタカナを ださない
+      bodyHTML: "",
+      choices: cs.map((w) => ({ html: picTile(w), correct: w === ans, label: picText(w) })),
+      text: `ききとり：${ans.w}`,
+      answerText: `${ans.j}（${ans.w}）`,
     };
   }
 
-  // 2) ぶんしょうだい
-  // ケロちゃんと コロちゃんが よく でて くる
-  const FROGS = ["ケロちゃん", "コロちゃん"];
-  const NAMES = [...FROGS, ...FROGS, "あきらさん", "ゆいさん", "はるとさん", "さくらさん",
-    "けんたさん", "みさきさん", "そうたさん", "ひなたさん", "りくさん", "あおいさん"];
-  function twoNames() {
-    if (Math.random() < 0.55) return shuffle(FROGS);   // はんぶん くらいは カエルの ふたり
-    const a = pick(NAMES);
-    let b = pick(NAMES);
-    while (b === a) b = pick(NAMES);
-    return [a, b];
-  }
-  function wordRange(lv) {
-    return { 1: [4, 20], 2: [12, 99], 3: [120, 980] }[lv];
-  }
-  function pairSum(lv, cap) {
-    // たしても レベルの はんいを こえない ふたつの すうじ
-    const [lo, hi] = wordRange(lv);
-    const top = cap ?? hi;
-    const a = rnd(lo, Math.max(lo, Math.floor(top * 0.6)));
-    const b = rnd(lo, Math.max(lo, top - a));
-    return [a, b];
-  }
-  function pairDiff(lv) {
-    const [lo, hi] = wordRange(lv);
-    const a = rnd(Math.max(lo + 2, Math.floor(hi * 0.4)), hi);
-    const b = rnd(lo, a - 1);
-    return [a, b];
-  }
-  const money = (lv, v) => (lv === 1 ? v * 10 : v);
-
-  const WORD_TEMPLATES = [
-    // 合併（あわせて いくつ）
-    (lv) => { const [a, b] = pairSum(lv), [n1, n2] = twoNames();
-      return { text: `${n1}は どんぐりを ${a}こ、${n2}は ${b}こ ひろいました。ふたり あわせて なんこ ひろいましたか。`, answer: a + b, unit: "こ" }; },
-    (lv) => { const [a, b] = pairSum(lv);
-      return { text: `${money(lv, a)}円の パンと ${money(lv, b)}円の ぎゅうにゅうを かいます。あわせて なん円 ですか。`, answer: money(lv, a) + money(lv, b), unit: "円" }; },
-    (lv) => { const [a, b] = pairSum(lv), n = pick(NAMES);
-      return { text: `${n}は なわとびを きのう ${a}回、きょう ${b}回 とびました。あわせて なん回 とびましたか。`, answer: a + b, unit: "回" }; },
-    // 増加（ふえると いくつ）
-    (lv) => { const [a, b] = pairSum(lv);
-      return { text: `あめを ${a}こ もって いました。おかあさんから ${b}こ もらいました。あめは ぜんぶで なんこ に なりましたか。`, answer: a + b, unit: "こ" }; },
-    (lv) => { const [a, b] = pairSum(lv);
-      return { text: `バスに ${a}人 のって いました。ていりゅうじょで ${b}人 のって きました。バスに のって いるのは なん人 ですか。`, answer: a + b, unit: "人" }; },
-    (lv) => { const [a, b] = pairSum(lv);
-      return { text: `水そうに きんぎょが ${a}ひき います。あたらしく ${b}ひき いれました。きんぎょは なんひき に なりましたか。`, answer: a + b, unit: "ひき" }; },
-    // 求残（のこりは いくつ）
-    (lv) => { const [a, b] = pairDiff(lv);
-      return { text: `おりがみが ${a}まい ありました。つるを おるのに ${b}まい つかいました。のこりは なんまい ですか。`, answer: a - b, unit: "まい" }; },
-    (lv) => { const [a, b] = pairDiff(lv);
-      return { text: `${money(lv, a)}円 もって かいものに いきました。${money(lv, b)}円の おかしを かいました。のこりは なん円 ですか。`, answer: money(lv, a) - money(lv, b), unit: "円" }; },
-    (lv) => { const [a, b] = pairDiff(lv);
-      return { text: `ぜんぶで ${a}ページの 本を よんで います。きょうまでに ${b}ページ よみました。あと なんページ のこって いますか。`, answer: a - b, unit: "ページ" }; },
-    (lv) => { const [a, b] = pairDiff(lv);
-      return { text: `${a}cmの リボンから ${b}cm きりとりました。のこった リボンは なんcm ですか。`, answer: a - b, unit: "cm" }; },
-    (lv) => { const [a, b] = pairDiff(lv);
-      return { text: `バスに ${a}人 のって いました。ていりゅうじょで ${b}人 おりました。バスに のって いるのは なん人 ですか。`, answer: a - b, unit: "人" }; },
-    // 求差（ちがいは いくつ）
-    (lv) => { const [a, b] = pairDiff(lv), [n1, n2] = twoNames();
-      return { text: `${n1}の カードは ${a}まい、${n2}の カードは ${b}まい です。かずの ちがいは なんまい ですか。`, answer: a - b, unit: "まい" }; },
-    (lv) => { const [a, b] = pairDiff(lv);
-      return { text: `あかい 花が ${a}本、しろい 花が ${b}本 さいて います。あかい 花は しろい 花より なん本 おおいですか。`, answer: a - b, unit: "本" }; },
-    // ケロちゃんと コロちゃん
-    (lv) => { const [a, b] = pairDiff(lv), [n1, n2] = shuffle(FROGS);
-      return { text: `${n1}は あめを ${a}こ もって います。${n2}に ${b}こ あげました。${n1}の あめは なんこ のこって いますか。`, answer: a - b, unit: "こ" }; },
-    (lv) => { const [a, b] = pairSum(lv), [n1, n2] = shuffle(FROGS);
-      return { text: `${n1}は はっぱを ${a}まい、${n2}は ${b}まい あつめました。ふたりの はっぱは あわせて なんまい ですか。`, answer: a + b, unit: "まい" }; },
-    (lv) => { const [a, b] = pairDiff(lv), [n1, n2] = shuffle(FROGS);
-      return { text: `いけで ${n1}は ${a}回、${n2}は ${b}回 およぎました。${n1}は ${n2}より なん回 おおく およぎましたか。`, answer: a - b, unit: "回" }; },
-    // 3つの たしざん
-    (lv) => { const [lo, hi] = wordRange(lv);
-      const t = Math.max(lo, Math.floor(hi / 3));
-      const a = rnd(lo, t), b = rnd(lo, t), c = rnd(lo, t);
-      return { text: `シールを おねえさんから ${a}まい、おにいさんから ${b}まい、おかあさんから ${c}まい もらいました。ぜんぶで なんまい ですか。`, answer: a + b + c, unit: "まい" }; },
-  ];
-
+  // 2) えいたんご：えを みて つづりを えらぶ
   function makeWord(lv) {
-    const q = pick(WORD_TEMPLATES)(lv);
+    const pool = wordsFor(lv);
+    const ans = pick(pool);
+    const cs = shuffle([ans, ...distract(ans, pool, lv, 3)]);
     return {
-      kind: "word",
-      ask: q.text,
-      askSmall: true,
-      bodyHTML: "",
-      input: "number",
-      maxLen: 5,
-      unit: q.unit,
-      answer: q.answer,
-      text: q.text,
-      answerText: `${q.answer}${q.unit}`,
+      ask: "この えは えいごで どれ？",
+      say: ans.w, after: ans.w, kana: ans.k,
+      hideKana: true,
+      bodyHTML: `${picBig(ans)}${ans.t ? "" : `<p class="picname">${esc(ans.j)}</p>`}`,
+      choices: cs.map((w) => ({ html: `<span class="pen">${esc(w.w)}</span>`, correct: w === ans, label: w.w })),
+      text: `えいたんご：${ans.j}`,
+      answerText: ans.w,
     };
   }
 
-  // 3) とけい
-  const jTime = (h, m) => `${h}じ${m === 0 ? "" : m + "ふん"}${m === 0 ? "ちょうど" : ""}`;
-  const addMin = (h, m, d) => {
-    let t = ((h % 12) * 60 + m + d) % 720;
-    if (t < 0) t += 720;
-    const hh = Math.floor(t / 60) || 12;
-    return [hh, t % 60];
-  };
-  function clockMinute(lv) {
-    if (lv === 1) return pick([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]);
-    if (lv === 2) return Math.random() < 0.55 ? pick([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]) : rnd(1, 59);
-    return rnd(0, 59);
-  }
-  function makeClockRead(lv) {
-    const h = rnd(1, 12), m = clockMinute(lv);
+  // 3) あいさつ：えいごの いいかたの いみを えらぶ
+  function makeTalk(lv) {
+    const pool = TALKS.filter((t) => t.lv <= lv);
+    const ans = pick(pool);
+    const cs = shuffle([ans, ...shuffle(pool.filter((t) => t.g !== ans.g)).slice(0, 3)]);
     return {
-      kind: "clock",
-      ask: "いま なんじ なんぷん ですか。",
-      bodyHTML: `<div class="clockwrap">${clockSVG(h, m, { learn: lv < 3 })}
-        ${lv === 1 ? `<div class="legend"><b class="h"><i></i>みじかい はり＝なんじ</b><b class="m"><i></i>ながい はり＝なんぷん</b></div>` : ""}
-      </div>`,
-      input: "time",
-      answer: { h, m },
-      text: "とけいの よみとり",
-      answerText: jTime(h, m),
+      ask: "この えいご、どんな いみ？",
+      say: ans.a, after: ans.a, kana: ans.k,
+      rate: 0.8,
+      bodyHTML: `<div class="phrase">${esc(ans.a)}</div>`,
+      one: true,
+      choices: cs.map((t) => ({ html: `<span class="pjp big">${esc(t.j)}</span>`, correct: t === ans, label: t.j })),
+      text: `あいさつ：${ans.a}`,
+      answerText: ans.j,
     };
   }
-  function makeClockShift(lv) {
-    const h = rnd(1, 12), m = lv === 3 ? pick([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]) : pick([0, 10, 15, 20, 30]);
-    const back = Math.random() < 0.35;
-    const d = pick(lv === 3 ? [10, 15, 20, 30, 40, 45] : [10, 15, 20, 30]);
-    const [ah, am] = addMin(h, m, back ? -d : d);
-    return {
-      kind: "clock",
-      ask: `この とけいの ${d}ふん${back ? "まえ" : "あと"}は なんじ なんぷん ですか。`,
-      bodyHTML: `<div class="clockwrap">${clockSVG(h, m, { learn: true })}</div>`,
-      input: "time",
-      answer: { h: ah, m: am },
-      text: `${jTime(h, m)}の ${d}ふん${back ? "まえ" : "あと"}`,
-      answerText: jTime(ah, am),
-    };
+
+  // 4) アルファベット：おと・大小・じゅんばん
+  function abcDistract(ch, n, lv) {
+    const low = ch === ch.toLowerCase();
+    const pool = ABC.map((c) => (low ? c.toLowerCase() : c)).filter((c) => c !== ch);
+    if (lv >= 2) {
+      const near = [...new Set(LOOKALIKE.filter((g) => g.includes(ch)).flat())]
+        .filter((c) => c !== ch && pool.includes(c));
+      const take = lv >= 3 ? n : rnd(1, 2);
+      const out = shuffle(near).slice(0, take);
+      return out.concat(shuffle(pool.filter((c) => !out.includes(c))).slice(0, n - out.length));
+    }
+    return shuffle(pool).slice(0, n);
   }
-  function makeClockChoice(lv) {
-    const h = rnd(1, 12), m = clockMinute(lv) || 5;
-    const right = { h, m };
-    const cands = [
-      { h: (h % 12) + 1, m },                       // とけいの はりを 1じかん ずらす
-      addPair(addMin(h, m, m >= 30 ? -15 : 15)),    // ながい はりを ずらす
-      { h: Math.max(1, Math.round(m / 5) || 12), m: (h % 12) * 5 }, // みじかい／ながい はりの とりちがえ
-      addPair(addMin(h, m, 30)),
-    ];
-    function addPair(p) { return { h: p[0], m: p[1] }; }
-    const same = (a, b) => a.h === b.h && a.m === b.m;
-    const wrong = [];
-    for (const c of shuffle(cands)) {
-      if (c.h < 1 || c.h > 12 || c.m < 0 || c.m > 59) continue;
-      if (same(c, right) || wrong.some((w) => same(w, c))) continue;
-      wrong.push(c);
-      if (wrong.length === 3) break;
+  const letterTile = (c) => `<span class="pletter">${esc(c)}</span>`;
+
+  function makeAbc(lv) {
+    const kinds = lv === 1 ? ["sound", "next", "sound"] : ["sound", "case", "next", "case"];
+    const kind = pick(kinds);
+    const lower = lv >= 2 && Math.random() < 0.5;
+
+    if (kind === "case") {
+      const up = pick(ABC);
+      const toLower = Math.random() < 0.5;
+      const from = toLower ? up : up.toLowerCase();
+      const ans = toLower ? up.toLowerCase() : up;
+      const cs = shuffle([ans, ...abcDistract(ans, 3, lv)]);
+      return {
+        ask: toLower ? "この 大もじの 小もじは どれ？" : "この 小もじの 大もじは どれ？",
+        say: up, after: up, kana: ABC_KANA[up],
+        bodyHTML: `<div class="letter">${esc(from)}</div>`,
+        choices: cs.map((c) => ({ html: letterTile(c), correct: c === ans, label: c })),
+        text: `${from} の ${toLower ? "小もじ" : "大もじ"}`,
+        answerText: ans,
+      };
     }
-    while (wrong.length < 3) {
-      const c = { h: rnd(1, 12), m: pick([0, 5, 15, 20, 30, 40, 45, 50]) };
-      if (!same(c, right) && !wrong.some((w) => same(w, c))) wrong.push(c);
+
+    if (kind === "next") {
+      const back = lv >= 3 && Math.random() < 0.4;      // まえの もじを きく ことも ある
+      const i = rnd(back ? 1 : 0, back ? 25 - 2 : 22);
+      const seq = back ? [ABC[i], ABC[i + 1], ABC[i + 2]] : [ABC[i], ABC[i + 1], ABC[i + 2]];
+      const ansUp = back ? ABC[i - 1] : ABC[i + 3];
+      const cast = (c) => (lower ? c.toLowerCase() : c);
+      const ans = cast(ansUp);
+      const cs = shuffle([ans, ...abcDistract(ans, 3, lv)]);
+      const shown = seq.map(cast).join(" ");
+      return {
+        ask: back ? "まえの もじは どれ？" : "つぎの もじは どれ？",
+        say: seq.join(", "), after: ansUp,
+        bodyHTML: `<div class="letter">${back ? `<i>?</i> ${esc(shown)}` : `${esc(shown)} <i>?</i>`}</div>`,
+        choices: cs.map((c) => ({ html: letterTile(c), correct: c === ans, label: c })),
+        text: back ? `? ${shown}` : `${shown} ?`,
+        answerText: ans,
+      };
     }
-    const opts = shuffle([right, ...wrong]);
+
+    // sound：きこえた もじを えらぶ
+    const up = pick(ABC);
+    const ans = lower ? up.toLowerCase() : up;
+    const cs = shuffle([ans, ...abcDistract(ans, 3, lv)]);
     return {
-      kind: "clock",
-      ask: `「${jTime(h, m)}」の とけいは どれですか。`,
+      ask: "きこえた もじは どれ？",
+      say: up, after: up, kana: ABC_KANA[up],
+      hideKana: true,
       bodyHTML: "",
-      input: "choice",
-      choices: opts.map((o, i) => ({
-        html: `${clockSVG(o.h, o.m, { learn: false, size: 120, cls: "" })}<span>${"アイウエ"[i]}</span>`,
-        correct: same(o, right),
-      })),
-      answer: right,
-      text: `「${jTime(h, m)}」の とけいえらび`,
-      answerText: jTime(h, m),
+      choices: cs.map((c) => ({ html: letterTile(c), correct: c === ans, label: c })),
+      text: `きこえた もじ（${ABC_KANA[up]}）`,
+      answerText: ans,
     };
-  }
-  function makeClock(lv) {
-    if (lv === 1) return Math.random() < 0.75 ? makeClockRead(1) : makeClockChoice(1);
-    if (lv === 2) return Math.random() < 0.6 ? makeClockRead(2) : makeClockChoice(2);
-    return Math.random() < 0.5 ? makeClockRead(3) : makeClockShift(3);
   }
 
   function makeQuestion(mode, lv) {
-    if (mode === "mix") mode = pick(["calc", "word", "clock"]);
-    if (mode === "calc") return makeCalc(lv);
-    if (mode === "word") return makeWord(lv);
-    return makeClock(lv);
+    const kind = mode === "mix" ? pick(["listen", "word", "talk", "abc"]) : mode;
+    const q = kind === "listen" ? makeListen(lv)
+      : kind === "word" ? makeWord(lv)
+      : kind === "talk" ? makeTalk(lv)
+      : makeAbc(lv);
+    q.kind = kind;
+    return q;
   }
 
-  /* ========== だれが やって いるか ========== */
-  // ログインは つかわない。なまえを えらぶ だけ。
-  // player_id は なまえから きめるので、べつの たんまつで おなじ なまえを えらべば
-  // サーバー側で 1人ぶんに まとまる（なまえを かえると べつの人に なる）。
+  /* ========== だれが やって いるか ==========
+     ログインは つかわない。なまえを えらぶ だけ。
+     さんすうノートと おなじ なまえの リストを つかうので、
+     どちらの アプリでも おなじ なまえが でて くる。 */
   const PLAYERS_KEY = "sn-players", CURRENT_KEY = "sn-current";
   const MAX_PLAYERS = 8, MAX_NAME = 12;
-  const playerId = (name) => "n:" + String(name).trim().toLowerCase();
 
   function loadPlayers() {
     try {
@@ -1352,69 +1531,10 @@
       ? `<li><span>まだ いません</span></li>`
       : list.map((n) => `<li><span>${esc(n)}</span><button type="button" data-del="${esc(n)}">この たんまつから けす</button></li>`).join("");
   }
-  // なまえは がめんに そのまま だすので、タグとして よまれないように する
-  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-
-  /* ========== サーバーへの そうしん ========== */
-  const SRV_KEY = "sn-server", OUTBOX_KEY = "sn-outbox", OUTBOX_MAX = 200;
-  const CONFIG = (typeof window !== "undefined" && window.SANSU_CONFIG) || {};
-  const rid = () => (crypto?.randomUUID?.() || `r-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
-
-  function srvCfg() {
-    try {
-      const v = JSON.parse(store.get(SRV_KEY, "null"));
-      if (v && typeof v.url === "string") return { url: v.url, key: typeof v.key === "string" ? v.key : "" };
-    } catch { /* こわれて いたら きていちを つかう */ }
-    return { url: String(CONFIG.serverUrl || ""), key: String(CONFIG.appKey || "") };
-  }
-  const setSrvCfg = (url, key) => store.set(SRV_KEY, JSON.stringify({
-    url: String(url).trim().replace(/\/+$/, ""), key: String(key).trim(),
-  }));
-
-  function loadOutbox() {
-    try { const v = JSON.parse(store.get(OUTBOX_KEY, "[]")); return Array.isArray(v) ? v : []; } catch { return []; }
-  }
-  const saveOutbox = (box) => store.set(OUTBOX_KEY, JSON.stringify(box.slice(-OUTBOX_MAX)));
-  function queueRun(run) {
-    const box = loadOutbox();
-    box.push(run);
-    saveOutbox(box);
-  }
-
-  // たまって いる きろくを じゅんばんに おくる。おくれなければ また こんど。
-  let flushing = false;
-  async function flushOutbox() {
-    if (flushing) return { busy: true };
-    const { url, key } = srvCfg();
-    if (!url) return { skipped: "no-url" };
-    const box = loadOutbox();
-    if (box.length === 0) return { sent: 0, left: 0 };
-    flushing = true;
-    let sent = 0, error = null;
-    try {
-      for (const run of [...box]) {
-        let res;
-        try {
-          res = await fetch(`${url}/api/runs`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(key ? { key, run } : { run }),
-          });
-        } catch { error = "サーバーに つながりません"; break; }
-        if (res.status === 401) { error = "あいことばが ちがいます"; break; }
-        // 400（データが おかしい）は なんど おくっても だめなので すすめる
-        if (!res.ok && res.status !== 400) { error = `サーバーが エラーを かえしました (${res.status})`; break; }
-        const left = loadOutbox().filter((r) => r.id !== run.id);
-        saveOutbox(left);
-        sent++;
-      }
-    } finally { flushing = false; }
-    return { sent, left: loadOutbox().length, error };
-  }
 
   /* ========== きろく（日ごとの じっせき） ========== */
-  const LOG_KEY = "sn-log-v1";
-  const LOG_MAX = 300;              // ふるい セットから きえていく
+  const LOG_KEY = "eg-log-v1";        // さんすうノート（sn-log-v1）とは べつに ほぞんする
+  const LOG_MAX = 300;
   const LV_NAME = { 1: "やさしい", 2: "ふつう", 3: "むずかしい" };
 
   const pad2 = (v) => String(v).padStart(2, "0");
@@ -1425,34 +1545,20 @@
     try {
       const v = JSON.parse(store.get(LOG_KEY, "[]"));
       if (!Array.isArray(v)) return [];
-      // いま えらんで いる 人の ぶん（p が ない ふるい きろくは だれの ものとも しないで のこす）
       const cur = currentPlayer();
       return cur ? v.filter((r) => !r.p || r.p === cur) : v;
     } catch { return []; }
   }
-  function loadLogAll() {
-    try { const v = JSON.parse(store.get(LOG_KEY, "[]")); return Array.isArray(v) ? v : []; } catch { return []; }
-  }
   function recordSet(score) {
     const now = new Date();
-    const player = currentPlayer();
     const qs = S.results.map((r) => ({ q: r.q.text, a: r.q.answerText, g: r.given || "", o: r.ok ? 1 : 0 }));
-    const list = loadLog();
-    list.push({ d: ymd(now), t: now.getTime(), m: S.mode, lv: S.lv, n: score, p: player, qs });
-    store.set(LOG_KEY, JSON.stringify(list.slice(-LOG_MAX)));
-
-    // サーバーにも のこす（なまえが きまって いる ときだけ）
-    if (player) {
-      queueRun({
-        id: rid(), player_id: playerId(player), player_name: player,
-        day: ymd(now), ts: now.getTime(), mode: S.mode, level: S.lv,
-        total: qs.length, correct: score, detail: qs,
-      });
-      flushOutbox();      // おくれなくても、つぎに ひらいた ときに おくる
-    }
+    const all = (() => {
+      try { const v = JSON.parse(store.get(LOG_KEY, "[]")); return Array.isArray(v) ? v : []; } catch { return []; }
+    })();
+    all.push({ d: ymd(now), t: now.getTime(), m: S.mode, lv: S.lv, n: score, p: currentPlayer(), qs });
+    store.set(LOG_KEY, JSON.stringify(all.slice(-LOG_MAX)));
   }
 
-  // 日ごとに まとめる（あたらしい日が さき）
   function byDay(list) {
     const map = new Map();
     for (const set of list) {
@@ -1466,7 +1572,6 @@
     days.forEach((e) => e.sets.sort((a, b) => a.t - b.t));
     return days.sort((a, b) => (a.d < b.d ? 1 : -1));
   }
-  // なん日 つづけて といたか
   function streakDays(list) {
     const has = new Set(list.map((s) => s.d));
     let d = new Date(), n = 0;
@@ -1484,10 +1589,9 @@
     return `${base}（${wd}）`;
   }
 
-  /* ---------- 2しゅうかんの ぼうグラフ（この たんまつ用・みんな用 きょうつう） ---------- */
-  const CHARTS = new Map();     // キャプションの id -> 日ごとの データ
+  /* ---------- 2しゅうかんの ぼうグラフ ---------- */
+  const CHARTS = new Map();
 
-  // この たんまつの きろくから 14日ぶんの データを つくる
   function dailySeries(list, days = 14) {
     const agg = new Map(byDay(list).map((e) => [e.d, e]));
     const today = new Date();
@@ -1499,20 +1603,16 @@
     }
     return out;
   }
-  // サーバーの まとめ（daily）を おなじ かたちに
-  const serverSeries = (daily) => (daily || []).map((v) => ({ d: v.day, q: v.total, ok: v.correct }));
 
-  function barChart(series, capId, opt = {}) {
+  function barChart(series, capId) {
     CHARTS.set(capId, series);
     const x0 = 30, x1 = 318, yTop = 14, yBase = 100;
     const slot = (x1 - x0) / series.length;
     const bw = Math.min(14, slot - 6.5);
-    // みんなの きろくでは、人ごとの グラフの たてじくを そろえて くらべられるように する
-    const max = Math.max(10, opt.max || 0, ...series.map((v) => v.q));
+    const max = Math.max(10, ...series.map((v) => v.q));
     const h = (v) => (v / max) * (yBase - yTop);
 
     let g = `<svg class="chart" viewBox="0 0 324 126" data-cap="${capId}" role="img" aria-label="この 2しゅうかんの もんだいすう">`;
-    // めもり（グラフが とどく あたいだけ）
     g += `<line x1="${x0}" y1="${yTop}" x2="${x1}" y2="${yTop}" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 3"/>`;
     g += `<line x1="${x0}" y1="${yBase}" x2="${x1}" y2="${yBase}" stroke="var(--line)" stroke-width="1.5"/>`;
     for (const [v, y] of [[max, yTop], [0, yBase]]) {
@@ -1537,7 +1637,6 @@
       if (i % 2 === 1) {
         g += `<text x="${xc.toFixed(1)}" y="113" text-anchor="middle" fill="var(--ink-soft)" font-family="M PLUS Rounded 1c, sans-serif" font-weight="700" font-size="8.5">${Number(v.d.slice(-2))}</text>`;
       }
-      // さわった日を したの ぶんで しらせる
       g += `<rect class="hit" x="${(x0 + slot * i).toFixed(1)}" y="${yTop - 8}" width="${slot.toFixed(1)}" height="${yBase - yTop + 24}" fill="transparent" data-i="${i}" tabindex="0" role="button" aria-label="${dayLabel(v.d)} ${v.q}もん せいかい ${v.ok}もん"><title>${dayLabel(v.d)} ${v.q}もん・せいかい ${v.ok}もん</title></rect>`;
     });
     g += `</svg>`;
@@ -1551,7 +1650,6 @@
       ? `${dayLabel(v.d)}　おやすみ`
       : `${dayLabel(v.d)}　<b>${v.q}</b>もん・せいかい <b>${v.ok}</b>もん`;
   }
-  // どの グラフでも、さわった ところの 日を したの ぶんに だす
   for (const ev of ["pointerover", "click", "focusin"]) {
     document.addEventListener(ev, (e) => {
       const hit = e.target.closest?.(".hit");
@@ -1564,6 +1662,7 @@
   /* ---------- きろく がめん ---------- */
   function renderHistory() {
     renderWipe(false);
+    renderPlist();
     const list = loadLog();
     const days = byDay(list);
     const today = ymd(new Date());
@@ -1595,14 +1694,14 @@
         ${e.sets.map((set) => `
           <details class="set">
             <summary>
-              <span>${MODE_NAME[set.m]}・${LV_NAME[set.lv]}</span>
+              <span>${MODE_NAME[set.m] || set.m}・${LV_NAME[set.lv]}</span>
               <span class="sc">${set.n}/${set.qs.length}</span>
               <span class="tm">${new Date(set.t).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}</span>
             </summary>
             <ul class="qs">
               ${set.qs.map((q) => q.o
-                ? `<li class="ok">${maruMark()}<span class="q">${q.q}</span><span class="a">${q.a}</span></li>`
-                : `<li class="ng"><span class="x">✕</span><span class="q">${q.q}</span><span class="a">${q.a}${q.g ? `<span class="mine">かいた こたえ ${q.g}</span>` : ""}</span></li>`).join("")}
+                ? `<li class="ok">${maruMark()}<span class="q">${esc(q.q)}</span><span class="a">${esc(q.a)}</span></li>`
+                : `<li class="ng"><span class="x">✕</span><span class="q">${esc(q.q)}</span><span class="a">${esc(q.a)}${q.g ? `<span class="mine">えらんだ こたえ ${esc(q.g)}</span>` : ""}</span></li>`).join("")}
             </ul>
           </details>`).join("")}
       </div>`).join("");
@@ -1622,134 +1721,49 @@
     $("hist-teaser").innerHTML = `${t ? `きょう <b>${t.q}</b>もん` : "きょうは まだ"}${st > 1 ? `・れんぞく <b>${st}</b>日` : ""}`;
   }
 
-  /* ========== サーバーせってい の がめん ========== */
-  function srvMsg(text, kind = "idle", id = "srv-msg") {
+  /* ========== こえの せってい ========== */
+  function note(text, kind, id) {
     const el = $(id);
-    if (!el) return;
-    el.className = `srv-msg ${kind}`;
-    el.innerHTML = text;
+    if (el) { el.className = `srv-msg ${kind}`; el.textContent = text; }
+  }
+  function refreshVoiceUI() {
+    if ($("history").hidden) return;
+    renderVoiceBox();
   }
   function renderVoiceBox() {
-    pickVoices();
-    const sel = $("voice-sel");
+    const jaSel = $("voice-sel"), enSel = $("en-sel");
+    const jaChosen = store.get(JA_NAME_KEY, ""), enChosen = store.get(EN_NAME_KEY, "");
+    jaSel.innerHTML = [`<option value="">おまかせ</option>`]
+      .concat(jaVoices.map((v) => `<option value="${esc(v.name)}" ${v.name === jaChosen ? "selected" : ""}>${esc(v.name)}</option>`)).join("");
+    enSel.innerHTML = [`<option value="">おまかせ</option>`]
+      .concat(enVoices.map((v) => `<option value="${esc(v.name)}" ${v.name === enChosen ? "selected" : ""}>${esc(v.name)}（${esc(v.lang)}）</option>`)).join("");
+
+    if (enVoices.length === 0) {
+      note("この たんまつには えいごの こえが ありません。もんだいには カタカナの よみが でるので、そのまま つづけられます。", "ng", "en-note");
+      $("try-en").disabled = true;
+    } else {
+      note(`いま つかう こえ：${enVoice ? enVoice.name : "なし"}`, "ok", "en-note");
+      $("try-en").disabled = false;
+    }
     if (jaVoices.length === 0) {
-      sel.innerHTML = `<option value="">（この たんまつには 日本語の こえが ありません）</option>`;
-      sel.disabled = true;
-      srvMsg("この たんまつには 日本語の こえが ないので、こうかおんだけに なります。", "idle", "voice-note");
-      return;
+      note("この たんまつには にほんごの こえが ありません（こうかおんだけに なります）。", "idle", "voice-note");
+    } else {
+      note(`いま つかう こえ：${voiceFor.kero ? voiceFor.kero.name : "なし"}`, "idle", "voice-note");
     }
-    sel.disabled = false;
-    const chosen = store.get(VOICE_NAME_KEY, "");
-    sel.innerHTML = `<option value="">おまかせ（かわいい こえを えらびます）</option>`
-      + jaVoices.map((v) => `<option value="${esc(v.name)}"${v.name === chosen ? " selected" : ""}>${esc(v.name)}</option>`).join("");
-    srvMsg(voiceOn
-      ? `いま: ${esc(voiceFor.kero?.name || "—")}（ケロ）／ ${esc(voiceFor.koro?.name || "—")}（コロ）`
-      : "「こえ オフ」に なって います。ヘッダーの ボタンで オンに できます。", "idle", "voice-note");
   }
 
-  function renderSrvBox() {
-    const { url, key } = srvCfg();
-    $("srv-url").value = url;
-    $("srv-key").value = key;
-    renderPlist();
-    const left = loadOutbox().length;
-    if (!url) srvMsg("サーバーの URL を いれると、みんなの きろくを まとめられます。<br>いれなくても この たんまつの きろくは のこります。");
-    else if (left > 0) srvMsg(`おくれて いない きろくが <b>${left}</b>件 あります。「いま おくる」を おしてください。`, "ng");
-    else srvMsg(`サーバー: ${esc(url)}`, "ok");
-  }
-  async function testServer() {
-    const { url, key } = srvCfg();
-    if (!url) { srvMsg("URL を いれて ください。", "ng"); return; }
-    srvMsg("たしかめて います…");
-    try {
-      const u = new URL(`${url}/api/summary`);
-      u.searchParams.set("today", ymd(new Date()));
-      if (key) u.searchParams.set("key", key);
-      const res = await fetch(u, { cache: "no-store" });
-      if (res.status === 401) { srvMsg("あいことばが ちがいます。", "ng"); return; }
-      if (!res.ok) { srvMsg(`サーバーが エラーを かえしました (${res.status})`, "ng"); return; }
-      const data = await res.json();
-      const n = (data.players || []).length;
-      srvMsg(`つながりました。いま <b>${n}</b>人ぶんの きろくが あります。`, "ok");
-      const out = await flushOutbox();
-      if (out.sent) srvMsg(`つながりました。たまって いた <b>${out.sent}</b>件を おくりました。`, "ok");
-    } catch { srvMsg("サーバーに つながりません。URL を たしかめて ください。", "ng"); }
-  }
-
-  /* ========== みんなの きろく（サーバーの まとめ） ========== */
-  async function renderTeam() {
-    const { url, key } = srvCfg();
-    $("team-list").innerHTML = "";
-    if (!url) {
-      srvMsg("サーバーが まだ せっていされて いません。<br>「きろく」がめんの サーバーらんに URL を いれて ください。", "idle", "team-msg");
-      return;
-    }
-    srvMsg("よみこんで います…", "idle", "team-msg");
-    await flushOutbox();
-    let data;
-    try {
-      const u = new URL(`${url}/api/summary`);
-      u.searchParams.set("today", ymd(new Date()));
-      if (key) u.searchParams.set("key", key);
-      const res = await fetch(u, { cache: "no-store" });
-      if (res.status === 401) { srvMsg("あいことばが ちがいます。", "ng", "team-msg"); return; }
-      if (!res.ok) { srvMsg(`サーバーが エラーを かえしました (${res.status})`, "ng", "team-msg"); return; }
-      data = await res.json();
-    } catch { srvMsg("サーバーに つながりません。", "ng", "team-msg"); return; }
-
-    const players = data.players || [];
-    if (players.length === 0) {
-      srvMsg("まだ だれの きろくも ありません。", "idle", "team-msg");
-      return;
-    }
-    const cur = currentPlayer();
-    // たてじくは いちばん おおい 人に あわせる（人どうしを くらべられる ように）
-    const axisMax = Math.max(10, ...players.flatMap((p) => (p.daily || []).map((d) => d.total)));
-    srvMsg(`${players.length}人・ぜんぶで ${data.sets}セット`, "ok", "team-msg");
-    $("team-list").innerHTML = players.map((p, i) => {
-      const cap = `team-cap-${i}`;
-      const series = serverSeries(p.daily);
-      return `<section class="sheet person">
-        <div class="person-h">
-          <strong>${esc(p.name)}${p.id === playerId(cur) ? "（じぶん）" : ""}</strong>
-          <span>きょう <b>${p.today.total}</b>もん</span>
-        </div>
-        <div class="tiles">
-          <div class="tile"><div class="v">${p.today.correct}<small>/${p.today.total}</small></div><div class="k">きょう せいかい</div></div>
-          <div class="tile"><div class="v">${p.streak}<small>日</small></div><div class="k">れんぞく</div></div>
-          <div class="tile"><div class="v">${p.correct}<small>/${p.total}</small></div><div class="k">つうさん せいかい</div></div>
-        </div>
-        ${barChart(series, cap, { max: axisMax })}
-        <p class="chart-cap" id="${cap}"></p>
-        <div class="legend2" aria-hidden="true">
-          <b><i class="ok"></i>せいかい</b><b><i class="ng"></i>まちがい</b>
-        </div>
-      </section>`;
-    }).join("");
-    players.forEach((p, i) => chartCaption(`team-cap-${i}`, (p.daily || []).length - 1));
-  }
-
-  /* ========== ゲームの じょうたい ========== */
+  /* ========== いまの じょうたい ========== */
   const S = {
-    mode: "calc",
-    lv: Number(store.get("sn-lv", "1")) || 1,
-    qs: [],
-    i: 0,
-    results: [],   // {q, ok, given}
-    buf: "",       // すうじにゅうりょく
-    tbuf: { h: "", m: "" },
-    tf: "h",       // いま えらんで いる とけいの ばしょ
-    locked: false,
-    timer: 0,      // せいかいの ときの じどうおくり
-    streak: 0,     // れんぞく せいかい
-    best: 0,
-    saved: false,  // この セットを きろくに のこしたか
+    mode: "listen",
+    lv: Math.min(3, Math.max(1, Number(store.get("eg-lv", "1")) || 1)),
+    qs: [], i: 0, results: [], streak: 0, best: 0,
+    locked: false, saved: false, timer: 0,
   };
 
-  /* ========== がめんの きりかえ ========== */
   function show(name) {
     clearTimeout(S.timer);
-    for (const id of ["home", "quiz", "result", "history", "team"]) $(id).hidden = id !== name;
+    if (synth) { try { synth.cancel(); } catch { /* とめられなくても つづける */ } }
+    for (const id of ["home", "quiz", "result", "history"]) $(id).hidden = id !== name;
     $("quit").hidden = name !== "quiz";
     window.scrollTo({ top: 0, behavior: "instant" });
   }
@@ -1757,7 +1771,14 @@
   /* ========== 出題 ========== */
   function startSet(mode) {
     S.mode = mode;
-    S.qs = Array.from({ length: TOTAL }, () => makeQuestion(mode, S.lv));
+    const seen = new Set();
+    S.qs = [];
+    while (S.qs.length < TOTAL) {
+      let q = makeQuestion(mode, S.lv);
+      for (let t = 0; t < 14 && seen.has(q.text); t++) q = makeQuestion(mode, S.lv);
+      seen.add(q.text);
+      S.qs.push(q);
+    }
     S.i = 0;
     S.results = [];
     S.streak = 0;
@@ -1777,146 +1798,74 @@
 
   function renderQuestion() {
     const q = S.qs[S.i];
+    clearTimeout(S.timer);
     document.querySelectorAll(".maru").forEach((el) => el.remove());
-    S.buf = "";
-    S.tbuf = { h: "", m: "" };
-    S.tf = "h";
     S.locked = false;
     $("judge").innerHTML = "";
     $("qmode").textContent = MODE_NAME[S.mode] + (S.mode === "mix" ? "：" + MODE_NAME[q.kind] : "");
     $("qnum").textContent = String(S.i + 1);
     renderMarks();
+    // こえが つかえない ときは カタカナの よみを だして、もんだいを とけるように する
+    const canHear = enReady();
+    $("ask").className = "ask" + (q.one ? " small" : "");
+    $("ask").textContent = canHear ? q.ask : q.ask.replace("きこえた", "この");
+    const showKana = q.kana && (!canHear || !q.hideKana);
+    const hint = showKana ? `<p class="hint">よみかた <b>${esc(q.kana)}</b></p>` : "";
+    const btnLabel = canHear ? (q.bodyHTML ? "えいごを きく" : "もういちど きく")
+      : !voiceOn ? "こえが オフです"
+      : "えいごの こえが ありません";
+    const btn = q.say
+      ? `<button type="button" class="playbtn" id="replay"${canHear ? "" : " disabled"}>
+           <span class="spk" aria-hidden="true">🔊</span>${btnLabel}
+         </button>`
+      : "";
+    $("body").innerHTML = q.bodyHTML + btn + hint;
 
-    $("sheet").style.setProperty("--ansshift", q.kind === "calc" ? "1.7ch" : "0");
-    $("ask").className = "ask" + (q.askSmall ? " small" : "");
-    $("ask").textContent = q.ask;
-    $("body").innerHTML = q.bodyHTML;
-    renderAnswerArea();
+    $("input").innerHTML = `<div class="picks${q.one ? " one" : ""}">${q.choices.map((c, i) =>
+      `<button type="button" class="pick" data-c="${i}"><span class="picknum" aria-hidden="true">${i + 1}</span>${c.html}</button>`).join("")}</div>`;
+
+    if (q.say && canHear) S.timer = setTimeout(() => speakEn(q.say, { rate: q.rate }), 350);
   }
 
-  function renderFields() {
+  function replay() {
     const q = S.qs[S.i];
-    if (q.input === "choice") return;
-    if (q.input === "time") {
-      $("answer").innerHTML = `<div class="ansrow">
-        <div class="field ${S.tf === "h" ? "on" : ""} ${S.tbuf.h ? "" : "empty"}" data-f="h" role="button" tabindex="0" aria-label="じ">${S.tbuf.h || ""}${S.tf === "h" ? '<span class="cursor"></span>' : ""}</div>
-        <span class="unit">じ</span>
-        <div class="field ${S.tf === "m" ? "on" : ""} ${S.tbuf.m ? "" : "empty"}" data-f="m" role="button" tabindex="0" aria-label="ふん">${S.tbuf.m || ""}${S.tf === "m" ? '<span class="cursor"></span>' : ""}</div>
-        <span class="unit">ふん</span>
-      </div>`;
-    } else {
-      $("answer").innerHTML = `<div class="ansrow">
-        <div class="field wide on">${S.buf}<span class="cursor"></span></div>
-        ${q.unit ? `<span class="unit">${q.unit}</span>` : ""}
-      </div>`;
-    }
-    updateGo();
-  }
-
-  function renderAnswerArea() {
-    const q = S.qs[S.i];
-    if (q.input === "choice") {
-      $("answer").innerHTML = "";
-      $("input").innerHTML = `<div class="picks">${q.choices.map((c, i) =>
-        `<button type="button" class="pick" data-c="${i}">${c.html}</button>`).join("")}</div>`;
-      return;
-    }
-    renderFields();
-    $("input").innerHTML = `<div class="pad">
-        ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button type="button" class="key" data-k="${n}">${n}</button>`).join("")}
-        <button type="button" class="key fn" data-k="clear">ぜんぶ<br>けす</button>
-        <button type="button" class="key" data-k="0">0</button>
-        <button type="button" class="key fn" data-k="back">ひとつ<br>けす</button>
-      </div>
-      <button type="button" class="go" id="go">こたえる</button>`;
-    updateGo();
-  }
-
-  function updateGo() {
-    const q = S.qs[S.i], go = $("go");
-    if (!go) return;
-    go.disabled = q.input === "time" ? !(S.tbuf.h && S.tbuf.m !== "") : S.buf === "";
-  }
-
-  function typeDigit(d) {
-    if (S.locked) return;
-    const q = S.qs[S.i];
-    if (q.input === "time") {
-      if (S.tf === "h") {
-        if (d === "0" && S.tbuf.h === "") return;          // 0じは ない
-        const next = S.tbuf.h + d;
-        if (Number(next) <= 12 && next.length <= 2) S.tbuf.h = next;
-        else S.tbuf.h = d;
-        if (Number(S.tbuf.h) > 1 || S.tbuf.h.length === 2) S.tf = "m";
-      } else {
-        const next = (S.tbuf.m + d).slice(-2);
-        S.tbuf.m = S.tbuf.m.length >= 2 ? d : (Number(next) <= 59 ? next : d);
-      }
-    } else if (S.buf.length < (q.maxLen || 5)) {
-      if (!(S.buf === "" && d === "0")) S.buf += d;
-      else S.buf = "0";
-    }
-    renderFields();
-  }
-
-  function backspace() {
-    if (S.locked) return;
-    const q = S.qs[S.i];
-    if (q.input === "time") {
-      if (S.tf === "m" && S.tbuf.m === "") { S.tf = "h"; S.tbuf.h = S.tbuf.h.slice(0, -1); }
-      else if (S.tf === "m") S.tbuf.m = S.tbuf.m.slice(0, -1);
-      else S.tbuf.h = S.tbuf.h.slice(0, -1);
-    } else S.buf = S.buf.slice(0, -1);
-    renderFields();
-  }
-
-  function clearAll() {
-    if (S.locked) return;
-    S.buf = ""; S.tbuf = { h: "", m: "" }; S.tf = "h";
-    renderFields();
+    if (q?.say) speakEn(q.say, { rate: q.rate });
   }
 
   /* ========== まるつけ ========== */
-  function submit() {
+  function choose(idx) {
     if (S.locked) return;
     const q = S.qs[S.i];
-    let ok, given;
-    if (q.input === "time") {
-      if (!S.tbuf.h || S.tbuf.m === "") return;
-      const h = Number(S.tbuf.h) % 12 || 12, m = Number(S.tbuf.m);
-      ok = h === (q.answer.h % 12 || 12) && m === q.answer.m;
-      given = jTime(h, m);
-    } else {
-      if (S.buf === "") return;
-      given = S.buf;
-      ok = Number(S.buf) === q.answer;
-    }
-    judge(ok, given);
+    const c = q.choices[idx];
+    if (!c) return;
+    judge(Boolean(c.correct), c.label, idx);
   }
 
-  // こえで よむ ための ととのえ（すうじと たんいの あいだを すこし あける）
-  function sayable(text) {
-    return String(text)
-      .replace(/(\d+)じ(\d+)ふん/, "$1じ $2ふん")
-      .replace(/(\d+)(こ|まい|本|人|円|ページ|回|ひき|cm)/, "$1 $2")
-      .replace(/cm/, "センチ");
-  }
-
-  function judge(ok, given) {
+  function judge(ok, given, idx) {
     S.locked = true;
-    S.results[S.i] = { q: S.qs[S.i], ok, given };
+    const q = S.qs[S.i];
+    S.results[S.i] = { q, ok, given };
     S.streak = ok ? S.streak + 1 : 0;
     S.best = Math.max(S.best, S.streak);
     const praise = S.streak >= 3 ? `${S.streak}もん れんぞく せいかい！` : pick(PRAISE);
-    // がめんに でて いる カエルと おなじ 子が しゃべる
     const who = S.i % 2 ? "koro" : "kero";
     const sfx = suffixOf(who);
     const line = ok
       ? (S.streak >= 3 ? `${S.streak}もん れんぞく せいかい${sfx}ー！` : `${pick(SAY_OK)}${sfx}ー！`)
-      : `おしい${sfx}。こたえは ${sayable(S.qs[S.i].answerText)} だよー`;
-    if (speak(line, who)) chirp(who);      // こえが でる ときは なきごえも
-    else beep(ok ? "ok" : "ng");           // こえが でない たんまつは これまでの こうかおん
+      : `おしい${sfx}。よく きいてね`;
+    const spoke = speak(line, who);
+    if (spoke) chirp(who);
+    // こたえの えいごを もういちど よむ（まちがえた ときは 2かい）
+    const said = q.after ? speakEn(q.after, { queue: true, rate: q.rate, twice: !ok }) : false;
+    if (!spoke && !said) beep(ok ? "ok" : "ng");
     renderMarks();
+
+    // どれが せいかいだったかを のこす
+    $("input").querySelectorAll(".pick").forEach((b, i) => {
+      b.disabled = true;
+      if (q.choices[i].correct) b.classList.add("ans");
+      else if (i === idx) b.classList.add("miss");
+    });
 
     if (ok) {
       $("sheet").insertAdjacentHTML("beforeend", maruSVG());
@@ -1926,16 +1875,15 @@
     }
     const last = S.i === TOTAL - 1;
     $("judge").innerHTML = `<div class="judge ${ok ? "" : "ng"}">
-      ${frogSVG(S.i % 2 ? "koro" : "kero", { size: 42, mood: ok ? "happy" : "open" })}
+      ${frogSVG(who, { size: 42, mood: ok ? "happy" : "open" })}
       <div class="txt">
         <strong>${ok ? "せいかい！" : "おしい！"}</strong>
-        <small>${ok ? praise : `こたえは <b>${S.qs[S.i].answerText}</b>`}</small>
+        <small>${ok ? esc(praise) : `こたえは <b class="en">${esc(q.answerText)}</b>`}</small>
       </div>
       <button type="button" class="next" id="next">${last ? "けっかを みる" : "つぎの もんだい"}</button>
     </div>`;
-    $("input").querySelectorAll("button").forEach((b) => { b.disabled = true; });
     clearTimeout(S.timer);
-    if (ok) S.timer = setTimeout(nextQuestion, 1100);
+    if (ok) S.timer = setTimeout(nextQuestion, 1500);
   }
 
   function nextQuestion() {
@@ -1963,7 +1911,6 @@
     $("stamp").innerHTML = `<div><div class="big">${title}</div><div class="sub">${n}<small>/${TOTAL}</small></div></div>`;
     $("stars").innerHTML = [0, 1, 2].map((i) => i < stars ? "★" : "<span>★</span>").join("");
 
-    // できた ことを ほめる
     const cheers = [];
     cheers.push(n === TOTAL ? "ぜんもん せいかい！ すばらしい！"
       : n >= 8 ? `${n}もん せいかい！ すごいね！`
@@ -1973,16 +1920,14 @@
       : "10もん ぜんぶ ちょうせん したね！");
     if (n === 0) cheers.push("さいごまで やったのが えらい！");
 
-    const KETA = { 1: "2", 2: "3", 3: "4" }[S.lv];
-    const LABEL = { calc: `${KETA}けたの ひっさん`, word: "ぶんしょうだい", clock: "とけいの もんだい" };
-    for (const kind of ["calc", "word", "clock"]) {
+    const LABEL = { listen: "ききとり", word: "えいたんご", talk: "あいさつ", abc: "アルファベット" };
+    for (const kind of ["listen", "word", "talk", "abc"]) {
       const c = oks.filter((r) => r.q.kind === kind).length;
       if (c > 0) cheers.push(`${LABEL[kind]}が ${c}もん せいかい！`);
     }
     if (S.best >= 3) cheers.push(`${S.best}もん れんぞくで せいかい！`);
 
-    // じぶんの きろくと くらべる
-    const key = `sn-best-${currentPlayer()}-${S.mode}-${S.lv}`;
+    const key = `eg-best-${currentPlayer()}-${S.mode}-${S.lv}`;
     const prev = Number(store.get(key, "-1"));
     if (prev >= 0 && n > prev) {
       cheers.push("じぶんの さいこう きろく！");
@@ -1990,28 +1935,24 @@
     }
     if (n > prev) store.set(key, String(n));
 
-    // さいしょの ひとことは ケロちゃんと コロちゃんの ふきだしに
     $("bubble").textContent = cheers[0];
-    // 「すごいね！ケロー！」と ！ が かさならないように おしまいの ！ を とる
     if (speak(`${cheers[0].replace(/[！!]+$/, "")}ケロー！`, "kero")) chirp("kero");
     $("result-frogs").innerHTML = frogPairHTML(58);
     $("cheers").innerHTML = cheers.slice(1).map((t) =>
-      `<div class="cheer">${maruMark()}<span>${t}</span></div>`).join("");
+      `<div class="cheer">${maruMark()}<span>${esc(t)}</span></div>`).join("");
 
-    // できた もんだいを ならべる
     $("donebox").hidden = n === 0;
     $("done").innerHTML = oks.map((r) => `<li>
         ${maruMark()}
-        <span class="q">${r.q.text}</span>
-        <span class="a">${r.q.answerText}</span>
+        <span class="q">${esc(r.q.text)}</span>
+        <span class="a">${esc(r.q.answerText)}</span>
       </li>`).join("");
 
-    // まちがえた もんだいの みなおし
     $("reviewbox").hidden = missed.length === 0;
     $("note").textContent = `つぎは この ${missed.length}もんに ちょうせん しよう。`;
     $("review").innerHTML = missed.map((r) => `<li>
-        <span class="q">${r.q.text}</span>
-        <span class="a">${r.q.answerText}</span>
+        <span class="q">${esc(r.q.text)}</span>
+        <span class="a">${esc(r.q.answerText)}</span>
       </li>`).join("");
     show("result");
   }
@@ -2019,7 +1960,7 @@
   /* ========== そうさ ========== */
   function setLevel(lv) {
     S.lv = lv;
-    store.set("sn-lv", String(lv));
+    store.set("eg-lv", String(lv));
     $("levels").querySelectorAll(".lv").forEach((b) => {
       b.setAttribute("aria-pressed", String(Number(b.dataset.lv) === lv));
     });
@@ -2032,38 +1973,19 @@
   document.querySelectorAll(".mode").forEach((b) => {
     b.addEventListener("click", () => startSet(b.dataset.mode));
   });
+  $("body").addEventListener("click", (e) => {
+    if (e.target.closest("#replay")) replay();
+  });
   $("input").addEventListener("click", (e) => {
-    const key = e.target.closest(".key");
-    if (key) {
-      const k = key.dataset.k;
-      if (k === "back") backspace();
-      else if (k === "clear") clearAll();
-      else typeDigit(k);
-      return;
-    }
-    if (e.target.closest("#go")) { submit(); return; }
     const p = e.target.closest(".pick");
-    if (p && !S.locked) {
-      const c = S.qs[S.i].choices[Number(p.dataset.c)];
-      judge(!!c.correct, "");
-    }
-  });
-  $("answer").addEventListener("click", (e) => {
-    const f = e.target.closest(".field");
-    if (f && f.dataset.f && !S.locked) { S.tf = f.dataset.f; renderFields(); }
-  });
-  $("answer").addEventListener("keydown", (e) => {
-    const f = e.target.closest(".field");
-    if (f && f.dataset.f && (e.key === "Enter" || e.key === " ")) {
-      e.preventDefault(); S.tf = f.dataset.f; renderFields();
-    }
+    if (p) choose(Number(p.dataset.c));
   });
   $("judge").addEventListener("click", (e) => {
     if (e.target.closest("#next")) nextQuestion();
   });
   $("quit").addEventListener("click", () => show("home"));
-  function openHistory() { renderHistory(); renderVoiceBox(); renderSrvBox(); show("history"); }
-  function openTeam() { show("team"); renderTeam(); }
+
+  function openHistory() { renderHistory(); renderVoiceBox(); show("history"); }
 
   // だれが やる？
   $("players").addEventListener("click", (e) => {
@@ -2089,37 +2011,32 @@
   });
 
   // こえ
+  $("en-sel").addEventListener("change", () => {
+    store.set(EN_NAME_KEY, $("en-sel").value);
+    pickVoices();
+    renderVoiceBox();
+    speakEn("Hello! Let's study English.", { rate: 0.85 });
+  });
+  $("try-en").addEventListener("click", () => {
+    if (!speakEn("Hello! Apple, cat, blue.", { rate: 0.8 })) {
+      note("こえが でません。ヘッダーの「こえ オン」も たしかめて ください。", "ng", "en-note");
+    }
+  });
   $("voice-sel").addEventListener("change", () => {
-    store.set(VOICE_NAME_KEY, $("voice-sel").value);
+    store.set(JA_NAME_KEY, $("voice-sel").value);
     pickVoices();
     renderVoiceBox();
     if (speak("この こえで いいケロー？", "kero")) chirp("kero");
   });
   $("try-kero").addEventListener("click", () => {
     if (speak("ケロだよー！ せいかいケロー！", "kero")) chirp("kero");
-    else srvMsg("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
+    else note("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
   });
   $("try-koro").addEventListener("click", () => {
     if (speak("コロだよー！ やったねコロー！", "koro")) chirp("koro");
-    else srvMsg("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
+    else note("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
   });
 
-  // サーバー
-  $("srv-save").addEventListener("click", () => {
-    setSrvCfg($("srv-url").value, $("srv-key").value);
-    testServer();
-  });
-  $("srv-send").addEventListener("click", async () => {
-    setSrvCfg($("srv-url").value, $("srv-key").value);
-    srvMsg("おくって います…");
-    const out = await flushOutbox();
-    if (out.skipped) srvMsg("URL を いれて ください。", "ng");
-    else if (out.error) srvMsg(`${out.error}（のこり ${out.left}件）`, "ng");
-    else srvMsg(`${out.sent}件 おくりました。`, "ok");
-  });
-  $("to-team").addEventListener("click", openTeam);
-  $("team-back").addEventListener("click", () => { renderSrvBox(); show("history"); });
-  $("team-reload").addEventListener("click", renderTeam);
   $("to-history").addEventListener("click", openHistory);
   $("to-history2").addEventListener("click", openHistory);
   $("hist-back").addEventListener("click", () => { teaseHistory(); show("home"); });
@@ -2127,19 +2044,20 @@
     if (e.target.closest("#wipe-ask")) renderWipe(true);
     else if (e.target.closest("#wipe-no")) renderWipe(false);
     else if (e.target.closest("#wipe-yes")) {
-      store.set(LOG_KEY, "[]");
+      // いま えらんで いる 人の ぶんだけ けす
+      try {
+        const all = JSON.parse(store.get(LOG_KEY, "[]"));
+        const cur = currentPlayer();
+        const left = Array.isArray(all) && cur ? all.filter((r) => r.p && r.p !== cur) : [];
+        store.set(LOG_KEY, JSON.stringify(left));
+      } catch { store.set(LOG_KEY, "[]"); }
       renderHistory();
       teaseHistory();
     }
   });
-  for (const ev of ["pointerover", "click", "focusin"]) {
-    $("chart").addEventListener(ev, (e) => {
-      const hit = e.target.closest(".hit");
-      if (hit) chartCaption(Number(hit.dataset.i));
-    });
-  }
   $("again").addEventListener("click", () => startSet(S.mode));
   $("tohome").addEventListener("click", () => { teaseHistory(); show("home"); });
+
   $("voice").addEventListener("click", () => {
     voiceOn = !voiceOn;
     store.set(VOICE_KEY, voiceOn ? "1" : "0");
@@ -2147,12 +2065,9 @@
     $("voice").textContent = voiceOn ? "こえ オン" : "こえ オフ";
     if (voiceOn) {
       pickVoices();
-      if (speak("ケロだよー！", "kero")) {
-        chirp("kero");
-        speak("コロだよー！ いっしょに がんばろうケロー！", "koro", { queue: true });
-      } else {
-        $("voice").textContent = "こえ なし";   // 日本語の こえが ない たんまつ
-      }
+      if (speak("いっしょに がんばろうケロー！", "kero")) chirp("kero");
+      speakEn("Hello!", { queue: true, rate: 0.85 });
+      if (jaVoices.length === 0 && enVoices.length === 0) $("voice").textContent = "こえ なし";
     } else if (synth) { synth.cancel(); }
   });
   $("sound").addEventListener("click", () => {
@@ -2165,12 +2080,16 @@
 
   document.addEventListener("keydown", (e) => {
     if ($("quiz").hidden) return;
-    if (e.key >= "0" && e.key <= "9") { typeDigit(e.key); e.preventDefault(); }
-    else if (e.key === "Backspace") { backspace(); e.preventDefault(); }
-    else if (e.key === "Escape") { clearAll(); }
-    else if (e.key === "Enter") { S.locked ? nextQuestion() : submit(); e.preventDefault(); }
-    else if (e.key === "ArrowRight" && S.qs[S.i]?.input === "time") { S.tf = "m"; renderFields(); }
-    else if (e.key === "ArrowLeft" && S.qs[S.i]?.input === "time") { S.tf = "h"; renderFields(); }
+    if (e.key >= "1" && e.key <= "4") {
+      const b = $("input").querySelector(`.pick[data-c="${Number(e.key) - 1}"]`);
+      if (b) { choose(Number(e.key) - 1); e.preventDefault(); }
+    } else if (e.key === "Enter") {
+      if (S.locked) nextQuestion();
+      e.preventDefault();
+    } else if (e.key === " " || e.key === "Spacebar") {
+      replay();
+      e.preventDefault();
+    }
   });
 
   /* ========== さいしょの ひょうじ ========== */
@@ -2179,11 +2098,8 @@
   $("sound").textContent = soundOn ? "おと オン" : "おと オフ";
   $("voice").setAttribute("aria-pressed", String(voiceOn));
   $("voice").textContent = voiceOn ? "こえ オン" : "こえ オフ";
-  $("peek-clock").innerHTML = clockSVG(3, 40, { learn: false, size: 78, cls: "" });
-  $("peek-mini").innerHTML = clockSVG(9, 20, { learn: false, size: 28, cls: "" });
   renderPlayers();
   teaseHistory();
-  flushOutbox();      // まえに おくれなかった きろくを おくる
   $("hello-frogs").innerHTML = `${frogSVG("kero", { size: 52, mood: "open" })}${frogSVG("koro", { size: 52, mood: "open" })}`;
 })();
 </script>
