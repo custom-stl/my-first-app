@@ -907,7 +907,8 @@
 
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
-    "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
+    "はなまる！", "じょうずー！", "みみが いいね！", "ケロちゃんも びっくり！", "コロちゃんも にっこり！",
+    "ふたりと ハイタッチ！", "いまの えいご ばっちり！"];
   const MODE_NAME = { listen: "ききとり", word: "えいたんご", talk: "あいさつ", abc: "アルファベット", mix: "ミックス" };
 
   /* ========== えいごの ことば ==========
@@ -1030,7 +1031,7 @@
     { w: "moon", j: "つき", k: "ムーン", e: "🌙", c: "nature", lv: 2 },
     { w: "rainbow", j: "にじ", k: "レインボー", e: "🌈", c: "nature", lv: 3 },
     { w: "tree", j: "き", k: "ツリー", e: "🌳", c: "nature", lv: 2 },
-    { w: "flower", j: "はな", k: "フラワー", e: "🌷", c: "nature", lv: 2 },
+    { w: "flower", j: "おはな", k: "フラワー", e: "🌷", c: "nature", lv: 2 },
     { w: "sea", j: "うみ", k: "シー", e: "🌊", c: "nature", lv: 3 },
 
     // かぞく
@@ -1047,6 +1048,112 @@
     { w: "sing", j: "うたう", k: "シング", e: "🎤", c: "act", lv: 3 },
     { w: "sleep", j: "ねる", k: "スリープ", e: "😴", c: "act", lv: 3 },
     { w: "dance", j: "おどる", k: "ダンス", e: "💃", c: "act", lv: 3 },
+
+    // むし
+    { w: "bee", j: "はち", k: "ビー", e: "🐝", c: "bug", lv: 2 },
+    { w: "butterfly", j: "ちょう", k: "バタフライ", e: "🦋", c: "bug", lv: 2 },
+    { w: "ant", j: "あり", k: "アント", e: "🐜", c: "bug", lv: 2 },
+    { w: "caterpillar", j: "いもむし", k: "キャタピラー", e: "🐛", c: "bug", lv: 3 },
+    { w: "ladybug", j: "てんとうむし", k: "レディバグ", e: "🐞", c: "bug", lv: 3 },
+    { w: "snail", j: "かたつむり", k: "スネイル", e: "🐌", c: "bug", lv: 3 },
+    { w: "spider", j: "くも（むし）", k: "スパイダー", e: "🕷️", c: "bug", lv: 3 },
+
+    // うみの いきもの
+    { w: "dolphin", j: "いるか", k: "ドルフィン", e: "🐬", c: "sea", lv: 2 },
+    { w: "whale", j: "くじら", k: "ホエール", e: "🐳", c: "sea", lv: 2 },
+    { w: "shark", j: "さめ", k: "シャーク", e: "🦈", c: "sea", lv: 2 },
+    { w: "octopus", j: "たこ", k: "オクトパス", e: "🐙", c: "sea", lv: 2 },
+    { w: "crab", j: "かに", k: "クラブ", e: "🦀", c: "sea", lv: 2 },
+    { w: "shrimp", j: "えび", k: "シュリンプ", e: "🦐", c: "sea", lv: 3 },
+    { w: "squid", j: "いか", k: "スクイッド", e: "🦑", c: "sea", lv: 3 },
+
+    // きるもの
+    { w: "shirt", j: "シャツ", k: "シャツ", e: "👕", c: "wear", lv: 2 },
+    { w: "pants", j: "ズボン", k: "パンツ", e: "👖", c: "wear", lv: 2 },
+    { w: "dress", j: "ワンピース", k: "ドレス", e: "👗", c: "wear", lv: 2 },
+    { w: "shoes", j: "くつ", k: "シューズ", e: "👟", c: "wear", lv: 2 },
+    { w: "socks", j: "くつした", k: "ソックス", e: "🧦", c: "wear", lv: 2 },
+    { w: "hat", j: "ぼうし", k: "ハット", e: "👒", c: "wear", lv: 2 },
+    { w: "coat", j: "コート", k: "コート", e: "🧥", c: "wear", lv: 3 },
+    { w: "gloves", j: "てぶくろ", k: "グローブス", e: "🧤", c: "wear", lv: 3 },
+    { w: "scarf", j: "マフラー", k: "スカーフ", e: "🧣", c: "wear", lv: 3 },
+
+    // いえ
+    { w: "house", j: "いえ", k: "ハウス", e: "🏠", c: "home", lv: 2 },
+    { w: "door", j: "ドア", k: "ドア", e: "🚪", c: "home", lv: 2 },
+    { w: "bed", j: "ベッド", k: "ベッド", e: "🛏️", c: "home", lv: 2 },
+    { w: "key", j: "かぎ", k: "キー", e: "🔑", c: "home", lv: 2 },
+    { w: "bath", j: "おふろ", k: "バス（おふろ）", e: "🛁", c: "home", lv: 3 },
+    { w: "soap", j: "せっけん", k: "ソープ", e: "🧼", c: "home", lv: 3 },
+
+    // おもちゃ・がっき
+    { w: "balloon", j: "ふうせん", k: "バルーン", e: "🎈", c: "toy", lv: 1 },
+    { w: "teddy bear", j: "ぬいぐるみ", k: "テディベア", e: "🧸", c: "toy", lv: 2 },
+    { w: "robot", j: "ロボット", k: "ロボット", e: "🤖", c: "toy", lv: 2 },
+    { w: "present", j: "プレゼント", k: "プレゼント", e: "🎁", c: "toy", lv: 2 },
+    { w: "drum", j: "たいこ", k: "ドラム", e: "🥁", c: "toy", lv: 2 },
+    { w: "piano", j: "ピアノ", k: "ピアノ", e: "🎹", c: "toy", lv: 3 },
+    { w: "guitar", j: "ギター", k: "ギター", e: "🎸", c: "toy", lv: 3 },
+    { w: "trumpet", j: "トランペット", k: "トランペット", e: "🎺", c: "toy", lv: 3 },
+
+    // スポーツ
+    { w: "basketball", j: "バスケットボール", k: "バスケットボール", e: "🏀", c: "sport", lv: 2 },
+    { w: "baseball", j: "やきゅう", k: "ベースボール", e: "⚾", c: "sport", lv: 2 },
+    { w: "tennis", j: "テニス", k: "テニス", e: "🎾", c: "sport", lv: 3 },
+
+    // たべもの（つづき）
+    { w: "hamburger", j: "ハンバーガー", k: "ハンバーガー", e: "🍔", c: "food", lv: 2 },
+    { w: "doughnut", j: "ドーナツ", k: "ドーナツ", e: "🍩", c: "food", lv: 2 },
+    { w: "cookie", j: "クッキー", k: "クッキー", e: "🍪", c: "food", lv: 2 },
+    { w: "chocolate", j: "チョコレート", k: "チョコレート", e: "🍫", c: "food", lv: 2 },
+    { w: "carrot", j: "にんじん", k: "キャロット", e: "🥕", c: "food", lv: 2 },
+    { w: "tomato", j: "トマト", k: "トマト", e: "🍅", c: "food", lv: 2 },
+    { w: "corn", j: "とうもろこし", k: "コーン", e: "🌽", c: "food", lv: 2 },
+    { w: "hot dog", j: "ホットドッグ", k: "ホットドッグ", e: "🌭", c: "food", lv: 3 },
+    { w: "french fries", j: "フライドポテト", k: "フレンチフライズ", e: "🍟", c: "food", lv: 3 },
+    { w: "salad", j: "サラダ", k: "サラダ", e: "🥗", c: "food", lv: 3 },
+    { w: "potato", j: "じゃがいも", k: "ポテト", e: "🥔", c: "food", lv: 3 },
+    { w: "cheese", j: "チーズ", k: "チーズ", e: "🧀", c: "food", lv: 3 },
+    { w: "popcorn", j: "ポップコーン", k: "ポップコーン", e: "🍿", c: "food", lv: 3 },
+    { w: "honey", j: "はちみつ", k: "ハニー", e: "🍯", c: "food", lv: 3 },
+    { w: "mushroom", j: "きのこ", k: "マッシュルーム", e: "🍄", c: "food", lv: 3 },
+
+    // ばしょ
+    { w: "school", j: "がっこう", k: "スクール", e: "🏫", c: "place", lv: 2 },
+    { w: "hospital", j: "びょういん", k: "ホスピタル", e: "🏥", c: "place", lv: 3 },
+    { w: "shop", j: "おみせ", k: "ショップ", e: "🏪", c: "place", lv: 3 },
+    { w: "station", j: "えき", k: "ステーション", e: "🚉", c: "place", lv: 3 },
+
+    // しぜん（つづき）
+    { w: "leaf", j: "はっぱ", k: "リーフ", e: "🍃", c: "nature", lv: 2 },
+    { w: "snowman", j: "ゆきだるま", k: "スノーマン", e: "⛄", c: "nature", lv: 2 },
+    { w: "fire", j: "ひ", k: "ファイヤー", e: "🔥", c: "nature", lv: 3 },
+    { w: "ice", j: "こおり", k: "アイス", e: "🧊", c: "nature", lv: 3 },
+    { w: "earth", j: "ちきゅう", k: "アース", e: "🌍", c: "nature", lv: 3 },
+    { w: "thunder", j: "かみなり", k: "サンダー", e: "⚡", c: "nature", lv: 3 },
+
+    // みの まわりの もの
+    { w: "heart", j: "ハート", k: "ハート", e: "❤️", c: "thing", lv: 1 },
+    { w: "umbrella", j: "かさ", k: "アンブレラ", e: "☂️", c: "thing", lv: 2 },
+    { w: "phone", j: "でんわ", k: "フォン", e: "📱", c: "thing", lv: 2 },
+    { w: "camera", j: "カメラ", k: "カメラ", e: "📷", c: "thing", lv: 3 },
+    { w: "computer", j: "コンピューター", k: "コンピューター", e: "💻", c: "thing", lv: 3 },
+    { w: "letter", j: "てがみ", k: "レター", e: "✉️", c: "thing", lv: 3 },
+
+    // のりもの（つづき）
+    { w: "rocket", j: "ロケット", k: "ロケット", e: "🚀", c: "ride", lv: 2 },
+    { w: "taxi", j: "タクシー", k: "タクシー", e: "🚕", c: "ride", lv: 3 },
+    { w: "police car", j: "パトカー", k: "ポリスカー", e: "🚓", c: "ride", lv: 3 },
+    { w: "ambulance", j: "きゅうきゅうしゃ", k: "アンビュランス", e: "🚑", c: "ride", lv: 3 },
+    { w: "fire engine", j: "しょうぼうしゃ", k: "ファイヤーエンジン", e: "🚒", c: "ride", lv: 3 },
+    { w: "helicopter", j: "ヘリコプター", k: "ヘリコプター", e: "🚁", c: "ride", lv: 3 },
+
+    // かず（13〜20 を そろえる）
+    { w: "fourteen", j: "14", k: "フォーティーン", t: "14", c: "number", lv: 3 },
+    { w: "sixteen", j: "16", k: "シックスティーン", t: "16", c: "number", lv: 3 },
+    { w: "seventeen", j: "17", k: "セブンティーン", t: "17", c: "number", lv: 3 },
+    { w: "eighteen", j: "18", k: "エイティーン", t: "18", c: "number", lv: 3 },
+    { w: "nineteen", j: "19", k: "ナインティーン", t: "19", c: "number", lv: 3 },
   ];
 
   /* ========== あいさつ・いいかた ==========
@@ -1101,27 +1208,47 @@
     ["U", "V", "Y", "W"], ["S", "Z", "X", "K"], ["D", "O", "Q", "G"], ["R", "P", "B", "K"],
   ];
 
-  /* ========== おと ========== */
+  /* ========== おと ==========
+     せいかいは「ピンポーン♪」、まちがいは やさしい「ぽよん」。
+     しかる ような おとには しない。 */
   let soundOn = store.get("sn-sound", "1") === "1";
   let actx = null;
-  function beep(kind) {
-    if (!soundOn) return;
+  const audio = () => {
+    try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); return actx; } catch { return null; }
+  };
+  // まるい おとを 1つ ならす（to を いれると おとが すべる）
+  function tone(freq, at, dur, opt = {}) {
+    const { type = "triangle", gain = 0.14, to = null } = opt;
+    const a = audio();
+    if (!a) return;
     try {
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      const notes = kind === "ok" ? [784, 1046] : [262, 208];
-      notes.forEach((f, i) => {
-        const o = actx.createOscillator(), g = actx.createGain();
-        o.type = "triangle";
-        o.frequency.value = f;
-        const t = actx.currentTime + i * 0.11;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
-        o.connect(g); g.connect(actx.destination);
-        o.start(t); o.stop(t + 0.24);
-      });
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = type;
+      const t = a.currentTime + at;
+      o.frequency.setValueAtTime(freq, t);
+      if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(gain, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(a.destination);
+      o.start(t); o.stop(t + dur + 0.02);
     } catch { /* おとが でなくても もんだいは とける */ }
   }
+  // せいかい：ド・ミ・ソ と きらきら
+  function sfxOk() {
+    if (!soundOn) return;
+    tone(1046.5, 0, 0.22);
+    tone(1318.5, 0.08, 0.22);
+    tone(1568, 0.16, 0.34, { gain: 0.15 });
+    tone(2093, 0.26, 0.3, { type: "sine", gain: 0.06 });
+  }
+  // まちがい：ぽよん（やわらかく さがる おと）
+  function sfxNg() {
+    if (!soundOn) return;
+    tone(523, 0, 0.17, { type: "sine", gain: 0.12, to: 392 });
+    tone(392, 0.13, 0.28, { type: "sine", gain: 0.1, to: 294 });
+  }
+  const beep = (kind) => (kind === "ok" ? sfxOk() : sfxNg());
 
   /* ========== こえ ==========
      ・えいごの ことばは たんまつに ある えいごの こえ（Web Speech API）で よむ
@@ -1238,7 +1365,10 @@
     } catch { return false; }
   }
 
-  const SAY_OK = ["せいかい", "やったね", "すごい", "ばっちり", "だいせいかい", "よく できた", "はなまる"];
+  // こえで いう ことば（〜ケロ／〜コロ が つく）
+  const SAY_OK = ["せいかい", "やったね", "すごーい", "ばっちり", "だいせいかい", "よく できました",
+    "はなまる", "じょうずー", "かんぺき", "うれしい", "ピンポーン", "その ちょうし"];
+  const SAY_NG = ["おしい", "ざんねん", "ドンマイ", "もうちょっと", "あとすこし"];
   const suffixOf = (who) => (who === "kero" ? "ケロ" : "コロ");
 
   /* ========== ケロちゃんと コロちゃん ========== */
@@ -1323,6 +1453,10 @@
   }
   const picText = (w) => (w.t ? w.t : w.j);
 
+  // まちがえた ときに こえで いう こたえ。カタカナと にほんごが おなじ
+  // ことば（ドア など）は くりかえさない。
+  const sayAnswer = (w) => (w.j === w.k ? `こたえは ${w.k} だよー` : `${w.j}は ${w.k} だよー`);
+
   // つづりの にかた（むずかしい レベルの えらびかたに つかう）
   function simScore(a, b) {
     let s = 0;
@@ -1340,7 +1474,8 @@
    *  むずかしい＝つづりが にて いる ものから。 */
   function distract(ans, pool, lv, n, keyFn = (w) => w.w) {
     const key = keyFn(ans);
-    const cand = pool.filter((w) => w.w !== ans.w && keyFn(w) !== key && w.j !== ans.j);
+    const cand = pool.filter((w) => w.w !== ans.w && keyFn(w) !== key && w.j !== ans.j
+      && !(w.e && w.e === ans.e));                 // おなじ えは 2つ ださない
     let ranked;
     if (lv === 1) ranked = shuffle(cand.filter((w) => w.c !== ans.c));
     else if (lv === 2) ranked = shuffle(cand.filter((w) => w.c === ans.c));
@@ -1367,6 +1502,7 @@
       hideKana: true,                       // こえが でる ときは カタカナを ださない
       bodyHTML: "",
       choices: cs.map((w) => ({ html: picTile(w), correct: w === ans, label: picText(w) })),
+      sayNg: sayAnswer(ans),
       text: `ききとり：${ans.w}`,
       answerText: `${ans.j}（${ans.w}）`,
     };
@@ -1383,6 +1519,7 @@
       hideKana: true,
       bodyHTML: `${picBig(ans)}${ans.t ? "" : `<p class="picname">${esc(ans.j)}</p>`}`,
       choices: cs.map((w) => ({ html: `<span class="pen">${esc(w.w)}</span>`, correct: w === ans, label: w.w })),
+      sayNg: sayAnswer(ans),
       text: `えいたんご：${ans.j}`,
       answerText: ans.w,
     };
@@ -1400,6 +1537,7 @@
       bodyHTML: `<div class="phrase">${esc(ans.a)}</div>`,
       one: true,
       choices: cs.map((t) => ({ html: `<span class="pjp big">${esc(t.j)}</span>`, correct: t === ans, label: t.j })),
+      sayNg: `${ans.k}は 「${ans.j}」って いみだよー`,
       text: `あいさつ：${ans.a}`,
       answerText: ans.j,
     };
@@ -1436,6 +1574,7 @@
         say: up, after: up, kana: ABC_KANA[up],
         bodyHTML: `<div class="letter">${esc(from)}</div>`,
         choices: cs.map((c) => ({ html: letterTile(c), correct: c === ans, label: c })),
+        sayNg: `${ABC_KANA[up]}の ${toLower ? "ちいさい" : "おおきい"} もじ だよー`,
         text: `${from} の ${toLower ? "小もじ" : "大もじ"}`,
         answerText: ans,
       };
@@ -1455,6 +1594,7 @@
         say: seq.join(", "), after: ansUp,
         bodyHTML: `<div class="letter">${back ? `<i>?</i> ${esc(shown)}` : `${esc(shown)} <i>?</i>`}</div>`,
         choices: cs.map((c) => ({ html: letterTile(c), correct: c === ans, label: c })),
+        sayNg: `こたえは ${ABC_KANA[ansUp]} だよー`,
         text: back ? `? ${shown}` : `${shown} ?`,
         answerText: ans,
       };
@@ -1470,6 +1610,7 @@
       hideKana: true,
       bodyHTML: "",
       choices: cs.map((c) => ({ html: letterTile(c), correct: c === ans, label: c })),
+      sayNg: `こたえは ${ABC_KANA[up]}の もじ だよー`,
       text: `きこえた もじ（${ABC_KANA[up]}）`,
       answerText: ans,
     };
@@ -1767,11 +1908,12 @@
     mode: "listen",
     lv: Math.min(3, Math.max(1, Number(store.get("eg-lv", "1")) || 1)),
     qs: [], i: 0, results: [], streak: 0, best: 0,
-    locked: false, saved: false, timer: 0,
+    locked: false, saved: false, timer: 0, vtimer: 0,
   };
 
   function show(name) {
     clearTimeout(S.timer);
+    clearTimeout(S.vtimer);
     if (synth) { try { synth.cancel(); } catch { /* とめられなくても つづける */ } }
     for (const id of ["home", "quiz", "result", "history"]) $(id).hidden = id !== name;
     $("quit").hidden = name !== "quiz";
@@ -1809,6 +1951,7 @@
   function renderQuestion() {
     const q = S.qs[S.i];
     clearTimeout(S.timer);
+    clearTimeout(S.vtimer);
     document.querySelectorAll(".maru").forEach((el) => el.remove());
     S.locked = false;
     $("judge").innerHTML = "";
@@ -1860,14 +2003,20 @@
     const praise = S.streak >= 3 ? `${S.streak}もん れんぞく せいかい！` : pick(PRAISE);
     const who = S.i % 2 ? "koro" : "kero";
     const sfx = suffixOf(who);
+
+    // ① まず おとで しらせる（ピンポーン／ぽよん）
+    if (ok) sfxOk(); else sfxNg();
+
+    // ② すこし おいてから ケロ・コロの こえ、そのあと えいごを もういちど
     const line = ok
       ? (S.streak >= 3 ? `${S.streak}もん れんぞく せいかい${sfx}ー！` : `${pick(SAY_OK)}${sfx}ー！`)
-      : `おしい${sfx}。よく きいてね`;
-    const spoke = speak(line, who);
-    if (spoke) chirp(who);
-    // こたえの えいごを もういちど よむ（まちがえた ときは 2かい）
-    const said = q.after ? speakEn(q.after, { queue: true, rate: q.rate, twice: !ok }) : false;
-    if (!spoke && !said) beep(ok ? "ok" : "ng");
+      : `${pick(SAY_NG)}${sfx}。${q.sayNg || "もういちど きいてね"}`;
+    const willSpeak = voiceOn && (jaReady() || enReady());
+    clearTimeout(S.vtimer);
+    S.vtimer = setTimeout(() => {
+      const spoke = speak(line, who);
+      if (q.after) speakEn(q.after, { queue: spoke, rate: q.rate, twice: !ok });
+    }, 430);
     renderMarks();
 
     // どれが せいかいだったかを のこす
@@ -1893,7 +2042,8 @@
       <button type="button" class="next" id="next">${last ? "けっかを みる" : "つぎの もんだい"}</button>
     </div>`;
     clearTimeout(S.timer);
-    if (ok) S.timer = setTimeout(nextQuestion, 1500);
+    // こえを さいごまで きいてから つぎへ（こえが ない ときは はやめに）
+    if (ok) S.timer = setTimeout(nextQuestion, willSpeak ? 2700 : 1300);
   }
 
   function nextQuestion() {

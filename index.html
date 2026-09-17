@@ -865,27 +865,47 @@
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
   const MODE_NAME = { calc: "ひっさん", word: "ぶんしょうだい", clock: "とけい", mix: "ミックス" };
 
-  /* ========== おと ========== */
+  /* ========== おと ==========
+     せいかいは「ピンポーン♪」、まちがいは やさしい「ぽよん」。
+     しかる ような おとには しない（えいごノートと おなじ おと）。 */
   let soundOn = store.get("sn-sound", "1") === "1";
   let actx = null;
-  function beep(kind) {
-    if (!soundOn) return;
+  const audio = () => {
+    try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); return actx; } catch { return null; }
+  };
+  // まるい おとを 1つ ならす（to を いれると おとが すべる）
+  function tone(freq, at, dur, opt = {}) {
+    const { type = "triangle", gain = 0.14, to = null } = opt;
+    const a = audio();
+    if (!a) return;
     try {
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      const notes = kind === "ok" ? [784, 1046] : [262, 208];
-      notes.forEach((f, i) => {
-        const o = actx.createOscillator(), g = actx.createGain();
-        o.type = "triangle";
-        o.frequency.value = f;
-        const t = actx.currentTime + i * 0.11;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
-        o.connect(g); g.connect(actx.destination);
-        o.start(t); o.stop(t + 0.24);
-      });
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = type;
+      const t = a.currentTime + at;
+      o.frequency.setValueAtTime(freq, t);
+      if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(gain, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(a.destination);
+      o.start(t); o.stop(t + dur + 0.02);
     } catch { /* おとが でなくても もんだいは とける */ }
   }
+  // せいかい：ド・ミ・ソ と きらきら
+  function sfxOk() {
+    if (!soundOn) return;
+    tone(1046.5, 0, 0.22);
+    tone(1318.5, 0.08, 0.22);
+    tone(1568, 0.16, 0.34, { gain: 0.15 });
+    tone(2093, 0.26, 0.3, { type: "sine", gain: 0.06 });
+  }
+  // まちがい：ぽよん（やわらかく さがる おと）
+  function sfxNg() {
+    if (!soundOn) return;
+    tone(523, 0, 0.17, { type: "sine", gain: 0.12, to: 392 });
+    tone(392, 0.13, 0.28, { type: "sine", gain: 0.1, to: 294 });
+  }
+  const beep = (kind) => (kind === "ok" ? sfxOk() : sfxNg());
 
   /* ========== ケロと コロの こえ ========== */
   // たんまつに はいって いる 日本語の こえ（Web Speech API）を つかう。
@@ -972,7 +992,9 @@
   }
 
   // ケロは「〜ケロ！」、コロは「〜コロ！」で しゃべる
-  const SAY_OK = ["せいかい", "やったね", "すごい", "ばっちり", "だいせいかい", "よく できた", "はなまる"];
+  const SAY_OK = ["せいかい", "やったね", "すごーい", "ばっちり", "だいせいかい", "よく できました",
+    "はなまる", "じょうずー", "かんぺき", "うれしい", "ピンポーン", "その ちょうし"];
+  const SAY_NG = ["おしい", "ざんねん", "ドンマイ", "もうちょっと", "あとすこし"];
   const suffixOf = (who) => (who === "kero" ? "ケロ" : "コロ");
 
   /* ========== 学習用とけいの え ========== */
@@ -1751,6 +1773,7 @@
     tf: "h",       // いま えらんで いる とけいの ばしょ
     locked: false,
     timer: 0,      // せいかいの ときの じどうおくり
+    vtimer: 0,     // おとの あとに こえを だす ための まちじかん
     streak: 0,     // れんぞく せいかい
     best: 0,
     saved: false,  // この セットを きろくに のこしたか
@@ -1759,6 +1782,7 @@
   /* ========== がめんの きりかえ ========== */
   function show(name) {
     clearTimeout(S.timer);
+    clearTimeout(S.vtimer);
     for (const id of ["home", "quiz", "result", "history", "team"]) $(id).hidden = id !== name;
     $("quit").hidden = name !== "quiz";
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -1787,6 +1811,7 @@
 
   function renderQuestion() {
     const q = S.qs[S.i];
+    clearTimeout(S.vtimer);
     document.querySelectorAll(".maru").forEach((el) => el.remove());
     S.buf = "";
     S.tbuf = { h: "", m: "" };
@@ -1923,9 +1948,11 @@
     const sfx = suffixOf(who);
     const line = ok
       ? (S.streak >= 3 ? `${S.streak}もん れんぞく せいかい${sfx}ー！` : `${pick(SAY_OK)}${sfx}ー！`)
-      : `おしい${sfx}。こたえは ${sayable(S.qs[S.i].answerText)} だよー`;
-    if (speak(line, who)) chirp(who);      // こえが でる ときは なきごえも
-    else beep(ok ? "ok" : "ng");           // こえが でない たんまつは これまでの こうかおん
+      : `${pick(SAY_NG)}${sfx}。こたえは ${sayable(S.qs[S.i].answerText)} だよー`;
+    if (ok) sfxOk(); else sfxNg();         // まず おとで しらせる
+    const willSpeak = voiceOn && voiceReady();
+    clearTimeout(S.vtimer);                // おとの あとに ケロ・コロの こえ
+    S.vtimer = setTimeout(() => speak(line, who), 430);
     renderMarks();
 
     if (ok) {
@@ -1945,7 +1972,8 @@
     </div>`;
     $("input").querySelectorAll("button").forEach((b) => { b.disabled = true; });
     clearTimeout(S.timer);
-    if (ok) S.timer = setTimeout(nextQuestion, 1100);
+    // こえを さいごまで きいてから つぎへ（こえが ない ときは はやめに）
+    if (ok) S.timer = setTimeout(nextQuestion, willSpeak ? 2200 : 1100);
   }
 
   function nextQuestion() {
