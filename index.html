@@ -513,6 +513,16 @@
   /* ---------- サーバー（みんなの きろく） ---------- */
   .field-row { display: grid; gap: 5px; margin-bottom: 10px; }
   .field-row label { font-size: .72rem; font-weight: 700; color: var(--ink-soft); letter-spacing: .04em; }
+  .seg { display: flex; gap: 7px; }
+  .seg button {
+    flex: 1; border: 1.5px solid var(--line); background: var(--card);
+    border-radius: var(--r-m); padding: 10px 6px;
+    font-size: .82rem; font-weight: 700; line-height: 1.3;
+  }
+  .seg button[aria-pressed="true"] {
+    border-color: var(--shu); background: var(--shu-soft); color: var(--shu);
+    box-shadow: inset 0 0 0 1px var(--shu);
+  }
   .field-row select {
     border: 1.5px solid var(--line); border-radius: var(--r-m);
     background: var(--card-2); color: var(--ink);
@@ -801,7 +811,14 @@
     <section class="sheet">
       <h3 class="sec-label">ケロと コロの こえ</h3>
       <div class="field-row">
-        <label for="voice-sel">こえの しゅるい（この たんまつに ある もの）</label>
+        <label>こえの タイプ</label>
+        <div class="seg" id="voice-type" role="group" aria-label="こえの タイプ">
+          <button type="button" data-vt="both">アニメごえ＋ことば</button>
+          <button type="button" data-vt="anime">アニメごえ だけ</button>
+        </div>
+      </div>
+      <div class="field-row" id="voice-sel-row">
+        <label for="voice-sel">ことばの こえ（この たんまつに ある もの）</label>
         <select id="voice-sel"></select>
       </div>
       <div class="mini-btns">
@@ -984,24 +1001,62 @@
     } catch { return false; }
   }
 
-  // カエルの なきごえ（ケロッ）。こえの まえに ちょこんと ならす。
-  function chirp(who = "kero") {
-    if (!soundOn) return false;
+  // アニメごえ。もじの かずぶん、ちいさな こえを ならべて キャラクターの こえを つくる。
+  // たんまつの よみあげ こえ（TTS）は おとの いろを かえられない（ピッチの じょうげんは 2.0）ので、
+  // アニメっぽい こえは WebAudio で じぶんで つくる。日本語の こえが ない たんまつでも なる。
+  const VOICE_TYPE_KEY = "sn-voice-type";
+  let voiceType = store.get(VOICE_TYPE_KEY, "both") === "anime" ? "anime" : "both";
+  const BABBLE = {
+    kero: { base: 700, wave: "triangle" },
+    koro: { base: 900, wave: "square" },
+  };
+  function babble(text, who = "kero", mood = "ok", maxChars = 8) {
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      const up = who === "kero" ? 1 : 1.3;
-      const t = actx.currentTime;
-      for (const [f, at, dur] of [[520 * up, 0, 0.075], [700 * up, 0.07, 0.12]]) {
+      const cfg = BABBLE[who] || BABBLE.kero;
+      // よめる もじだけ かぞえる（「！」や すきまは かぞえない）
+      const chars = [...String(text).replace(/[^ぁ-んァ-ヶー一-龥0-9A-Za-z]/g, "")].slice(0, maxChars);
+      const n = Math.min(maxChars, Math.max(3, chars.length));
+      const step = 0.082;
+      const t0 = actx.currentTime + 0.01;
+
+      // くちの かたちの ような フィルターを とおすと こえっぽく なる
+      const band = actx.createBiquadFilter();
+      band.type = "bandpass";
+      band.frequency.value = cfg.base * 1.7;
+      band.Q.value = 1.1;
+      const out = actx.createGain();
+      out.gain.value = 0.85;
+      band.connect(out);
+      out.connect(actx.destination);
+
+      for (let i = 0; i < n; i++) {
+        const code = chars[i] ? chars[i].charCodeAt(0) : i * 7;
+        const wobble = ((code % 7) - 3) * 0.05;                       // もじごとの たかさの ゆれ
+        const contour = (mood === "ok" ? 1 : -1) * (i / n) * 0.3;     // せいかいは あがる、まちがいは さがる
+        const f = Math.max(180, cfg.base * (1 + wobble + contour));
+        const at = t0 + i * step;
+        const dur = step * 0.8;
+
         const o = actx.createOscillator(), g = actx.createGain();
-        o.type = "triangle";
-        o.frequency.setValueAtTime(f, t + at);
-        o.frequency.exponentialRampToValueAtTime(f * 1.14, t + at + dur * 0.45);
-        o.frequency.exponentialRampToValueAtTime(f * 0.86, t + at + dur);
-        g.gain.setValueAtTime(0.0001, t + at);
-        g.gain.exponentialRampToValueAtTime(0.13, t + at + 0.018);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + at + dur);
-        o.connect(g); g.connect(actx.destination);
-        o.start(t + at); o.stop(t + at + dur + 0.02);
+        o.type = i % 2 ? cfg.wave : "triangle";
+        o.frequency.setValueAtTime(f, at);
+        o.frequency.linearRampToValueAtTime(f * 1.05, at + dur);
+        // ビブラート（アニメの キャラクターの ような ゆれ）
+        const vib = actx.createOscillator(), vibg = actx.createGain();
+        vib.type = "sine";
+        vib.frequency.value = 24;
+        vibg.gain.value = f * 0.035;
+        vib.connect(vibg);
+        vibg.connect(o.frequency);
+
+        g.gain.setValueAtTime(0.0001, at);
+        g.gain.exponentialRampToValueAtTime(0.17, at + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+        o.connect(g);
+        g.connect(band);
+        o.start(at); o.stop(at + dur + 0.01);
+        vib.start(at); vib.stop(at + dur + 0.01);
       }
       return true;
     } catch { return false; }
@@ -1010,6 +1065,19 @@
   // ケロは「〜ケロ！」、コロは「〜コロ！」で しゃべる
   const SAY_OK = ["せいかい", "やったね", "すごい", "ばっちり", "だいせいかい", "よく できた", "はなまる"];
   const suffixOf = (who) => (who === "kero" ? "ケロ" : "コロ");
+  // やって いる 子の なまえを よぶ
+  const callName = () => {
+    const n = currentPlayer();
+    return n ? `${n}、` : "";
+  };
+
+  // キャラクターの こえで しらせる。アニメごえ＋ことば／アニメごえ だけ の きりかえ。
+  function voiceSay(line, who, mood = "ok") {
+    if (!voiceOn) return false;
+    const spoke = voiceType === "both" && speak(line, who);
+    // ことばを しゃべる ときは みじかい あいさつ ていどに、ならない ときは ぜんぶ アニメごえで
+    return babble(line, who, mood, spoke ? 3 : 8) || spoke;
+  }
 
   /* ========== 学習用とけいの え ========== */
   function clockSVG(h, m, opt = {}) {
@@ -1706,20 +1774,32 @@
   }
   function renderVoiceBox() {
     pickVoices();
+    $("voice-type").querySelectorAll("[data-vt]").forEach((b) => {
+      b.setAttribute("aria-pressed", String(b.dataset.vt === voiceType));
+    });
+    // アニメごえ だけの ときは、ことばの こえは つかわない
+    $("voice-sel-row").hidden = voiceType !== "both";
+
     const sel = $("voice-sel");
+    const chosen = store.get(VOICE_NAME_KEY, "");
     if (jaVoices.length === 0) {
       sel.innerHTML = `<option value="">（この たんまつには 日本語の こえが ありません）</option>`;
       sel.disabled = true;
-      srvMsg("この たんまつには 日本語の こえが ないので、こうかおんだけに なります。", "idle", "voice-note");
-      return;
+    } else {
+      sel.disabled = false;
+      sel.innerHTML = `<option value="">おまかせ（かわいい こえを えらびます）</option>`
+        + jaVoices.map((v) => `<option value="${esc(v.name)}"${v.name === chosen ? " selected" : ""}>${esc(v.name)}</option>`).join("");
     }
-    sel.disabled = false;
-    const chosen = store.get(VOICE_NAME_KEY, "");
-    sel.innerHTML = `<option value="">おまかせ（かわいい こえを えらびます）</option>`
-      + jaVoices.map((v) => `<option value="${esc(v.name)}"${v.name === chosen ? " selected" : ""}>${esc(v.name)}</option>`).join("");
-    srvMsg(voiceOn
-      ? `いま: ${esc(voiceFor.kero?.name || "—")}（ケロ）／ ${esc(voiceFor.koro?.name || "—")}（コロ）`
-      : "「こえ オフ」に なって います。ヘッダーの ボタンで オンに できます。", "idle", "voice-note");
+
+    if (!voiceOn) {
+      srvMsg("「こえ オフ」に なって います。ヘッダーの ボタンで オンに できます。", "idle", "voice-note");
+    } else if (voiceType === "anime") {
+      srvMsg("ケロと コロの アニメごえだけで しらせます。ことばは がめんに でます。", "idle", "voice-note");
+    } else if (jaVoices.length === 0) {
+      srvMsg("この たんまつには 日本語の こえが ないので、アニメごえだけに なります。", "idle", "voice-note");
+    } else {
+      srvMsg(`アニメごえ＋ことば。ことばの こえ: ${esc(voiceFor.kero?.name || "—")}（ケロ）／ ${esc(voiceFor.koro?.name || "—")}（コロ）`, "idle", "voice-note");
+    }
   }
 
   function renderSrvBox() {
@@ -2036,10 +2116,9 @@
     const who = S.i % 2 ? "koro" : "kero";
     const sfx = suffixOf(who);
     const line = ok
-      ? (S.streak >= 3 ? `${S.streak}もん れんぞく せいかい${sfx}ー！` : `${pick(SAY_OK)}${sfx}ー！`)
-      : `おしい${sfx}。こたえは ${sayable(S.qs[S.i].answerText)} だよー`;
-    if (speak(line, who)) chirp(who);      // こえが でる ときは なきごえも
-    else beep(ok ? "ok" : "ng");           // こえが でない たんまつは これまでの こうかおん
+      ? `${callName()}${S.streak >= 3 ? `${S.streak}もん れんぞく せいかい${sfx}ー！` : `${pick(SAY_OK)}${sfx}ー！`}`
+      : `${callName()}おしい${sfx}。こたえは ${sayable(S.qs[S.i].answerText)} だよー`;
+    if (!voiceSay(line, who, ok ? "ok" : "ng")) beep(ok ? "ok" : "ng");
     renderMarks();
 
     if (ok) {
@@ -2115,9 +2194,9 @@
     if (n > prev) store.set(key, String(n));
 
     // さいしょの ひとことは ケロちゃんと コロちゃんの ふきだしに
-    $("bubble").textContent = cheers[0];
+    $("bubble").textContent = `${callName()}${cheers[0]}`;
     // 「すごいね！ケロー！」と ！ が かさならないように おしまいの ！ を とる
-    if (speak(`${cheers[0].replace(/[！!]+$/, "")}ケロー！`, "kero")) chirp("kero");
+    voiceSay(`${callName()}${cheers[0].replace(/[！!]+$/, "")}ケロー！`, "kero", "ok");
     $("result-frogs").innerHTML = frogPairHTML(58);
     $("cheers").innerHTML = cheers.slice(1).map((t) =>
       `<div class="cheer">${maruMark()}<span>${t}</span></div>`).join("");
@@ -2228,19 +2307,29 @@
   });
 
   // こえ
+  $("voice-type").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-vt]");
+    if (!b) return;
+    voiceType = b.dataset.vt;
+    store.set(VOICE_TYPE_KEY, voiceType);
+    renderVoiceBox();
+    voiceSay(`${callName()}${voiceType === "anime" ? "アニメごえだけで いくケロー！" : "ことばも しゃべるケロー！"}`, "kero", "ok");
+  });
   $("voice-sel").addEventListener("change", () => {
     store.set(VOICE_NAME_KEY, $("voice-sel").value);
     pickVoices();
     renderVoiceBox();
-    if (speak("この こえで いいケロー？", "kero")) chirp("kero");
+    voiceSay(`${callName()}この こえで いいケロー？`, "kero", "ok");
   });
   $("try-kero").addEventListener("click", () => {
-    if (speak("ケロだよー！ せいかいケロー！", "kero")) chirp("kero");
-    else srvMsg("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
+    if (!voiceSay(`${callName()}ケロだよー！ せいかいケロー！`, "kero", "ok")) {
+      srvMsg("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
+    }
   });
   $("try-koro").addEventListener("click", () => {
-    if (speak("コロだよー！ やったねコロー！", "koro")) chirp("koro");
-    else srvMsg("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
+    if (!voiceSay(`${callName()}コロだよー！ やったねコロー！`, "koro", "ok")) {
+      srvMsg("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
+    }
   });
 
   // サーバー
@@ -2286,11 +2375,9 @@
     $("voice").textContent = voiceOn ? "こえ オン" : "こえ オフ";
     if (voiceOn) {
       pickVoices();
-      if (speak("ケロだよー！", "kero")) {
-        chirp("kero");
-        speak("コロだよー！ いっしょに がんばろうケロー！", "koro", { queue: true });
-      } else {
-        $("voice").textContent = "こえ なし";   // 日本語の こえが ない たんまつ
+      voiceSay(`${callName()}ケロだよー！`, "kero", "ok");
+      if (voiceType === "both" && voiceReady()) {
+        speak("コロだよー！ いっしょに がんばろうコロー！", "koro", { queue: true });
       }
     } else if (synth) { synth.cancel(); }
   });
