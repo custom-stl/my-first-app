@@ -1247,29 +1247,39 @@
     const kero = who === "kero";
     const skin = kero ? "#5fae55" : "#a3c53f";
     const edge = kero ? "#3f8038" : "#7d9c2b";
+    const face = kero ? "#86cd77" : "#c9e27a";     // くちの まわりの あかるい いろ
     const ribbon = kero ? "#e4523f" : "#2b6ca3";
     const dark = "#233b22";
+    const cheek = "#ff93a5";
+    const tongue = "#ff8f7e";
     const eyes = mood === "happy"
-      ? `<path d="M25 30 Q32 21 39 30" fill="none" stroke="${dark}" stroke-width="3.4" stroke-linecap="round"/>
-         <path d="M61 30 Q68 21 75 30" fill="none" stroke="${dark}" stroke-width="3.4" stroke-linecap="round"/>`
-      : `<circle cx="32" cy="30" r="6.4" fill="${dark}"/><circle cx="68" cy="30" r="6.4" fill="${dark}"/>
-         <circle cx="34.4" cy="27.4" r="2.1" fill="#fff"/><circle cx="70.4" cy="27.4" r="2.1" fill="#fff"/>`;
+      ? `<path d="M22.5 29 Q31 17.5 39.5 29" fill="none" stroke="${dark}" stroke-width="4" stroke-linecap="round"/>
+         <path d="M60.5 29 Q69 17.5 77.5 29" fill="none" stroke="${dark}" stroke-width="4" stroke-linecap="round"/>`
+      : `<circle cx="32.6" cy="28.4" r="7.8" fill="${dark}"/><circle cx="67.4" cy="28.4" r="7.8" fill="${dark}"/>
+         <circle cx="35.8" cy="24.8" r="3" fill="#fff"/><circle cx="70.6" cy="24.8" r="3" fill="#fff"/>
+         <circle cx="30.2" cy="32.2" r="1.6" fill="#fff" opacity=".85"/><circle cx="65" cy="32.2" r="1.6" fill="#fff" opacity=".85"/>`;
     const mouth = mood === "happy"
-      ? `<path d="M31 51 Q50 72 69 51" fill="none" stroke="${dark}" stroke-width="3.4" stroke-linecap="round"/>`
-      : `<path d="M36 56 Q50 66 64 56" fill="none" stroke="${dark}" stroke-width="3.4" stroke-linecap="round"/>`;
+      ? `<ellipse cx="50" cy="60.5" rx="5.6" ry="3.8" fill="${tongue}"/>
+         <path d="M34.5 51 Q50 66.5 65.5 51" fill="none" stroke="${dark}" stroke-width="3.6" stroke-linecap="round"/>`
+      : `<ellipse cx="50" cy="57" rx="6.4" ry="5.6" fill="${dark}"/>
+         <ellipse cx="50" cy="59.8" rx="3.4" ry="2.2" fill="${tongue}"/>`;
     return `<svg class="${cls}" viewBox="0 0 100 96" width="${size}" height="${size * 0.96}" role="img" aria-label="${kero ? "ケロちゃん" : "コロちゃん"}">
-      <ellipse cx="50" cy="57" rx="33" ry="28" fill="${skin}"/>
-      <circle cx="32" cy="29" r="14" fill="#fff" stroke="${edge}" stroke-width="2.6"/>
-      <circle cx="68" cy="29" r="14" fill="#fff" stroke="${edge}" stroke-width="2.6"/>
+      <ellipse cx="50" cy="58" rx="34" ry="28" fill="${skin}"/>
+      <ellipse cx="50" cy="57" rx="22" ry="13.8" fill="${face}" opacity=".9"/>
+      <ellipse cx="50" cy="58" rx="34" ry="28" fill="none" stroke="${edge}" stroke-width="2" opacity=".85"/>
+      <ellipse cx="29" cy="44" rx="8" ry="5" fill="#fff" opacity=".18" transform="rotate(-22 29 44)"/>
+      <circle cx="31" cy="26" r="16" fill="#fff" stroke="${edge}" stroke-width="2.6"/>
+      <circle cx="69" cy="26" r="16" fill="#fff" stroke="${edge}" stroke-width="2.6"/>
       ${eyes}
-      <circle cx="44.5" cy="45" r="1.9" fill="${edge}"/>
-      <circle cx="55.5" cy="45" r="1.9" fill="${edge}"/>
+      <circle cx="45.4" cy="45.5" r="1.8" fill="${edge}"/>
+      <circle cx="54.6" cy="45.5" r="1.8" fill="${edge}"/>
       ${mouth}
-      <ellipse cx="24" cy="57" rx="6.2" ry="4.2" fill="#ff8f7e" opacity=".6"/>
-      <ellipse cx="76" cy="57" rx="6.2" ry="4.2" fill="#ff8f7e" opacity=".6"/>
-      <path d="M50 84 L36 78 L36 90 Z" fill="${ribbon}"/>
-      <path d="M50 84 L64 78 L64 90 Z" fill="${ribbon}"/>
-      <circle cx="50" cy="84" r="4.2" fill="${ribbon}"/>
+      <circle cx="22.5" cy="58" r="6.4" fill="${cheek}" opacity=".8"/>
+      <circle cx="77.5" cy="58" r="6.4" fill="${cheek}" opacity=".8"/>
+      <path d="M50 84 C43 76.5 35 75.5 33 79.5 C31 83.5 33.5 89 38.5 89.5 C43.5 90 47.5 87.5 50 84 Z" fill="${ribbon}"/>
+      <path d="M50 84 C57 76.5 65 75.5 67 79.5 C69 83.5 66.5 89 61.5 89.5 C56.5 90 52.5 87.5 50 84 Z" fill="${ribbon}"/>
+      <circle cx="50" cy="84" r="4.6" fill="${ribbon}"/>
+      <circle cx="48.2" cy="82.4" r="1.5" fill="#fff" opacity=".45"/>
     </svg>`;
   }
   const frogPairHTML = (size = 58) => `

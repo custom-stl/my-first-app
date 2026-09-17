@@ -17,16 +17,16 @@ const SIZE = 512;                     // かたちは 512x512 で かんがえ�
 /* ========== かたちの ていぎ ========== */
 const C = {
   paper: "#f4f7fb", grid: "#dbe6f1", ink: "#1f2f45",
-  skin: "#a3c53f", edge: "#7d9c2b", dark: "#233b22", ribbon: "#2b6ca3",
-  blush: "#ff8f7e", shu: "#e4523f", ai: "#2b6ca3", green: "#6f8f3c",
+  skin: "#a3c53f", edge: "#7d9c2b", face: "#c9e27a", dark: "#233b22", ribbon: "#2b6ca3",
+  cheek: "#ff93a5", tongue: "#ff8f7e", shu: "#e4523f", ai: "#2b6ca3", green: "#6f8f3c",
 };
 
 const shapes = [];
 const rect = (x, y, w, h, fill, alpha = 1) => shapes.push({ t: "rect", x, y, w, h, fill, alpha });
-const ellipse = (cx, cy, rx, ry, fill, alpha = 1) => shapes.push({ t: "ellipse", cx, cy, rx, ry, fill, alpha });
-const circle = (cx, cy, r, fill, stroke, sw = 0) => shapes.push({ t: "circle", cx, cy, r, fill, stroke, sw, alpha: 1 });
-const poly = (pts, fill) => shapes.push({ t: "poly", pts, fill, alpha: 1 });
-const line = (pts, w, stroke) => shapes.push({ t: "line", pts, w, stroke, alpha: 1 });
+const ellipse = (cx, cy, rx, ry, fill, alpha = 1, rot = 0) => shapes.push({ t: "ellipse", cx, cy, rx, ry, fill, alpha, rot });
+const circle = (cx, cy, r, fill, stroke, sw = 0, alpha = 1) => shapes.push({ t: "circle", cx, cy, r, fill, stroke, sw, alpha });
+const poly = (pts, fill, alpha = 1) => shapes.push({ t: "poly", pts, fill, alpha });
+const line = (pts, w, stroke, alpha = 1) => shapes.push({ t: "line", pts, w, stroke, alpha });
 
 // にじかんすう（カエルの め・くち）を てんの れつに する
 function quad(p0, p1, p2, n = 18) {
@@ -35,6 +35,16 @@ function quad(p0, p1, p2, n = 18) {
     const t = i / n, u = 1 - t;
     out.push([u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0],
               u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1]]);
+  }
+  return out;
+}
+// 3じかんすう（リボンの まるみ）を てんの れつに する
+function cubic(p0, p1, p2, p3, n = 14) {
+  const out = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, u = 1 - t;
+    out.push([u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
+              u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1]]);
   }
   return out;
 }
@@ -58,23 +68,36 @@ for (let v = 96; v < 512; v += 96) {
 }
 
 /* ---------- 2. コロちゃん（オリジナルの カエル） ---------- */
-// index.html の frogSVG() と おなじ かたち（100x96 の ざひょう）を おおきく する
+// english.html / index.html の frogSVG() と おなじ かたち（100x96 の ざひょう）
 const FS = 3.0, FX = 256 - 50 * FS, FY = 236 - 48 * FS;
 const fp = ([x, y]) => [FX + x * FS, FY + y * FS];
 const fw = (w) => w * FS;
-ellipse(...fp([50, 57]), fw(33), fw(28), C.skin);
-circle(...fp([32, 29]), fw(14), "#ffffff", C.edge, fw(2.6));
-circle(...fp([68, 29]), fw(14), "#ffffff", C.edge, fw(2.6));
-line(quad([25, 30], [32, 21], [39, 30]).map(fp), fw(3.4), C.dark);
-line(quad([61, 30], [68, 21], [75, 30]).map(fp), fw(3.4), C.dark);
-circle(...fp([44.5, 45]), fw(1.9), C.edge, null, 0);
-circle(...fp([55.5, 45]), fw(1.9), C.edge, null, 0);
-line(quad([31, 51], [50, 72], [69, 51]).map(fp), fw(3.4), C.dark);
-ellipse(...fp([24, 57]), fw(6.2), fw(4.2), C.blush, 0.6);
-ellipse(...fp([76, 57]), fw(6.2), fw(4.2), C.blush, 0.6);
-poly([[50, 84], [36, 78], [36, 90]].map(fp), C.ribbon);
-poly([[50, 84], [64, 78], [64, 90]].map(fp), C.ribbon);
-circle(...fp([50, 84]), fw(4.2), C.ribbon, null, 0);
+ellipse(...fp([50, 58]), fw(34), fw(28), C.skin);
+ellipse(...fp([50, 57]), fw(22), fw(13.8), C.face, 0.9);
+line(arc(...fp([50, 58]), fw(34), fw(28), 0, 360), fw(2), C.edge, 0.85);
+ellipse(...fp([29, 44]), fw(8), fw(5), "#ffffff", 0.18, -22);
+circle(...fp([31, 26]), fw(16), "#ffffff", C.edge, fw(2.6));
+circle(...fp([69, 26]), fw(16), "#ffffff", C.edge, fw(2.6));
+line(quad([22.5, 29], [31, 17.5], [39.5, 29]).map(fp), fw(4), C.dark);
+line(quad([60.5, 29], [69, 17.5], [77.5, 29]).map(fp), fw(4), C.dark);
+circle(...fp([45.4, 45.5]), fw(1.8), C.edge, null, 0);
+circle(...fp([54.6, 45.5]), fw(1.8), C.edge, null, 0);
+ellipse(...fp([50, 60.5]), fw(5.6), fw(3.8), C.tongue);
+line(quad([34.5, 51], [50, 66.5], [65.5, 51]).map(fp), fw(3.6), C.dark);
+circle(...fp([22.5, 58]), fw(6.4), C.cheek, null, 0, 0.8);
+circle(...fp([77.5, 58]), fw(6.4), C.cheek, null, 0, 0.8);
+poly([
+  ...cubic([50, 84], [43, 76.5], [35, 75.5], [33, 79.5]),
+  ...cubic([33, 79.5], [31, 83.5], [33.5, 89], [38.5, 89.5]),
+  ...cubic([38.5, 89.5], [43.5, 90], [47.5, 87.5], [50, 84]),
+].map(fp), C.ribbon);
+poly([
+  ...cubic([50, 84], [57, 76.5], [65, 75.5], [67, 79.5]),
+  ...cubic([67, 79.5], [69, 83.5], [66.5, 89], [61.5, 89.5]),
+  ...cubic([61.5, 89.5], [56.5, 90], [52.5, 87.5], [50, 84]),
+].map(fp), C.ribbon);
+circle(...fp([50, 84]), fw(4.6), C.ribbon, null, 0);
+circle(...fp([48.2, 82.4]), fw(1.5), "#ffffff", null, 0, 0.45);
 
 /* ---------- 3. ABC ---------- */
 // 100 の ますの なかで もじを かき、よこに ならべる
@@ -106,10 +129,13 @@ function toSVG() {
   const body = shapes.map((s) => {
     const op = s.alpha < 1 ? ` opacity="${s.alpha}"` : "";
     if (s.t === "rect") return `<rect x="${f(s.x)}" y="${f(s.y)}" width="${f(s.w)}" height="${f(s.h)}" fill="${s.fill}"${op}/>`;
-    if (s.t === "ellipse") return `<ellipse cx="${f(s.cx)}" cy="${f(s.cy)}" rx="${f(s.rx)}" ry="${f(s.ry)}" fill="${s.fill}"${op}/>`;
-    if (s.t === "circle") return `<circle cx="${f(s.cx)}" cy="${f(s.cy)}" r="${f(s.r)}" fill="${s.fill}"${s.sw ? ` stroke="${s.stroke}" stroke-width="${f(s.sw)}"` : ""}/>`;
-    if (s.t === "poly") return `<path d="${d(s.pts)}Z" fill="${s.fill}"/>`;
-    return `<path d="${d(s.pts)}" fill="none" stroke="${s.stroke}" stroke-width="${f(s.w)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if (s.t === "ellipse") {
+      const rot = s.rot ? ` transform="rotate(${f(s.rot)} ${f(s.cx)} ${f(s.cy)})"` : "";
+      return `<ellipse cx="${f(s.cx)}" cy="${f(s.cy)}" rx="${f(s.rx)}" ry="${f(s.ry)}" fill="${s.fill}"${op}${rot}/>`;
+    }
+    if (s.t === "circle") return `<circle cx="${f(s.cx)}" cy="${f(s.cy)}" r="${f(s.r)}" fill="${s.fill}"${s.sw ? ` stroke="${s.stroke}" stroke-width="${f(s.sw)}"` : ""}${op}/>`;
+    if (s.t === "poly") return `<path d="${d(s.pts)}Z" fill="${s.fill}"${op}/>`;
+    return `<path d="${d(s.pts)}" fill="none" stroke="${s.stroke}" stroke-width="${f(s.w)}" stroke-linecap="round" stroke-linejoin="round"${op}/>`;
   }).join("\n  ");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="えいごノート">
   ${body}
@@ -128,7 +154,10 @@ const distSeg = (px, py, ax, ay, bx, by) => {
 };
 function bbox(s) {
   if (s.t === "rect") return [s.x, s.y, s.x + s.w, s.y + s.h];
-  if (s.t === "ellipse") return [s.cx - s.rx, s.cy - s.ry, s.cx + s.rx, s.cy + s.ry];
+  if (s.t === "ellipse") {
+    const r = Math.max(s.rx, s.ry);
+    return [s.cx - r, s.cy - r, s.cx + r, s.cy + r];
+  }
   if (s.t === "circle") { const r = s.r + s.sw / 2; return [s.cx - r, s.cy - r, s.cx + r, s.cy + r]; }
   const pad = s.t === "line" ? s.w / 2 + 1 : 1;
   const xs = s.pts.map((p) => p[0]), ys = s.pts.map((p) => p[1]);
@@ -137,7 +166,12 @@ function bbox(s) {
 function hit(s, x, y) {
   if (s.t === "rect") return x >= s.x && x < s.x + s.w && y >= s.y && y < s.y + s.h ? s.fill : null;
   if (s.t === "ellipse") {
-    const a = (x - s.cx) / s.rx, b = (y - s.cy) / s.ry;
+    let dx = x - s.cx, dy = y - s.cy;
+    if (s.rot) {                                   // かたむいた だえんは てんの ほうを もどして みる
+      const r = (-s.rot * Math.PI) / 180, c = Math.cos(r), n = Math.sin(r);
+      [dx, dy] = [dx * c - dy * n, dx * n + dy * c];
+    }
+    const a = dx / s.rx, b = dy / s.ry;
     return a * a + b * b <= 1 ? s.fill : null;
   }
   if (s.t === "circle") {
