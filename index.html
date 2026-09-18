@@ -347,7 +347,7 @@
 
   /* はんてい */
   .judge {
-    display: flex; align-items: center; gap: 12px;
+    display: flex; flex-direction: column; align-items: stretch; gap: 10px;
     border-radius: var(--r-m);
     padding: 12px 14px;
     margin-top: 12px;
@@ -355,17 +355,23 @@
     border: 1.5px solid var(--shu);
   }
   .judge.ng { background: var(--ai-soft); border-color: var(--ai); }
-  .judge .txt { flex: 1; }
-  .judge strong {
-    display: block; font-family: var(--f-disp); font-size: 1.12rem; color: var(--shu);
-    letter-spacing: .06em;
+  .says { display: grid; gap: 8px; min-width: 0; }
+  .say { display: flex; align-items: center; gap: 9px; }
+  .say .frog { flex: 0 0 36px; }
+  .say p {
+    margin: 0; font-size: .82rem; font-weight: 700; line-height: 1.6; color: var(--ink);
+    word-break: keep-all; overflow-wrap: break-word;
   }
-  .judge.ng strong { color: var(--ai); }
-  .judge small { font-size: .8rem; color: var(--ink-soft); font-weight: 700; }
-  .judge small b { font-family: var(--f-num); font-size: 1.05rem; color: var(--ink); }
+  .say strong {
+    font-family: var(--f-disp); font-weight: 400; font-size: 1.02rem;
+    color: var(--shu); letter-spacing: .04em; margin-right: .4em;
+  }
+  .judge.ng .say strong { color: var(--ai); }
+  .say p b { font-family: var(--f-num); font-size: 1.06rem; }
   .judge .next {
+    align-self: flex-end;
     border: 0; background: var(--ink); color: var(--paper);
-    border-radius: 999px; padding: 9px 16px; font-weight: 900; font-size: .85rem;
+    border-radius: 999px; padding: 10px 20px; font-weight: 900; font-size: .88rem;
     white-space: nowrap;
   }
 
@@ -436,7 +442,7 @@
   .hello { display: flex; align-items: center; gap: 13px; margin: 16px 0 22px; }
   .hello .lead { margin: 0; }
   .hello .frogs { gap: 9px; flex: 0 0 auto; }
-  .judge .frog { flex: 0 0 42px; }
+
   .cheers { display: grid; gap: 7px; margin-top: 14px; }
   .cheer {
     display: flex; align-items: center; gap: 9px;
@@ -1010,7 +1016,7 @@
     kero: { base: 700, wave: "triangle" },
     koro: { base: 900, wave: "square" },
   };
-  function babble(text, who = "kero", mood = "ok", maxChars = 8) {
+  function babble(text, who = "kero", mood = "ok", maxChars = 8, delay = 0) {
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
       const cfg = BABBLE[who] || BABBLE.kero;
@@ -1018,7 +1024,7 @@
       const chars = [...String(text).replace(/[^ぁ-んァ-ヶー一-龥0-9A-Za-z]/g, "")].slice(0, maxChars);
       const n = Math.min(maxChars, Math.max(3, chars.length));
       const step = 0.082;
-      const t0 = actx.currentTime + 0.01;
+      const t0 = actx.currentTime + 0.01 + delay;
 
       // くちの かたちの ような フィルターを とおすと こえっぽく なる
       const band = actx.createBiquadFilter();
@@ -1070,6 +1076,54 @@
     const n = currentPlayer();
     return n ? `${n}、` : "";
   };
+
+  // まちがいの しゅるいに あわせた コロの ヒント
+  const KORO_OK = ["その ちょうしコロー！", "つぎも いけるコロ！", "コロも うれしいコロー！",
+    "いいかんじコロ！", "ばっちりコロー！", "やるコロー！"];
+
+  function hintFor(q, given) {
+    const g = String(given ?? "");
+    if (q.kind === "calc") {
+      const m = q.text.match(/^(\d+)\s*([＋－])\s*(\d+)$/);
+      const add = m ? m[2] === "＋" : true;
+      const diff = Number(g) - q.answer;
+      if (Number.isFinite(diff) && diff !== 0) {
+        for (const p of [1000, 100, 10]) {
+          if (add && diff === -p) return "くりあがりを 1つ わすれて いるかもコロ";
+          if (!add && diff === p) return "くりさがりを わすれて いるかもコロ";
+        }
+        if (String(q.answer).length !== g.length) return "けたを そろえて かくと まちがえにくいコロ";
+        if (Math.abs(diff) <= 2) return "あと ちょっと！ いちのくらいから もう いちどコロ";
+      }
+      return add ? "いちのくらいから じゅんばんに たすと いいコロ"
+                 : "いちのくらいから じゅんばんに ひくと いいコロ";
+    }
+    if (q.kind === "word") {
+      const nums = (q.text.match(/\d+/g) || []).map(Number);
+      return q.answer < Math.max(0, ...nums)
+        ? "「のこり」や「ちがい」は ひきざんだコロ"
+        : "「あわせて」「ぜんぶで」は たしざんだコロ";
+    }
+    if (q.kind === "clock") {
+      const shift = q.text.match(/(\d+)ふん(あと|まえ)/);
+      if (shift) {
+        return `ながい はりを ${shift[1]}めもり ${shift[2] === "あと" ? "すすめて" : "もどして"} みようコロ`;
+      }
+      const a = q.answer;
+      const gm = g.match(/(\d+)じ(?:(\d+)ふん)?/);
+      if (a && typeof a === "object" && gm) {
+        const gh = Number(gm[1]), gmin = Number(gm[2] || 0);
+        // みじかい はりと ながい はりの とりちがえ
+        if (gh === (Math.round(a.m / 5) || 12) || gmin === (a.h % 12) * 5) {
+          return "みじかい はりが「じ」、ながい はりが「ふん」だコロ";
+        }
+        if (gh !== a.h && gmin === a.m) return "みじかい はりが つぎの すうじに いく まえは、まだ まえの「じ」だコロ";
+        if (gh === a.h) return "ながい はりは すうじ 1つで 5ふん、1めもりで 1ふんだコロ";
+      }
+      return "みじかい はりと ながい はりを じゅんばんに みようコロ";
+    }
+    return "つぎは できるコロ！";
+  }
 
   // キャラクターの こえで しらせる。アニメごえ＋ことば／アニメごえ だけ の きりかえ。
   function voiceSay(line, who, mood = "ok") {
@@ -2111,14 +2165,34 @@
     S.results[S.i] = { q: S.qs[S.i], ok, given };
     S.streak = ok ? S.streak + 1 : 0;
     S.best = Math.max(S.best, S.streak);
+    const q = S.qs[S.i];
     const praise = S.streak >= 3 ? `${S.streak}もん れんぞく せいかい！` : pick(PRAISE);
-    // がめんに でて いる カエルと おなじ 子が しゃべる
-    const who = S.i % 2 ? "koro" : "kero";
-    const sfx = suffixOf(who);
-    const line = ok
-      ? `${callName()}${S.streak >= 3 ? `${S.streak}もん れんぞく せいかい${sfx}ー！` : `${pick(SAY_OK)}${sfx}ー！`}`
-      : `${callName()}おしい${sfx}。こたえは ${sayable(S.qs[S.i].answerText)} だよー`;
-    if (!voiceSay(line, who, ok ? "ok" : "ng")) beep(ok ? "ok" : "ng");
+    // ケロが しらせて ほめる、コロが フォローする（1もんごとに ふたりで）
+    const keroText = ok ? praise : `こたえは <b>${esc(q.answerText)}</b>`;
+    const koroText = ok
+      ? (S.streak >= 3 ? `${S.streak}もん れんぞくコロー！ すごいコロ！` : pick(KORO_OK))
+      : hintFor(q, given);
+    const keroSay = ok
+      ? `${callName()}${S.streak >= 3 ? `${S.streak}もん れんぞく せいかいケロー！` : `${pick(SAY_OK)}ケロー！`}`
+      : `${callName()}おしいケロ。こたえは ${sayable(q.answerText)} だよー`;
+    const koroSay = ok ? koroText : koroText.replace(/<[^>]+>/g, "");
+    const mood = ok ? "ok" : "ng";
+
+    let sounded = false;
+    if (voiceOn) {
+      const spoke = voiceType === "both" && speak(keroSay, "kero");
+      if (spoke) {
+        speak(koroSay, "koro", { queue: true });     // ケロの あとに つづけて
+        babble(keroSay, "kero", mood, 3);
+        sounded = true;
+      } else {
+        // アニメごえ だけの ときは ふたりの こえを じゅんばんに
+        const b1 = babble(keroSay, "kero", mood, 6);
+        const b2 = babble(koroSay, "koro", mood, 6, 0.55);
+        sounded = b1 || b2;
+      }
+    }
+    if (!sounded) beep(ok ? "ok" : "ng");
     renderMarks();
 
     if (ok) {
@@ -2129,16 +2203,22 @@
     }
     const last = S.i === TOTAL - 1;
     $("judge").innerHTML = `<div class="judge ${ok ? "" : "ng"}">
-      ${frogSVG(S.i % 2 ? "koro" : "kero", { size: 42, mood: ok ? "happy" : "open" })}
-      <div class="txt">
-        <strong>${ok ? "せいかい！" : "おしい！"}</strong>
-        <small>${ok ? praise : `こたえは <b>${S.qs[S.i].answerText}</b>`}</small>
+      <div class="says">
+        <div class="say">
+          ${frogSVG("kero", { size: 36, mood: ok ? "happy" : "open" })}
+          <p><strong>${ok ? "せいかい！" : "おしい！"}</strong>${keroText}</p>
+        </div>
+        <div class="say">
+          ${frogSVG("koro", { size: 36, mood: ok ? "happy" : "open" })}
+          <p>${koroText}</p>
+        </div>
       </div>
       <button type="button" class="next" id="next">${last ? "けっかを みる" : "つぎの もんだい"}</button>
     </div>`;
     $("input").querySelectorAll("button").forEach((b) => { b.disabled = true; });
     clearTimeout(S.timer);
-    if (ok) S.timer = setTimeout(nextQuestion, 1100);
+    // ふたりが しゃべる ときは、しゃべりきる まで すこし まつ
+    if (ok) S.timer = setTimeout(nextQuestion, voiceOn && voiceType === "both" ? 1800 : 1200);
   }
 
   function nextQuestion() {
