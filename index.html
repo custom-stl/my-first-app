@@ -1171,15 +1171,46 @@
     } catch { return false; }
   }
 
+  // わくの 中（iframe）で うごいて いるか。わくの 中では マイクが つかえない ことが おおい。
+  const inFrame = () => { try { return window.self !== window.top; } catch { return true; } };
+  // ファイルを そのまま ひらいて いるか。
+  // （file:// は Chrome では isSecureContext が true に なるので、プロトコルで みる）
+  const openedAsFile = () => location.protocol === "file:";
+  const micBlocked = () => openedAsFile() || window.isSecureContext === false;
+  const FILE_MSG = "この ひらきかた（ファイルを そのまま ひらく）では マイクが つかえません。"
+    + "<br>https の ページ、または http://localhost で ひらくと ろくおん できます。";
+
+  // マイクが つかえない りゆうは いくつも あるので、わけて つたえる
+  function micError(e) {
+    const name = String(e?.name || "");
+    if (micBlocked()) return FILE_MSG;
+    if (inFrame()) {
+      return "この ページは ほかの ページの わくの 中で ひらかれて いるので、マイクが つかえません。"
+        + "<br>あたらしい タブで ページを ひらくと ろくおん できます。";
+    }
+    if (name === "NotAllowedError" || name === "SecurityError") {
+      return "マイクが きょか されて いません。<br>アドレスばーの マイクの マーク（または かぎの マーク）から「きょか」に して、もう いちど おして ください。";
+    }
+    if (name === "NotFoundError" || name === "OverconstrainedError") {
+      return "マイクが みつかりません。マイクの ついた たんまつで ひらいて ください。";
+    }
+    if (name === "NotReadableError") {
+      return "マイクが ほかの アプリで つかわれて います。そちらを とじて から もう いちど おして ください。";
+    }
+    return `マイクを つかえませんでした（${esc(name || "げんいん ふめい")}）。`;
+  }
+
   // マイクから とる
   async function startRec(slotId, onTick, onDone) {
     if (recorder) return { error: "いま ろくおん中です" };
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      return { error: "この ブラウザでは ろくおん できません" };
+      return { error: "この ブラウザでは ろくおん できません。Chrome や Safari で ひらいて ください。" };
     }
+    // ファイルを そのまま ひらいて いる ときは ブラウザが マイクを ゆるさない
+    if (micBlocked()) return { error: FILE_MSG };
     let stream;
     try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
-    catch { return { error: "マイクを つかう きょかが ひつようです（https の ページで ひらいて ください）" }; }
+    catch (e) { return { error: micError(e) }; }
     try {
       const mime = ["audio/webm", "audio/mp4", ""].find((m) => !m || MediaRecorder.isTypeSupported?.(m));
       recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
@@ -2005,7 +2036,7 @@
   function renderRecBox() {
     const recs = loadRecs();
     const supported = Boolean(navigator.mediaDevices?.getUserMedia) && typeof MediaRecorder !== "undefined";
-    const secure = window.isSecureContext !== false;
+    const secure = !micBlocked();
     $("rec-toggle").textContent = recOn ? "ろくおんした こえを つかう: オン" : "ろくおんした こえを つかう: オフ";
     $("rec-toggle").className = recOn ? "go2" : "";
     $("rec-pitch").value = String(recPitch());
@@ -2027,8 +2058,14 @@
       </li>`;
     }).join("");
 
-    if (!supported || !secure) {
-      srvMsg("この ひらきかたでは ろくおん できません。<br>https の ページ（GitHub Pages など）で ひらくと つかえます。", "ng", "rec-msg");
+    if (!supported) {
+      srvMsg("この ブラウザでは ろくおん できません。Chrome や Safari で ひらいて ください。", "ng", "rec-msg");
+    } else if (!secure) {
+      srvMsg(FILE_MSG, "ng", "rec-msg");
+    } else if (inFrame()) {
+      srvMsg("この ページは ほかの ページの わくの 中で ひらかれて います。"
+        + "<br>マイクを つかうには、<b>あたらしい タブで ページを ひらいて</b> ください。"
+        + "<br>（ろくおんずみの こえを ならす のは ここでも できます）", "ng", "rec-msg");
     } else if (Object.keys(recs).length === 0) {
       srvMsg("「● ろくおん」を おして、3びょうまでで こえを いれて ください。<br>ろくおんした こえは この たんまつの 中だけに のこります。", "idle", "rec-msg");
     } else if (!recOn) {
