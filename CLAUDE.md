@@ -54,4 +54,7 @@ node tests/verify-api.mjs         # きろくサーバー（server/）のAPIを�
 - 表示は**ライト／ダークの両テーマ**を確認する。色は `:root` のトークン経由で使う
 - グラフの2色は `dataviz` skill の `validate_palette.js` で検証済み（ライト `#e4523f`/`#2b6ca3`、ダーク `#e8603f`/`#3f8fd0`）。変えるなら再検証する
 - 記録・録音した声・設定はすべて `localStorage`（端末内）。サーバーに送るのは記録だけ
+- `localStorage` はブラウザ側の都合で消える（URLが変わる／iOS Safariの7日ルール／データ削除）。
+  「バックアップ（こえと きろく）」でファイルに出し入れできるので、消えた相談が来たらまずそれを案内する。
+  `store.set` は失敗すると false を返す（保存できたか必ず見る。黙って成功扱いにしない）
 - 自分で `display` を指定した要素にも `hidden` が効くよう `[hidden]{display:none!important}` を入れてある（消さない）

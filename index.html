@@ -870,6 +870,16 @@
     </section>
 
     <section class="sheet">
+      <h3 class="sec-label">バックアップ（こえと きろく）</h3>
+      <p class="srv-msg idle" id="bk-msg"></p>
+      <div class="mini-btns">
+        <button type="button" class="go2" id="bk-save">ファイルに ほぞん</button>
+        <button type="button" id="bk-load">ファイルから もどす</button>
+      </div>
+      <input type="file" id="bk-file" accept="application/json,.json" hidden>
+    </section>
+
+    <section class="sheet">
       <h3 class="sec-label">サーバー（みんなの きろく）</h3>
       <p class="srv-msg idle" id="srv-msg"></p>
       <div class="field-row">
@@ -951,7 +961,8 @@
   };
   const store = {
     get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch { /* 非対応でも動く */ } },
+    // ほぞんできたか かえす（いっぱいの ときや つかえない ときは false）
+    set(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } },
   };
 
   const TOTAL = 10;
@@ -1135,7 +1146,7 @@
     try { const v = JSON.parse(store.get(REC_KEY, "{}")); return v && typeof v === "object" ? v : {}; }
     catch { return {}; }
   }
-  const saveRecs = (recs) => store.set(REC_KEY, JSON.stringify(recs));
+  const saveRecs = (recs) => store.set(REC_KEY, JSON.stringify(recs));   // false なら ほぞん できて いない
 
   // ほぞんして ある こえを、すぐ ならせる かたちに しておく
   async function primeRecs() {
@@ -1229,7 +1240,10 @@
           for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
           const recs = loadRecs();
           recs[slotId] = { mime: blob.type, data: btoa(bin), size: bytes.length, at: Date.now() };
-          saveRecs(recs);
+          if (!saveRecs(recs)) {
+            onDone?.({ error: "たんまつに ほぞん できませんでした。<br>ほかの こえを けすか、もっと みじかく とりなおして ください。" });
+            return;
+          }
           delete recBuf[slotId];
           await primeRecs();
           onDone?.({ ok: true, size: bytes.length });
@@ -1252,6 +1266,81 @@
   function stopRec() {
     clearInterval(recTimer);
     try { recorder?.state === "recording" && recorder.stop(); } catch { /* すでに とまって いる */ }
+  }
+
+  /* ---------- バックアップ（こえと きろくを ファイルに のこす） ---------- */
+  // ブラウザの ほぞんは、データを けしたり しばらく つかわなかったり すると
+  // ブラウザじしんに けされる ことが ある（とくに iPhone/iPad の Safari）。
+  // ファイルに だして おけば もどせる。べつの たんまつに うつす のにも つかえる。
+  function backupData() {
+    const recs = loadRecs();
+    return {
+      app: "sansu-note", v: 1, at: new Date().toISOString(),
+      voices: recs,
+      voicePitch: store.get(REC_PITCH_KEY, "1.3"),
+      recOn: store.get(REC_ON_KEY, "1"),
+      voiceType: store.get(VOICE_TYPE_KEY, "both"),
+      players: loadPlayers(),
+      current: store.get(CURRENT_KEY, ""),
+      log: loadLogAll(),
+      // サーバーの URL と あいことばは わざと いれない（ファイルに ひみつを のこさない ため）
+    };
+  }
+  function backupName() {
+    const d = new Date();
+    return `sansu-note-backup-${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}.json`;
+  }
+  function saveBackupFile() {
+    try {
+      const blob = new Blob([JSON.stringify(backupData())], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = backupName();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      return true;
+    } catch { return false; }
+  }
+  // もどす。こえは いれかえ、きろくと 人は いまの ものと あわせる。
+  function restoreBackup(json) {
+    if (!json || json.app !== "sansu-note") return { error: "さんすうノートの バックアップ ファイルでは ないようです。" };
+    let voices = 0, sets = 0;
+    if (json.voices && typeof json.voices === "object") {
+      const recs = loadRecs();
+      for (const [id, rec] of Object.entries(json.voices)) {
+        if (!REC_SLOTS.some((s) => s.id === id) || typeof rec?.data !== "string") continue;
+        recs[id] = { mime: String(rec.mime || "audio/webm"), data: rec.data, size: Number(rec.size) || 0, at: Number(rec.at) || Date.now() };
+        voices++;
+      }
+      if (voices && !saveRecs(recs)) return { error: "こえを ほぞん できませんでした（たんまつの ほぞんりょうが たりません）。" };
+      for (const id of Object.keys(json.voices)) delete recBuf[id];
+    }
+    if (Array.isArray(json.log)) {
+      const mine = loadLogAll();
+      const seen = new Set(mine.map((r) => `${r.p || ""}|${r.t}`));
+      for (const r of json.log) {
+        if (!r || typeof r.t !== "number" || !Array.isArray(r.qs)) continue;
+        const key = `${r.p || ""}|${r.t}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        mine.push(r);
+        sets++;
+      }
+      mine.sort((a, b) => a.t - b.t);
+      store.set(LOG_KEY, JSON.stringify(mine.slice(-LOG_MAX)));
+    }
+    if (Array.isArray(json.players)) {
+      const names = [...new Set([...loadPlayers(), ...json.players.filter((n) => typeof n === "string" && n.trim())])];
+      savePlayers(names);
+      if (json.current && names.includes(json.current) && !currentPlayer()) store.set(CURRENT_KEY, json.current);
+    }
+    if (json.voicePitch) store.set(REC_PITCH_KEY, String(json.voicePitch));
+    if (json.recOn) { store.set(REC_ON_KEY, String(json.recOn)); recOn = String(json.recOn) === "1"; }
+    if (json.voiceType) { store.set(VOICE_TYPE_KEY, String(json.voiceType)); voiceType = String(json.voiceType) === "anime" ? "anime" : "both"; }
+    return { ok: true, voices, sets };
   }
 
   // まちがいの しゅるいに あわせた コロの ヒント
@@ -2071,8 +2160,21 @@
     } else if (!recOn) {
       srvMsg("ろくおんは ありますが、いまは つかわない せっていです。", "idle", "rec-msg");
     } else {
-      srvMsg(`ろくおんした こえで しらせます（${Object.keys(recs).length}/4）。ない ぶんは アニメごえに なります。`, "idle", "rec-msg");
+      srvMsg(`ろくおんした こえで しらせます（${Object.keys(recs).length}/4）。ない ぶんは アニメごえに なります。`
+        + `<br>ブラウザの データを けすと こえも きえます。下の「バックアップ」で ファイルに のこせます。`, "idle", "rec-msg");
     }
+  }
+
+  // ろくおんの らんと バックアップの けんすうは いっしょに あたらしく する
+  const renderRecAll = () => { renderRecBox(); renderBkBox(); };
+
+  function renderBkBox() {
+    const recs = Object.keys(loadRecs()).length;
+    const sets = loadLogAll().length;
+    srvMsg(`いまの なかみ: こえ <b>${recs}</b>/4・きろく <b>${sets}</b>セット。`
+      + `<br>ファイルに ほぞんして おけば、ブラウザの データが きえても もどせます。べつの たんまつに うつす のにも つかえます。`
+      + (inFrame() ? `<br>（この わくの 中では ファイルの ほぞんが できません。あたらしい タブで ひらいて ください）` : ""),
+      "idle", "bk-msg");
   }
 
   function renderSrvBox() {
@@ -2580,7 +2682,7 @@
   $("quit").addEventListener("click", () => show("home"));
   function openHistory() {
     S.histPlayer = currentPlayer();      // ひらいた ときは いま やって いる 人
-    renderHistory(); renderVoiceBox(); renderRecBox(); renderSrvBox(); show("history");
+    renderHistory(); renderVoiceBox(); renderRecBox(); renderBkBox(); renderSrvBox(); show("history");
   }
   // きろく がめんで だれの ぶんを みるか
   $("hist-who").addEventListener("click", (e) => {
@@ -2649,7 +2751,7 @@
   $("rec-toggle").addEventListener("click", () => {
     recOn = !recOn;
     store.set(REC_ON_KEY, recOn ? "1" : "0");
-    renderRecBox();
+    renderRecAll();
     if (recOn) playRec("kero", "ok");
   });
   $("rec-pitch").addEventListener("input", () => {
@@ -2665,7 +2767,7 @@
       const res = await startRec(id,
         (left) => { recBtn.textContent = `とめる（${(left / 1000).toFixed(1)}）`; },
         (done) => {
-          renderRecBox();
+          renderRecAll();
           if (done.error) srvMsg(done.error, "ng", "rec-msg");
           else {
             srvMsg("ろくおん できました。「▶ きいて みる」で たしかめて ください。", "ok", "rec-msg");
@@ -2697,12 +2799,40 @@
         delete recs[id];
         saveRecs(recs);
         delete recBuf[id];
-        renderRecBox();
+        renderRecAll();
       } else {
         delBtn.dataset.confirm = "1";
         delBtn.textContent = "ほんとうに けす？";
       }
     }
+  });
+
+  // バックアップ
+  $("bk-save").addEventListener("click", () => {
+    if (saveBackupFile()) {
+      srvMsg("ファイルに ほぞんしました。なくさない ところに おいて ください。", "ok", "bk-msg");
+    } else {
+      srvMsg("ファイルに ほぞん できませんでした。あたらしい タブで ページを ひらいて ためして ください。", "ng", "bk-msg");
+    }
+  });
+  $("bk-load").addEventListener("click", () => { $("bk-file").value = ""; $("bk-file").click(); });
+  $("bk-file").addEventListener("change", async () => {
+    const f = $("bk-file").files?.[0];
+    if (!f) return;
+    if (f.size > 8 * 1024 * 1024) {
+      srvMsg("ファイルが おおきすぎます。", "ng", "bk-msg");
+      return;
+    }
+    srvMsg("よみこんで います…", "idle", "bk-msg");
+    try {
+      const json = JSON.parse(await f.text());
+      const res = restoreBackup(json);
+      if (res.error) { srvMsg(res.error, "ng", "bk-msg"); return; }
+      await primeRecs();
+      renderPlayers(); renderHistory(); renderVoiceBox(); renderRecAll(); teaseHistory();
+      srvMsg(`もどしました。こえ <b>${res.voices}</b>こ・きろく <b>${res.sets}</b>セットを よみこみました。`, "ok", "bk-msg");
+      if (res.voices) playRec("kero", "ok");
+    } catch { srvMsg("ファイルを よめませんでした。", "ng", "bk-msg"); }
   });
 
   // サーバー
