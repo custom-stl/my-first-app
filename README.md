@@ -48,6 +48,23 @@ URLを開くだけで使えます。スマホ・タブレットのブラウザ�
 
 フォルダごと [Netlify Drop](https://app.netlify.com/drop) にドラッグするだけで、ログイン不要の公開URLがもらえます（ビルド不要、リポジトリを公開する必要もありません）。Cloudflare Pages や Vercel でも同様です。
 
+**2つのアプリは1回のドロップで両方とも公開されます。** 公開に必要なのは次の13ファイルだけです（`README.md` / `server/` / `tools/` / `.github/` は不要）。
+
+```
+index.html  english.html  config.js
+manifest.webmanifest     icon.svg     icon-192.png     icon-512.png     icon-180.png
+manifest-en.webmanifest  icon-en.svg  icon-en-192.png  icon-en-512.png  icon-en-180.png
+```
+
+| ページ | URL |
+| --- | --- |
+| さんすうノート | `https://<サイト名>.netlify.app/` |
+| えいごノート | `https://<サイト名>.netlify.app/english.html` |
+
+どちらのホーム画面にも相手のアプリへのリンクがあるので、行き来できます。えいごノートを「ホーム画面に追加」すると、ABCのアイコンで英語アプリだけを直接ひらけます。
+
+> **更新するとき**: Netlify Drop にもう一度ドロップすると**別のURL**の新しいサイトになります。同じURLを使い続けたい場合は、Netlify にログインして（サイトを自分のアカウントに claim して）、そのサイトの **Deploys** 画面にフォルダをドラッグしてください。
+
 記録は端末のブラウザに保存される（`localStorage`）ため、公開URLで使っても**他の人に自分の記録は見えません**。逆に、同じ端末の同じブラウザでないと記録は引き継がれません。
 
 ---
