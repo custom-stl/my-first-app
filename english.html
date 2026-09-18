@@ -672,6 +672,19 @@
   .peek-en b { color: var(--shu); }
   .peek-emoji { font-size: 1.6rem; line-height: 1.35; text-align: center; }
 
+  /* もんだいを だす ケロ・コロ */
+  .asker { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+  .asker .frog { flex: 0 0 auto; margin-top: -1px; }
+  .asker .ask { margin: 0; flex: 1; }
+  .judge { flex-wrap: wrap; }
+  .judge .pair { display: flex; flex: 0 0 auto; }
+  .judge .pair .frog:last-child { margin-left: -11px; }
+  .follow {
+    flex-basis: 100%; width: 100%; margin: 1px 0 0;
+    font-size: .78rem; font-weight: 700; color: var(--ink-soft); line-height: 1.7;
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+
   /* 花まるは シートの まんなかに（したの「きく」ボタンに かぶらない ように） */
   .maru {
     top: 50%; bottom: auto;
@@ -798,7 +811,10 @@
     </div>
 
     <section class="sheet" id="sheet">
-      <p class="ask" id="ask"></p>
+      <div class="asker">
+        <div id="askfrog" aria-hidden="true"></div>
+        <p class="ask" id="ask"></p>
+      </div>
       <div id="body"></div>
     </section>
 
@@ -1338,7 +1354,7 @@
       };
       if (!opt.queue) synth.cancel();
       say();
-      if (opt.twice) setTimeout(say, 0);
+      if (opt.twice) say();          // 2かいめも ここで ならべて おく（あとの こえと まざらない）
       return true;
     } catch { return false; }
   }
@@ -1369,6 +1385,10 @@
   const SAY_OK = ["せいかい", "やったね", "すごーい", "ばっちり", "だいせいかい", "よく できました",
     "はなまる", "じょうずー", "かんぺき", "うれしい", "ピンポーン", "その ちょうし"];
   const SAY_NG = ["おしい", "ざんねん", "ドンマイ", "もうちょっと", "あとすこし"];
+  // あいぼうの カエルが かける ことば（さんすうノートの ように ふたりで みている）
+  const FOLLOW_NG = ["だいじょうぶ！ いっしょに おぼえよう。", "つぎは きっと できるよ。",
+    "まちがえても へいき。よく きいて いるね。", "あきらめないで やって いるの、えらい！"];
+  const FOLLOW_OK = ["ハイタッチ！", "ふたりとも 大よろこび！", "すごい いきおいだね！", "この ちょうしで！"];
   const suffixOf = (who) => (who === "kero" ? "ケロ" : "コロ");
 
   /* ========== ケロちゃんと コロちゃん ========== */
@@ -1412,6 +1432,7 @@
       <circle cx="48.2" cy="82.4" r="1.5" fill="#fff" opacity=".45"/>
     </svg>`;
   }
+  const frogName = (who) => (who === "kero" ? "ケロちゃん" : "コロちゃん");
   const frogPairHTML = (size = 58) => `
     <figure>${frogSVG("kero", { size })}<figcaption>ケロちゃん</figcaption></figure>
     <figure>${frogSVG("koro", { size })}<figcaption>コロちゃん</figcaption></figure>`;
@@ -1907,7 +1928,7 @@
   const S = {
     mode: "listen",
     lv: Math.min(3, Math.max(1, Number(store.get("eg-lv", "1")) || 1)),
-    qs: [], i: 0, results: [], streak: 0, best: 0,
+    qs: [], i: 0, results: [], streak: 0, best: 0, missRun: 0,
     locked: false, saved: false, timer: 0, vtimer: 0,
   };
 
@@ -1935,6 +1956,7 @@
     S.results = [];
     S.streak = 0;
     S.best = 0;
+    S.missRun = 0;
     S.saved = false;
     show("quiz");
     renderQuestion();
@@ -1960,8 +1982,17 @@
     renderMarks();
     // こえが つかえない ときは カタカナの よみを だして、もんだいを とけるように する
     const canHear = enReady();
+    // この もんだいを だす カエル（こたえあわせでも おなじ子が でて くる）
+    const askerWho = S.i % 2 ? "koro" : "kero";
+    const askerName = frogName(askerWho);
+    const askText = canHear ? q.ask : q.ask.replace("きこえた", "この");
+    const lead = q.kind === "word" ? `${askerName}に おしえて！`
+      : q.kind === "talk" ? `${askerName}が いったよ。`
+      : canHear && q.hideKana ? `${askerName}が いうよ。`
+      : `${askerName}から しつもん！`;
+    $("askfrog").innerHTML = frogSVG(askerWho, { size: 44, mood: "open" });
     $("ask").className = "ask" + (q.one ? " small" : "");
-    $("ask").textContent = canHear ? q.ask : q.ask.replace("きこえた", "この");
+    $("ask").textContent = `${lead} ${askText}`;
     const showKana = q.kana && (!canHear || !q.hideKana);
     const hint = showKana ? `<p class="hint">よみかた <b>${esc(q.kana)}</b></p>` : "";
     const btnLabel = canHear ? (q.bodyHTML ? "えいごを きく" : "もういちど きく")
@@ -2001,8 +2032,16 @@
     S.streak = ok ? S.streak + 1 : 0;
     S.best = Math.max(S.best, S.streak);
     const praise = S.streak >= 3 ? `${S.streak}もん れんぞく せいかい！` : pick(PRAISE);
-    const who = S.i % 2 ? "koro" : "kero";
+    const who = S.i % 2 ? "koro" : "kero";     // もんだいを だした子が こたえあわせも する
+    const pal = who === "kero" ? "koro" : "kero";
     const sfx = suffixOf(who);
+    S.missRun = ok ? 0 : S.missRun + 1;
+
+    // あいぼうの カエルの ひとこと（れんぞく せいかい／2もん つづけて まちがえた とき）
+    const follow = ok
+      ? (S.streak >= 3 ? `${frogName(pal)}も ${pick(FOLLOW_OK)}` : "")
+      : (S.missRun >= 2 ? `${frogName(pal)}「${pick(FOLLOW_NG)}」` : "");
+    const followSay = !ok && S.missRun >= 2 ? `${pick(FOLLOW_NG)}${suffixOf(pal)}ー！` : "";
 
     // ① まず おとで しらせる（ピンポーン／ぽよん）
     if (ok) sfxOk(); else sfxNg();
@@ -2016,6 +2055,7 @@
     S.vtimer = setTimeout(() => {
       const spoke = speak(line, who);
       if (q.after) speakEn(q.after, { queue: spoke, rate: q.rate, twice: !ok });
+      if (followSay) speak(followSay, pal, { queue: true });   // あいぼうが はげます
     }, 430);
     renderMarks();
 
@@ -2033,13 +2073,18 @@
       setTimeout(() => $("sheet").classList.remove("shake"), 340);
     }
     const last = S.i === TOTAL - 1;
+    // れんぞく せいかいの ときは ふたり そろって よろこぶ
+    const faces = S.streak >= 3
+      ? `<div class="pair">${frogSVG(who, { size: 38 })}${frogSVG(pal, { size: 38 })}</div>`
+      : frogSVG(who, { size: 42, mood: ok ? "happy" : "open" });
     $("judge").innerHTML = `<div class="judge ${ok ? "" : "ng"}">
-      ${frogSVG(who, { size: 42, mood: ok ? "happy" : "open" })}
+      ${faces}
       <div class="txt">
         <strong>${ok ? "せいかい！" : "おしい！"}</strong>
         <small>${ok ? esc(praise) : `こたえは <b class="en">${esc(q.answerText)}</b>`}</small>
       </div>
       <button type="button" class="next" id="next">${last ? "けっかを みる" : "つぎの もんだい"}</button>
+      ${follow ? `<p class="follow">${esc(follow)}</p>` : ""}
     </div>`;
     clearTimeout(S.timer);
     // こえを さいごまで きいてから つぎへ（こえが ない ときは はやめに）
@@ -2086,6 +2131,11 @@
       if (c > 0) cheers.push(`${LABEL[kind]}が ${c}もん せいかい！`);
     }
     if (S.best >= 3) cheers.push(`${S.best}もん れんぞくで せいかい！`);
+    // さいごは ケロちゃん・コロちゃんからの ひとこと
+    cheers.push(n === TOTAL ? "ケロちゃんも コロちゃんも 大よろこび！"
+      : n >= 6 ? "ケロちゃんと コロちゃんが ハイタッチ して くれたよ！"
+      : n >= 1 ? "コロちゃん「ここまで できたね。いっしょに れんしゅう しよう」"
+      : "ケロちゃん「さいごまで やったね。また いっしょに やろう」");
 
     const key = `eg-best-${currentPlayer()}-${S.mode}-${S.lv}`;
     const prev = Number(store.get(key, "-1"));
