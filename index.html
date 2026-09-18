@@ -567,6 +567,28 @@
   .g-bar i { display: block; height: 100%; background: var(--chart-ok); border-radius: 999px; }
   .g-num { flex: 0 0 auto; font-family: var(--f-num); font-weight: 800; color: var(--ink-soft); }
   .g-num b { color: var(--ink); }
+  .recs { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .recs li {
+    border-top: 1px dashed var(--line); padding-top: 10px;
+    display: grid; gap: 7px;
+  }
+  .recs li:first-child { border-top: 0; padding-top: 0; }
+  .rec-h { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .rec-h b { font-size: .86rem; }
+  .rec-h span { font-size: .74rem; color: var(--ink-soft); font-weight: 700; }
+  .rec-h .state { margin-left: auto; white-space: nowrap; }
+  .rec-h .state.done { color: var(--chart-ok); }
+  .rec-btns { display: flex; gap: 7px; flex-wrap: wrap; }
+  .rec-btns button {
+    border: 1.5px solid var(--line); background: var(--card);
+    border-radius: var(--r-m); padding: 8px 13px;
+    font-size: .8rem; font-weight: 700;
+  }
+  .rec-btns button.rec { border-color: var(--shu); color: var(--shu); }
+  .rec-btns button.rec[data-on="1"] { background: var(--shu); color: #fff; }
+  .rec-btns button[disabled] { opacity: .45; }
+  .field-row input[type="range"] { padding: 0; accent-color: var(--shu); }
+  #rec-pitch-v { font-family: var(--f-num); font-weight: 800; color: var(--ink); }
   .person-more {
     width: 100%; margin-top: 12px;
     border: 1.5px solid var(--line); background: var(--card-2);
@@ -835,6 +857,19 @@
     </section>
 
     <section class="sheet">
+      <h3 class="sec-label">じぶんの こえを つかう（ろくおん）</h3>
+      <p class="srv-msg idle" id="rec-msg"></p>
+      <div class="mini-btns" style="margin-bottom:12px">
+        <button type="button" id="rec-toggle">ろくおんした こえを つかう</button>
+      </div>
+      <div class="field-row">
+        <label for="rec-pitch">こえの たかさ（はやさ） <span id="rec-pitch-v"></span></label>
+        <input type="range" id="rec-pitch" min="1" max="1.8" step="0.05">
+      </div>
+      <ul class="recs" id="recs"></ul>
+    </section>
+
+    <section class="sheet">
       <h3 class="sec-label">サーバー（みんなの きろく）</h3>
       <p class="srv-msg idle" id="srv-msg"></p>
       <div class="field-row">
@@ -1076,6 +1111,117 @@
     const n = currentPlayer();
     return n ? `${n}、` : "";
   };
+
+  /* ---------- じぶんの こえを ろくおんして つかう ---------- */
+  // マイクで とった こえを たんまつの なかに ためて、はやさを あげて ならす。
+  // はやさを あげると たかい こえに なるので、おとなの こえでも キャラクターの こえに なる。
+  const REC_KEY = "sn-rec", REC_ON_KEY = "sn-rec-on", REC_PITCH_KEY = "sn-rec-pitch";
+  const REC_MAX_MS = 3000;                 // 1つ 3びょうまで
+  const REC_SLOTS = [
+    { id: "kero-ok", who: "kero", label: "ケロ・ほめる", eg: "「せいかい！ やったね！」" },
+    { id: "kero-ng", who: "kero", label: "ケロ・しらせる", eg: "「おしい！」" },
+    { id: "koro-ok", who: "koro", label: "コロ・ほめる", eg: "「その ちょうし！」" },
+    { id: "koro-ng", who: "koro", label: "コロ・フォロー", eg: "「つぎは できるよ！」" },
+  ];
+  let recOn = store.get(REC_ON_KEY, "1") === "1";
+  const recPitch = () => {
+    const v = Number(store.get(REC_PITCH_KEY, "1.3"));
+    return Number.isFinite(v) ? Math.min(1.8, Math.max(1, v)) : 1.3;
+  };
+  const recBuf = {};                        // ならす ように ほどいた おと
+  let recorder = null, recTimer = null, recSlotNow = "";
+
+  function loadRecs() {
+    try { const v = JSON.parse(store.get(REC_KEY, "{}")); return v && typeof v === "object" ? v : {}; }
+    catch { return {}; }
+  }
+  const saveRecs = (recs) => store.set(REC_KEY, JSON.stringify(recs));
+
+  // ほぞんして ある こえを、すぐ ならせる かたちに しておく
+  async function primeRecs() {
+    if (!window.AudioContext && !window.webkitAudioContext) return;
+    const recs = loadRecs();
+    for (const [id, rec] of Object.entries(recs)) {
+      if (recBuf[id] || !rec?.data) continue;
+      try {
+        actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+        const bin = atob(rec.data);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        recBuf[id] = await actx.decodeAudioData(bytes.buffer);
+      } catch { /* ほどけない ものは つかわない */ }
+    }
+  }
+  const hasRec = (who, kind) => Boolean(recOn && recBuf[`${who}-${kind}`]);
+
+  function playRec(who, kind, opt = {}) {
+    const id = `${who}-${kind}`;
+    if (!recOn || !recBuf[id]) return false;
+    try {
+      actx.resume?.();
+      const src = actx.createBufferSource();
+      src.buffer = recBuf[id];
+      // はやさ＝こえの たかさ。コロは ケロより すこし たかく。
+      src.playbackRate.value = Math.min(2.2, recPitch() * (who === "koro" ? 1.12 : 1));
+      const g = actx.createGain();
+      g.gain.value = 1;
+      src.connect(g); g.connect(actx.destination);
+      src.start(actx.currentTime + (opt.delay || 0));
+      return true;
+    } catch { return false; }
+  }
+
+  // マイクから とる
+  async function startRec(slotId, onTick, onDone) {
+    if (recorder) return { error: "いま ろくおん中です" };
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      return { error: "この ブラウザでは ろくおん できません" };
+    }
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch { return { error: "マイクを つかう きょかが ひつようです（https の ページで ひらいて ください）" }; }
+    try {
+      const mime = ["audio/webm", "audio/mp4", ""].find((m) => !m || MediaRecorder.isTypeSupported?.(m));
+      recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      recSlotNow = slotId;
+      const chunks = [];
+      recorder.ondataavailable = (e) => { if (e.data?.size) chunks.push(e.data); };
+      recorder.onstop = async () => {
+        clearInterval(recTimer);
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunks, { type: chunks[0]?.type || "audio/webm" });
+        recorder = null; recSlotNow = "";
+        try {
+          const buf = await blob.arrayBuffer();
+          let bin = "";
+          const bytes = new Uint8Array(buf);
+          for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+          const recs = loadRecs();
+          recs[slotId] = { mime: blob.type, data: btoa(bin), size: bytes.length, at: Date.now() };
+          saveRecs(recs);
+          delete recBuf[slotId];
+          await primeRecs();
+          onDone?.({ ok: true, size: bytes.length });
+        } catch { onDone?.({ error: "ほぞん できませんでした（みじかく とりなおして ください）" }); }
+      };
+      recorder.start();
+      const t0 = Date.now();
+      recTimer = setInterval(() => {
+        const left = Math.max(0, REC_MAX_MS - (Date.now() - t0));
+        onTick?.(left);
+        if (left <= 0) stopRec();
+      }, 100);
+      return { ok: true };
+    } catch {
+      stream.getTracks().forEach((t) => t.stop());
+      recorder = null; recSlotNow = "";
+      return { error: "ろくおんを はじめられませんでした" };
+    }
+  }
+  function stopRec() {
+    clearInterval(recTimer);
+    try { recorder?.state === "recording" && recorder.stop(); } catch { /* すでに とまって いる */ }
+  }
 
   // まちがいの しゅるいに あわせた コロの ヒント
   const KORO_OK = ["その ちょうしコロー！", "つぎも いけるコロ！", "コロも うれしいコロー！",
@@ -1856,6 +2002,42 @@
     }
   }
 
+  function renderRecBox() {
+    const recs = loadRecs();
+    const supported = Boolean(navigator.mediaDevices?.getUserMedia) && typeof MediaRecorder !== "undefined";
+    const secure = window.isSecureContext !== false;
+    $("rec-toggle").textContent = recOn ? "ろくおんした こえを つかう: オン" : "ろくおんした こえを つかう: オフ";
+    $("rec-toggle").className = recOn ? "go2" : "";
+    $("rec-pitch").value = String(recPitch());
+    $("rec-pitch-v").textContent = `${recPitch().toFixed(2)}ばい`;
+
+    $("recs").innerHTML = REC_SLOTS.map((sl) => {
+      const r = recs[sl.id];
+      const busy = recSlotNow === sl.id;
+      return `<li>
+        <div class="rec-h">
+          <b>${sl.label}</b><span>${sl.eg}</span>
+          <span class="state ${r ? "done" : ""}">${r ? `ろくおんずみ ${Math.round(r.size / 1024)}KB` : "まだ"}</span>
+        </div>
+        <div class="rec-btns">
+          <button type="button" class="rec" data-rec="${sl.id}" data-on="${busy ? 1 : 0}"${supported ? "" : " disabled"}>${busy ? "とめる" : "● ろくおん"}</button>
+          <button type="button" data-play="${sl.id}"${r ? "" : " disabled"}>▶ きいて みる</button>
+          <button type="button" data-del-rec="${sl.id}"${r ? "" : " disabled"}>けす</button>
+        </div>
+      </li>`;
+    }).join("");
+
+    if (!supported || !secure) {
+      srvMsg("この ひらきかたでは ろくおん できません。<br>https の ページ（GitHub Pages など）で ひらくと つかえます。", "ng", "rec-msg");
+    } else if (Object.keys(recs).length === 0) {
+      srvMsg("「● ろくおん」を おして、3びょうまでで こえを いれて ください。<br>ろくおんした こえは この たんまつの 中だけに のこります。", "idle", "rec-msg");
+    } else if (!recOn) {
+      srvMsg("ろくおんは ありますが、いまは つかわない せっていです。", "idle", "rec-msg");
+    } else {
+      srvMsg(`ろくおんした こえで しらせます（${Object.keys(recs).length}/4）。ない ぶんは アニメごえに なります。`, "idle", "rec-msg");
+    }
+  }
+
   function renderSrvBox() {
     const { url, key } = srvCfg();
     $("srv-url").value = url;
@@ -2180,16 +2362,30 @@
 
     let sounded = false;
     if (voiceOn) {
-      const spoke = voiceType === "both" && speak(keroSay, "kero");
-      if (spoke) {
-        speak(koroSay, "koro", { queue: true });     // ケロの あとに つづけて
-        babble(keroSay, "kero", mood, 3);
+      const kind = ok ? "ok" : "ng";
+      // ろくおんした こえが あれば それを つかう（ない ぶんだけ アニメごえ）
+      const rk = playRec("kero", kind);
+      const rc = playRec("koro", kind, { delay: rk ? 0.95 : 0.5 });
+      if (rk || rc) {
         sounded = true;
+        if (!rk) babble(keroSay, "kero", mood, 5);
+        if (!rc) babble(koroSay, "koro", mood, 5, 0.55);
+        // まちがいの ときだけ、こたえは ことばで つたえる
+        if (!ok && voiceType === "both") {
+          speak(`こたえは ${sayable(q.answerText)} だよー`, "kero", { queue: true });
+        }
       } else {
-        // アニメごえ だけの ときは ふたりの こえを じゅんばんに
-        const b1 = babble(keroSay, "kero", mood, 6);
-        const b2 = babble(koroSay, "koro", mood, 6, 0.55);
-        sounded = b1 || b2;
+        const spoke = voiceType === "both" && speak(keroSay, "kero");
+        if (spoke) {
+          speak(koroSay, "koro", { queue: true });     // ケロの あとに つづけて
+          babble(keroSay, "kero", mood, 3);
+          sounded = true;
+        } else {
+          // アニメごえ だけの ときは ふたりの こえを じゅんばんに
+          const b1 = babble(keroSay, "kero", mood, 6);
+          const b2 = babble(koroSay, "koro", mood, 6, 0.55);
+          sounded = b1 || b2;
+        }
       }
     }
     if (!sounded) beep(ok ? "ok" : "ng");
@@ -2347,7 +2543,7 @@
   $("quit").addEventListener("click", () => show("home"));
   function openHistory() {
     S.histPlayer = currentPlayer();      // ひらいた ときは いま やって いる 人
-    renderHistory(); renderVoiceBox(); renderSrvBox(); show("history");
+    renderHistory(); renderVoiceBox(); renderRecBox(); renderSrvBox(); show("history");
   }
   // きろく がめんで だれの ぶんを みるか
   $("hist-who").addEventListener("click", (e) => {
@@ -2409,6 +2605,66 @@
   $("try-koro").addEventListener("click", () => {
     if (!voiceSay(`${callName()}コロだよー！ やったねコロー！`, "koro", "ok")) {
       srvMsg("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
+    }
+  });
+
+  // じぶんの こえ（ろくおん）
+  $("rec-toggle").addEventListener("click", () => {
+    recOn = !recOn;
+    store.set(REC_ON_KEY, recOn ? "1" : "0");
+    renderRecBox();
+    if (recOn) playRec("kero", "ok");
+  });
+  $("rec-pitch").addEventListener("input", () => {
+    store.set(REC_PITCH_KEY, $("rec-pitch").value);
+    $("rec-pitch-v").textContent = `${recPitch().toFixed(2)}ばい`;
+  });
+  $("rec-pitch").addEventListener("change", () => { playRec("kero", "ok") || playRec("koro", "ok"); });
+  $("recs").addEventListener("click", async (e) => {
+    const recBtn = e.target.closest("[data-rec]");
+    if (recBtn) {
+      const id = recBtn.dataset.rec;
+      if (recSlotNow === id) { stopRec(); return; }
+      const res = await startRec(id,
+        (left) => { recBtn.textContent = `とめる（${(left / 1000).toFixed(1)}）`; },
+        (done) => {
+          renderRecBox();
+          if (done.error) srvMsg(done.error, "ng", "rec-msg");
+          else {
+            srvMsg("ろくおん できました。「▶ きいて みる」で たしかめて ください。", "ok", "rec-msg");
+            const who = id.startsWith("kero") ? "kero" : "koro";
+            playRec(who, id.endsWith("ok") ? "ok" : "ng");
+          }
+        });
+      if (res.error) { srvMsg(res.error, "ng", "rec-msg"); return; }
+      recBtn.dataset.on = "1";
+      recBtn.textContent = "とめる（3.0）";
+      return;
+    }
+    const playBtn = e.target.closest("[data-play]");
+    if (playBtn) {
+      const id = playBtn.dataset.play;
+      const who = id.startsWith("kero") ? "kero" : "koro";
+      const wasOn = recOn;
+      recOn = true;                                 // ためす ときは オフでも ならす
+      const played = playRec(who, id.endsWith("ok") ? "ok" : "ng");
+      recOn = wasOn;
+      if (!played) srvMsg("ならせませんでした。とりなおして みて ください。", "ng", "rec-msg");
+      return;
+    }
+    const delBtn = e.target.closest("[data-del-rec]");
+    if (delBtn) {
+      const id = delBtn.dataset.delRec;
+      if (delBtn.dataset.confirm === "1") {
+        const recs = loadRecs();
+        delete recs[id];
+        saveRecs(recs);
+        delete recBuf[id];
+        renderRecBox();
+      } else {
+        delBtn.dataset.confirm = "1";
+        delBtn.textContent = "ほんとうに けす？";
+      }
     }
   });
 
@@ -2489,6 +2745,7 @@
   $("peek-mini").innerHTML = clockSVG(9, 20, { learn: false, size: 28, cls: "" });
   renderPlayers();
   teaseHistory();
+  primeRecs();          // ろくおんした こえを すぐ ならせる ように
   flushOutbox();      // まえに おくれなかった きろくを おくる
   $("hello-frogs").innerHTML = `${frogSVG("kero", { size: 52, mood: "open" })}${frogSVG("koro", { size: 52, mood: "open" })}`;
 })();
