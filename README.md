@@ -11,6 +11,14 @@ xdg-open index.html      # Linux
 npx http-server . -p 8080
 ```
 
+## 公開先
+
+**https://sparkly-nougat-5bb9ae.netlify.app/** （Netlify Drop）
+
+更新するときは、配布用の一式（`index.html` / `config.js` / `manifest.webmanifest` / `icon.svg` / `icon-180.png` / `icon-192.png` / `icon-512.png`）をフォルダにまとめ、Netlify のサイトの **Deploys** にドラッグ＆ドロップします（URLは変わりません）。
+
+GitHubリポジトリとNetlifyを連携すると、`main` への push だけで自動更新できます（Netlifyはprivateリポジトリにも接続できるので、公開する必要はありません）。手順は Netlify の **Site configuration → Build & deploy → Continuous deployment → Link repository** です。
+
 ## ログインなしで使う
 
 サーバーもアカウントも使わない静的なページなので、**認証なしで動きます**（通信するのは Google Fonts の読み込みだけで、それが遮断されても端末の書体で問題なく動きます）。方法は3つあります。
@@ -207,6 +215,15 @@ URLを開くだけで使えます。スマホ・タブレットのブラウザ�
 | Windows / PC のブラウザ | 日本語の音声が入っていないことがあります。その場合は**アニメごえだけ**で知らせます（ことばは画面に出ます） |
 
 声を止めたいときは「こえ オフ」を押してください。
+
+## 変更したときの確認
+
+```bash
+node tests/verify-questions.mjs   # 360問を自動で解いて答え合わせを照合
+node tests/verify-api.mjs         # きろくサーバーのAPIを検証
+```
+
+`verify-questions.mjs` は答えを画面から独立に求めて照合します（筆算は問題文から、時計は針の角度から）。出題や採点を変えたら実行してください。
 
 ## つくり
 
