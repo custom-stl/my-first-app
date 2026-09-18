@@ -894,7 +894,7 @@
       <div class="mini-btns">
         <button type="button" class="go2" id="srv-save">ほぞんして ためす</button>
         <button type="button" id="srv-send">いま おくる</button>
-        <button type="button" id="to-team">みんなの きろくを みる</button>
+        <button type="button" id="to-team">みんなの きろくを みる（サーバーが なくても みられます）</button>
       </div>
       <h3 class="sec-label" style="margin-top:18px">この たんまつの 人</h3>
       <ul class="plist" id="plist"></ul>
@@ -967,7 +967,7 @@
   };
 
   // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
-  const BUILD = "2026-09-18b";
+  const BUILD = "2026-09-18c";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
@@ -2193,6 +2193,11 @@
   async function testServer() {
     const { url, key } = srvCfg();
     if (!url) { srvMsg("URL を いれて ください。", "ng"); return; }
+    if (location.protocol === "https:" && /^http:\/\//i.test(url)) {
+      srvMsg("この ページは <b>https</b> なので、<b>http://</b> の サーバーには つなげません（ブラウザが とめます）。"
+        + "<br>https:// の アドレスを いれて ください。", "ng");
+      return;
+    }
     srvMsg("たしかめて います…");
     try {
       const u = new URL(`${url}/api/summary`);
@@ -2206,44 +2211,51 @@
       srvMsg(`つながりました。いま <b>${n}</b>人ぶんの きろくが あります。`, "ok");
       const out = await flushOutbox();
       if (out.sent) srvMsg(`つながりました。たまって いた <b>${out.sent}</b>件を おくりました。`, "ok");
-    } catch { srvMsg("サーバーに つながりません。URL を たしかめて ください。", "ng"); }
+    } catch {
+      srvMsg("サーバーに つながりません。<br>URL が ただしいか、サーバーが うごいて いるか、"
+        + "CORS（ALLOW_ORIGIN）の せっていを たしかめて ください。", "ng");
+    }
   }
 
   /* ========== みんなの きろく（サーバーの まとめ） ========== */
   let lastTeam = [];
-  async function renderTeam() {
-    const { url, key } = srvCfg();
-    $("team-list").innerHTML = "";
-    if (!url) {
-      srvMsg("サーバーが まだ せっていされて いません。<br>「きろく」がめんの サーバーらんに URL を いれて ください。", "idle", "team-msg");
-      return;
+  // この たんまつの きろくから、サーバーと おなじ かたちの まとめを つくる。
+  // サーバーが なくても「みんなの きろく」を みられる ように するため。
+  function localTeam(days = 14) {
+    const byName = new Map();
+    for (const r of loadLogAll()) {
+      const name = r.p || "（なまえなし）";
+      if (!byName.has(name)) byName.set(name, []);
+      byName.get(name).push(r);
     }
-    srvMsg("よみこんで います…", "idle", "team-msg");
-    await flushOutbox();
-    let data;
-    try {
-      const u = new URL(`${url}/api/summary`);
-      u.searchParams.set("today", ymd(new Date()));
-      if (key) u.searchParams.set("key", key);
-      const res = await fetch(u, { cache: "no-store" });
-      if (res.status === 401) { srvMsg("あいことばが ちがいます。", "ng", "team-msg"); return; }
-      if (!res.ok) { srvMsg(`サーバーが エラーを かえしました (${res.status})`, "ng", "team-msg"); return; }
-      data = await res.json();
-    } catch { srvMsg("サーバーに つながりません。", "ng", "team-msg"); return; }
+    const today = new Date();
+    return [...byName.entries()].map(([name, list]) => {
+      const map = new Map(byDay(list).map((e) => [e.d, e]));
+      const t = map.get(ymd(today));
+      const daily = [];
+      for (let i = days - 1; i >= 0; i--) {
+        const key = ymd(shiftDay(today, -i));
+        const e = map.get(key);
+        daily.push({ day: key, total: e ? e.q : 0, correct: e ? e.ok : 0 });
+      }
+      return {
+        id: playerId(name), name, local: true,
+        sets: list.length,
+        total: list.reduce((a, r) => a + (r.qs?.length || 0), 0),
+        correct: list.reduce((a, r) => a + r.n, 0),
+        streak: streakDays(list),
+        today: { total: t ? t.q : 0, correct: t ? t.ok : 0, sets: t ? t.sets.length : 0 },
+        daily,
+      };
+    }).sort((a, b) => b.today.total - a.today.total || b.total - a.total || a.name.localeCompare(b.name, "ja"));
+  }
 
-    const players = data.players || [];
-    lastTeam = players;
-    if (players.length === 0) {
-      srvMsg("まだ だれの きろくも ありません。", "idle", "team-msg");
-      return;
-    }
+  function teamCards(players) {
     const cur = currentPlayer();
     // たてじくは いちばん おおい 人に あわせる（人どうしを くらべられる ように）
     const axisMax = Math.max(10, ...players.flatMap((p) => (p.daily || []).map((d) => d.total)));
-    srvMsg(`${players.length}人・ぜんぶで ${data.sets}セット`, "ok", "team-msg");
     $("team-list").innerHTML = players.map((p, i) => {
       const cap = `team-cap-${i}`;
-      const series = serverSeries(p.daily);
       return `<section class="sheet person">
         <div class="person-h">
           <strong>${esc(p.name)}${p.id === playerId(cur) ? "（じぶん）" : ""}</strong>
@@ -2254,7 +2266,7 @@
           <div class="tile"><div class="v">${p.streak}<small>日</small></div><div class="k">れんぞく</div></div>
           <div class="tile"><div class="v">${p.correct}<small>/${p.total}</small></div><div class="k">つうさん せいかい</div></div>
         </div>
-        ${barChart(series, cap, { max: axisMax })}
+        ${barChart(serverSeries(p.daily), cap, { max: axisMax })}
         <p class="chart-cap" id="${cap}"></p>
         <div class="legend2" aria-hidden="true">
           <b><i class="ok"></i>せいかい</b><b><i class="ng"></i>まちがい</b>
@@ -2265,12 +2277,79 @@
     players.forEach((p, i) => chartCaption(`team-cap-${i}`, (p.daily || []).length - 1));
   }
 
+  // この たんまつの ぶんだけ ひょうじ する（サーバーが ない・つながらない とき）
+  function showLocalTeam(note, kind = "idle") {
+    lastTeam = localTeam();
+    if (lastTeam.length === 0) {
+      $("team-list").innerHTML = "";
+      srvMsg(`${note}<br>まだ だれの きろくも ありません。もんだいを 10もん とくと ここに でます。`, kind, "team-msg");
+      return;
+    }
+    teamCards(lastTeam);
+    srvMsg(`${note}<br>いまは <b>この たんまつの ${lastTeam.length}人ぶん</b>を ひょうじ して います。`, kind, "team-msg");
+  }
+
+  async function renderTeam() {
+    const { url, key } = srvCfg();
+    $("team-list").innerHTML = "";
+
+    // サーバーを つかわない ばあいも、この たんまつの きろくで みんなを くらべられる
+    if (!url) {
+      showLocalTeam("サーバーは せっていされて いません。"
+        + "<br>ほかの たんまつの ぶんも まとめたい ときは、「きろく」がめんの サーバーらんで せっていして ください。");
+      return;
+    }
+    // https の ページから http:// の サーバーは ブラウザが とめる
+    if (location.protocol === "https:" && /^http:\/\//i.test(url)) {
+      showLocalTeam("この ページは <b>https</b> なので、<b>http://</b> の サーバーには つなげません（ブラウザが とめます）。"
+        + "<br>サーバーの アドレスを https:// の ものに して ください。", "ng");
+      return;
+    }
+
+    srvMsg("よみこんで います…", "idle", "team-msg");
+    await flushOutbox();
+    let data;
+    try {
+      const u = new URL(`${url}/api/summary`);
+      u.searchParams.set("today", ymd(new Date()));
+      if (key) u.searchParams.set("key", key);
+      const res = await fetch(u, { cache: "no-store" });
+      if (res.status === 401) {
+        showLocalTeam("サーバーの <b>あいことばが ちがいます</b>。「きろく」がめんの サーバーらんで たしかめて ください。", "ng");
+        return;
+      }
+      if (!res.ok) {
+        showLocalTeam(`サーバーが エラーを かえしました（${res.status}）。`, "ng");
+        return;
+      }
+      data = await res.json();
+    } catch {
+      showLocalTeam(`サーバー（${esc(url)}）に つながりません。`
+        + "<br>URL が ただしいか、サーバーが うごいて いるか、CORS（ALLOW_ORIGIN）の せっていを たしかめて ください。", "ng");
+      return;
+    }
+
+    const players = data.players || [];
+    lastTeam = players;
+    if (players.length === 0) {
+      showLocalTeam("サーバーには まだ きろくが ありません。");
+      return;
+    }
+    teamCards(players);
+    srvMsg(`サーバー: ${players.length}人・ぜんぶで ${data.sets}セット`, "ok", "team-msg");
+  }
+
   /* ========== ひとりぶんの くわしい きろく（サーバーから） ========== */
   // サーバーの きろくを、この たんまつの きろくと おなじ かたちに そろえる
   const serverRunsToSets = (runs) => (runs || []).map((r) => ({
     d: r.day, t: r.ts, m: r.mode, lv: r.level, n: r.correct, total: r.total,
     qs: (r.detail || []).map((q) => ({ q: q.q, a: q.a, g: q.g, o: q.o })),
   }));
+
+  // この たんまつの きろくから、その 人の セットだけ とりだす
+  const localSetsOf = (id) => loadLogAll()
+    .filter((r) => playerId(r.p || "（なまえなし）") === id)
+    .map((r) => ({ d: r.d, t: r.t, m: r.m, lv: r.lv, n: r.n, total: r.qs?.length || 0, qs: r.qs || [] }));
 
   async function openChild(id) {
     const p = lastTeam.find((x) => x.id === id);
@@ -2286,8 +2365,23 @@
     chartCaption("child-cap", series.length - 1);
     $("child-genre").innerHTML = "";
     $("child-days").innerHTML = "";
-    srvMsg("よみこんで います…", "idle", "child-msg");
 
+    // サーバーを つかって いない ときは この たんまつの きろくから つくる
+    if (p.local) {
+      const sets = localSetsOf(id);
+      if (sets.length === 0) {
+        srvMsg("まだ きろくが ありません。", "idle", "child-msg");
+        $("child-days").innerHTML = `<p class="empty">まだ きろくが ありません。</p>`;
+        $("child-genre").innerHTML = `<p class="empty">まだ きろくが ありません。</p>`;
+        return;
+      }
+      srvMsg(`この たんまつの きろく ${sets.length}セットぶん（あたらしい じゅん）`, "idle", "child-msg");
+      $("child-genre").innerHTML = genreHTML(sets);
+      $("child-days").innerHTML = daysHTML(byDay(sets));
+      return;
+    }
+
+    srvMsg("よみこんで います…", "idle", "child-msg");
     const { url, key } = srvCfg();
     try {
       const u = new URL(`${url}/api/runs`);
@@ -2295,7 +2389,13 @@
       u.searchParams.set("limit", "200");
       if (key) u.searchParams.set("key", key);
       const res = await fetch(u, { cache: "no-store" });
-      if (!res.ok) { srvMsg(`きろくを よめませんでした (${res.status})`, "ng", "child-msg"); return; }
+      if (!res.ok) {
+        const sets = localSetsOf(id);
+        srvMsg(`サーバーから きろくを よめませんでした（${res.status}）。この たんまつの ぶんを ひょうじ します。`, "ng", "child-msg");
+        $("child-genre").innerHTML = genreHTML(sets);
+        $("child-days").innerHTML = daysHTML(byDay(sets));
+        return;
+      }
       const data = await res.json();
       const sets = serverRunsToSets(data.runs);
       if (sets.length === 0) {
@@ -2307,7 +2407,12 @@
       srvMsg(`${sets.length}セットぶん（あたらしい じゅん）`, "idle", "child-msg");
       $("child-genre").innerHTML = genreHTML(sets);
       $("child-days").innerHTML = daysHTML(byDay(sets));
-    } catch { srvMsg("サーバーに つながりません。", "ng", "child-msg"); }
+    } catch {
+      const sets = localSetsOf(id);
+      srvMsg("サーバーに つながりません。この たんまつの ぶんを ひょうじ します。", "ng", "child-msg");
+      $("child-genre").innerHTML = genreHTML(sets);
+      $("child-days").innerHTML = daysHTML(byDay(sets));
+    }
   }
 
   /* ========== ゲームの じょうたい ========== */
