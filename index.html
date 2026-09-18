@@ -769,7 +769,8 @@
       <span id="hist-teaser"></span>
     </button>
 
-    <p class="foot">こたえは すうじの ボタンで にゅうりょく します。<br>パソコンでは キーボードの すうじ・Enter も つかえます。</p>
+    <p class="foot">こたえは すうじの ボタンで にゅうりょく します。<br>パソコンでは キーボードの すうじ・Enter も つかえます。
+      <br><span id="build"></span></p>
   </main>
 
   <!-- ======== 出題 ======== -->
@@ -965,6 +966,8 @@
     set(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } },
   };
 
+  // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
+  const BUILD = "2026-09-18b";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
@@ -2910,6 +2913,7 @@
   $("voice").textContent = voiceOn ? "こえ オン" : "こえ オフ";
   $("peek-clock").innerHTML = clockSVG(3, 40, { learn: false, size: 78, cls: "" });
   $("peek-mini").innerHTML = clockSVG(9, 20, { learn: false, size: 28, cls: "" });
+  $("build").textContent = `バージョン ${BUILD}`;
   renderPlayers();
   teaseHistory();
   primeRecs();          // ろくおんした こえを すぐ ならせる ように
