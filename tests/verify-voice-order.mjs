@@ -59,6 +59,34 @@ const spy = (voices) => `
   Object.defineProperty(window, 'AudioContext', { configurable: true, value: SpyCtx });
   Object.defineProperty(window, 'webkitAudioContext', { configurable: true, value: SpyCtx });
 `;
+// トップ → さんすう → レベル2 → ひっさん
+const sansu = async (pg) => {
+  await pg.click('.mode[data-app="home"]');
+  await pg.click('#home .lv[data-lv="2"]');
+  await pg.click('.mode[data-mode="calc"]');
+};
+// トップ → えいご → レベル1 → ききとり
+const eigo = async (pg) => {
+  await pg.click('.mode[data-app="eigo"]');
+  await pg.click('#eigo .lv[data-lv="1"]');
+  await pg.click('.mode[data-mode="listen"]');
+};
+// えいごの 4たく。あって いても まちがって いても、ふたりとも こえを だす。
+const answerEigo = async (pg) => {
+  await pg.evaluate(() => { window.__ev = []; });
+  await pg.click('.pick[data-c="0"]');
+};
+// ケロと コロの 4つの こえを ろくおんする（ほめる・フォロー）
+const recordAll = async (pg) => {
+  await pg.click('#to-history'); await pg.waitForTimeout(400);
+  for (const slot of ['kero-ok', 'kero-ng', 'koro-ok', 'koro-ng']) {
+    await pg.click(`[data-rec="${slot}"]`);
+    await pg.waitForTimeout(1500);
+    await pg.click(`[data-rec="${slot}"]`);
+    await pg.waitForTimeout(800);
+  }
+  await pg.evaluate(() => document.querySelector('#hist-back').click());
+};
 const answer = async (pg, ok) => {
   const v = await pg.evaluate(() => {
     const r = [...document.querySelectorAll('.hz-row')].map(x => x.textContent.trim());
@@ -79,7 +107,7 @@ try {
   await pg.goto('http://127.0.0.1:8099/index.html');
   await pg.waitForTimeout(1800);
   await pg.click('#padd'); await pg.fill('#pname', 'はると'); await pg.press('#pname', 'Enter');
-  await pg.click('.lv[data-lv="2"]'); await pg.click('.mode[data-mode="calc"]');
+  await sansu(pg);
   await answer(pg, true);
   await pg.waitForTimeout(1800);
   let ev = await pg.evaluate(() => window.__ev);
@@ -103,7 +131,7 @@ try {
   pg.on('pageerror', e => errs.push(String(e)));
   await pg.goto('http://127.0.0.1:8099/index.html');
   await pg.waitForTimeout(1800);
-  await pg.click('.lv[data-lv="2"]'); await pg.click('.mode[data-mode="calc"]');
+  await sansu(pg);
   await answer(pg, true);
   await pg.waitForTimeout(2500);
   ev = await pg.evaluate(() => window.__ev);
@@ -136,7 +164,7 @@ try {
     await pg.waitForTimeout(900);
   }
   await pg.evaluate(() => document.querySelector('#hist-back').click());
-  await pg.click('.lv[data-lv="2"]'); await pg.click('.mode[data-mode="calc"]');
+  await sansu(pg);
   await answer(pg, true);
   await pg.waitForTimeout(5000);
   ev = await pg.evaluate(() => window.__ev.filter(e => e.kind === 'rec'));
@@ -146,6 +174,37 @@ try {
     check('ろくおん: 1つめが おわって から 2つめ', gap >= ev[0].dur * 1000,
       `1つめ ${ev[0].dur}びょう → 2つめは ${gap}ms あと`);
   }
+  await pg.close();
+
+  // ===== 4) えいご: ろくおんした こえが えいごでも つかえて、えいごの よみあげと かさならない =====
+  ctx = await b.newContext({ viewport: { width: 430, height: 940 }, permissions: ['microphone'] });
+  await ctx.addInitScript(spy([{ name: 'Kyoko', lang: 'ja-JP' }, { name: 'Samantha', lang: 'en-US' }]));
+  pg = await ctx.newPage();
+  pg.on('pageerror', e => errs.push(String(e)));
+  await pg.goto('http://127.0.0.1:8099/index.html');
+  await pg.waitForTimeout(1800);
+  await recordAll(pg);
+  await eigo(pg);
+  await pg.waitForTimeout(1200);
+  await answerEigo(pg);
+  await pg.waitForTimeout(6000);
+  ev = await pg.evaluate(() => window.__ev);
+  const recs = ev.filter(e => e.kind === 'rec');
+  // にほんごが まざって いない ものを「えいごの よみあげ」と する
+  const en = ev.filter(e => e.kind === 'tts' && !/[ぁ-んァ-ヶ一-龥]/.test(e.text));
+  const enEnd = ev.filter(e => e.kind === 'tts-end' && !/[ぁ-んァ-ヶ一-龥]/.test(e.text));
+  check('えいご: ろくおんした こえが ふたりぶん なる', recs.length === 2,
+    recs.map(x => `${x.t}ms(${x.dur}びょう)`).join(' | '));
+  check('えいご: えいごも よみあげる', en.length >= 1, en.map(x => `${x.t}ms:${x.text}`).join(' | '));
+  if (recs.length === 2 && en.length >= 1) {
+    check('えいご: えいごは ケロの こえが おわって から',
+      en[0].t >= recs[0].t + recs[0].dur * 1000,
+      `ケロ ${recs[0].t}ms(${recs[0].dur}びょう) → えいご ${en[0].t}ms`);
+    const lastEn = Math.max(...(enEnd.length ? enEnd : en).map(x => x.t));
+    check('えいご: コロは えいごが おわって から', recs[1].t >= lastEn,
+      `えいご おわり ${lastEn}ms → コロ ${recs[1].t}ms`);
+  }
+
   console.log('\n' + results.join('\n'));
   const ng = results.filter(r => r.startsWith('NG')).length;
   console.log(`\nしっぱい ${ng}件 / JSエラー ${errs.length ? errs.join(' | ') : 'なし'}`);

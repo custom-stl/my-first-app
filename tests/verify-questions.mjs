@@ -13,7 +13,21 @@ pg.on('pageerror', e => errs.push(String(e)));
 await pg.goto('file://' + process.cwd() + '/index.html');
 
 const fails = [];
-const stats = { calc: 0, word: 0, read: 0, shift: 0, choice: 0 };
+const stats = { calc: 0, word: 0, read: 0, shift: 0, choice: 0, eigo: 0 };
+// どの アプリの もんだいかで、トップから たどる がめんが かわる
+const EIGO = ['listen', 'eword', 'talk', 'abc', 'eigo'];
+const appOf = (mode) => (EIGO.includes(mode) ? 'eigo' : 'home');
+// くらべる ときは、てん・かっこ・スペースを ぬく（「はい、どうぞ」と「はいどうぞ」を おなじに）
+const norm = (v) => [...String(v)].filter((ch) => /[ぁ-んァ-ヶー一-龥A-Za-z0-9]/.test(ch)).join('');
+// アプリの ことばの ひょうとは べつに、テスト側で もって いる こたえ（ぬきうち）。
+// 「えいたんご」で この にほんごが でたら、せいかいは かならず この つづり。
+const KNOWN = {
+  ねこ: 'cat', いぬ: 'dog', とり: 'bird', さかな: 'fish', うさぎ: 'rabbit', くま: 'bear',
+  ぶた: 'pig', かえる: 'frog', さる: 'monkey', ぞう: 'elephant', うま: 'horse', うし: 'cow',
+  りんご: 'apple', あか: 'red', あお: 'blue', みどり: 'green', きいろ: 'yellow', しろ: 'white',
+  くろ: 'black', あたま: 'head', て: 'hand', め: 'eye', みみ: 'ear', くち: 'mouth',
+  ほん: 'book', つくえ: 'desk', いす: 'chair', とけい: 'clock', かさ: 'umbrella',
+};
 
 // 出題されている もんだいの「ただしい こたえ」を がめんから どくじに もとめる
 async function truth() {
@@ -36,6 +50,23 @@ async function truth() {
       let h = Math.floor((ha % 360) / 30); if (h === 0) h = 12;
       const shift = ask.match(/(\d+)ふん(まえ|あと)/);
       return { t: shift ? 'shift' : 'read', h, m, ask, d: shift ? Number(shift[1]) : 0, back: shift ? shift[2] === 'まえ' : false };
+    }
+    if (document.querySelector('.picks.en')) {
+      // えいご: 4たく。せいかいは アプリの もんだいデータから とるのでは なく、
+      // がめんに でて いる「え」「もじ」と こたえあわせの ひょうじで てらす。
+      // ボタンの 1〜4の ばんごうと えもじは ぬいて、ことばだけ とりだす。
+      const label = (el) => {
+        if (!el) return '';
+        const c = el.cloneNode(true);
+        c.querySelectorAll('.picknum').forEach((n) => n.remove());
+        return [...c.textContent.trim()].filter((ch) => /[ぁ-んァ-ヶー一-龥A-Za-z0-9'.!? ]/.test(ch)).join('').trim();
+      };
+      const picks = [...document.querySelectorAll('.pick')].map((p, i) => ({ i, label: label(p) }));
+      return {
+        t: 'eigo', ask, picks,
+        one: Boolean(document.querySelector('.picks.one')),
+        picname: document.querySelector('.picname')?.textContent.trim() || '',
+      };
     }
     if (document.querySelector('.picks')) {
       const want = document.querySelector('#ask').textContent.match(/「(\d+)じ(?:(\d+)ふん)?/);
@@ -64,14 +95,15 @@ async function typeTime(h, m) {
 const verdict = () => pg.evaluate(() => document.querySelector('.judge')?.classList.contains('ng') ? 'ng' : (document.querySelector('.judge') ? 'ok' : 'none'));
 
 for (const lv of [1, 2, 3]) {
-  for (const mode of (process.env.ONLY || 'calc,word,clock').split(',')) {
+  for (const mode of (process.env.ONLY || 'calc,word,clock,listen,eword,talk,abc').split(',')) {
     for (let set = 0; set < 4; set++) {
       try {
-        await pg.click(`.lv[data-lv="${lv}"]`, { timeout: 4000 });
+        await pg.click(`.mode[data-app="${appOf(mode)}"]`, { timeout: 4000 });
+        await pg.click(`#${appOf(mode)} .lv[data-lv="${lv}"]`, { timeout: 4000 });
         await pg.click(`.mode[data-mode="${mode}"]`, { timeout: 4000 });
       } catch (e) {
         const st = await pg.evaluate(() => ({
-          screen: ['home', 'quiz', 'result'].find((id) => !document.getElementById(id).hidden),
+          screen: ['top', 'home', 'eigo', 'quiz', 'result'].find((id) => !document.getElementById(id).hidden),
           ask: document.querySelector('#ask')?.textContent,
           judge: document.querySelector('.judge')?.textContent,
         }));
@@ -112,6 +144,36 @@ for (const lv of [1, 2, 3]) {
           let tot = ((t.h % 12) * 60 + t.m + (t.back ? -t.d : t.d)) % 720;
           if (tot < 0) tot += 720;
           await typeTime(Math.floor(tot / 60) || 12, tot % 60);
+        } else if (t.t === 'eigo') {
+          stats.eigo++;
+          if (t.picks.length !== 4) fails.push(`lv${lv} ${mode} せんたくしが ${t.picks.length}こ`);
+          const uniq = new Set(t.picks.map(p => p.label));
+          if (uniq.size !== t.picks.length) fails.push(`lv${lv} ${mode} せんたくしが ダブり: ${JSON.stringify(t.picks.map(p => p.label))}`);
+          // 1つめを えらんで、こたえあわせに でる せいかいと てらす
+          await pg.click('.pick[data-c="0"]');
+          const shown = await pg.evaluate(() => ({
+            ok: !document.querySelector('.judge').classList.contains('ng'),
+            ans: document.querySelector('.judge .say p b')?.textContent || '',
+            marked: [...document.querySelectorAll('.pick.ans')].length,
+            ansLabel: (() => {
+              const el = document.querySelector('.pick.ans');
+              if (!el) return '';
+              const c = el.cloneNode(true);
+              c.querySelectorAll('.picknum').forEach((n) => n.remove());
+              return [...c.textContent.trim()].filter((ch) => /[ぁ-んァ-ヶー一-龥A-Za-z0-9'.!? ]/.test(ch)).join('').trim();
+            })(),
+          }));
+          if (shown.marked !== 1) fails.push(`lv${lv} ${mode} せいかいの しるしが ${shown.marked}こ`);
+          if (!shown.ok && !shown.ans) fails.push(`lv${lv} ${mode} まちがえた のに こたえが でない: ${t.ask}`);
+          // ○を つけた ボタンと、こたえあわせに でる こたえが あって いるか
+          if (shown.ansLabel && shown.ans && !norm(shown.ans).includes(norm(shown.ansLabel))) {
+            fails.push(`lv${lv} ${mode} ○の ボタンと こたえが ちがう: ${shown.ansLabel} / ${shown.ans}`);
+          }
+          // 「えいたんご」は テスト側の こたえと てらす
+          if (t.picname && KNOWN[t.picname] && shown.ansLabel && shown.ansLabel !== KNOWN[t.picname]) {
+            fails.push(`lv${lv} ${mode} ${t.picname} の こたえが ちがう: ${shown.ansLabel}（${KNOWN[t.picname]} のはず）`);
+          }
+          expectOk = false;
         } else if (t.t === 'choice') {
           stats.choice++;
           const match = t.opts.filter(o => o.h === (t.want.h % 12 || 12) && o.m === t.want.m);
