@@ -1,10 +1,10 @@
 {
-  "name": "えいごノート",
+  "name": "えいご（さんすうノート）",
   "short_name": "えいご",
-  "description": "小学1年生向けの えいご。ききとり・えいたんご・あいさつ・アルファベット。",
+  "description": "さんすうノートの「えいご」メニューを すぐ ひらく ショートカット。ききとり・えいたんご・あいさつ・アルファベット。",
   "lang": "ja",
   "dir": "ltr",
-  "start_url": "./english.html",
+  "start_url": "./index.html?eigo=1",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

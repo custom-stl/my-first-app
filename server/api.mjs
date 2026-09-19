@@ -7,7 +7,7 @@
 //   store.insertRun(row)        -> true（あたらしく いれた）/ false（すでに ある）
 //   store.listRuns({ since })   -> row の はいれつ（ふるい→あたらしい）
 
-export const MODES = ["calc", "word", "clock", "mix"];
+export const MODES = ["calc", "word", "clock", "mix", "eigo"];
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_DETAIL = 50;      // 1セットの もんだいすうの うわぎり
 const MAX_STR = 400;        // もんだい文などの ながさの うわぎり
