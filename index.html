@@ -967,7 +967,7 @@
   };
 
   // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
-  const BUILD = "2026-09-18c";
+  const BUILD = "2026-09-19a";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
@@ -1033,7 +1033,14 @@
     pickVoices();
     if ("onvoiceschanged" in synth) synth.onvoiceschanged = pickVoices;
   }
-  const voiceReady = () => Boolean(synth) && (jaVoices.length > 0 || (synth.getVoices?.() || []).length === 0);
+  // 日本語の こえが じっさいに ある ときだけ ことばで しゃべる。
+  // 「まだ よみこまれて いない だけ」の ことも あるので、その ときは もう いちど さがす。
+  // こえが 見つからない たんまつでは、むおんで まつ より アニメごえの ほうが よい。
+  function voiceReady() {
+    if (!synth) return false;
+    if (jaVoices.length === 0) pickVoices();
+    return jaVoices.length > 0;
+  }
 
   // ピッチは しようの うわげん 2.0 まで。ケロは あまえた かんじで ゆっくり、
   // コロは うわげんまで あげて はずんだ かんじに。
@@ -1041,19 +1048,61 @@
     kero: { pitch: 1.85, rate: 0.88 },
     koro: { pitch: 2.0, rate: 1.12 },
   };
+  function makeUtterance(text, who) {
+    const u = new SpeechSynthesisUtterance(String(text));
+    u.lang = "ja-JP";
+    if (voiceFor[who]) u.voice = voiceFor[who];
+    const st = VOICE_STYLE[who] || VOICE_STYLE.kero;
+    u.pitch = st.pitch;
+    u.rate = st.rate;
+    return u;
+  }
   function speak(text, who = "kero", opt = {}) {
     if (!voiceOn || !synth || !voiceReady()) return false;
     try {
-      const u = new SpeechSynthesisUtterance(String(text));
-      u.lang = "ja-JP";
-      if (voiceFor[who]) u.voice = voiceFor[who];
-      const st = VOICE_STYLE[who] || VOICE_STYLE.kero;
-      u.pitch = st.pitch;
-      u.rate = st.rate;
       if (!opt.queue) synth.cancel();       // まえの こえが のこって いたら とめる
-      synth.speak(u);
+      synth.speak(makeUtterance(text, who));
       return true;
     } catch { return false; }
+  }
+  // しゃべり おわる まで まつ（おわりの あいずが こない ブラウザ よう に じかんで うちきり）
+  function speakAsync(text, who = "kero") {
+    if (!voiceOn || !synth || !voiceReady()) return null;
+    try {
+      const u = makeUtterance(text, who);
+      return new Promise((resolve) => {
+        let done = false;
+        const finish = () => { if (!done) { done = true; clearTimeout(t); resolve(); } };
+        const t = setTimeout(finish, 1200 + String(text).length * 220);
+        u.onend = finish;
+        u.onerror = finish;
+        synth.speak(u);
+      });
+    } catch { return null; }
+  }
+
+  // こえを ひとつずつ、かさならない ように ならす
+  async function playVoiceParts(parts) {
+    stopVoice();
+    const my = voiceSeq;
+    for (const part of parts) {
+      if (my !== voiceSeq) return;          // つぎの もんだいに いったら やめる
+      const r = part();
+      if (r && typeof r.then === "function") await r;      // ことば（おわる まで まつ）
+      else if (typeof r === "number" && r > 0) await wait(r + 0.12);   // おと（びょうすうぶん まつ）
+      if (my !== voiceSeq) return;
+    }
+  }
+
+  // ひとりぶんの こえの ぶひん。ろくおん＞ことば＞アニメごえ の じゅんで えらぶ。
+  // ことばの ときは みじかい アニメごえを さきに ならして、キャラクターの かんじを のこす。
+  function voicePartsFor(line, who, kind) {
+    if (!voiceOn) return [];
+    if (hasRec(who, kind)) return [() => playRec(who, kind)];
+    if (voiceType === "both" && voiceReady()) {
+      return [() => babble(line, who, kind, 3), () => speakAsync(line, who) ?? 0];
+    }
+    return [() => babble(line, who, kind, 8)];
   }
 
   // アニメごえ。もじの かずぶん、ちいさな こえを ならべて キャラクターの こえを つくる。
@@ -1065,15 +1114,17 @@
     kero: { base: 700, wave: "triangle" },
     koro: { base: 900, wave: "square" },
   };
-  function babble(text, who = "kero", mood = "ok", maxChars = 8, delay = 0) {
+  // ならして、かかる びょうすうを かえす（0 なら ならって いない）
+  function babble(text, who = "kero", mood = "ok", maxChars = 8) {
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      actx.resume?.();
       const cfg = BABBLE[who] || BABBLE.kero;
       // よめる もじだけ かぞえる（「！」や すきまは かぞえない）
       const chars = [...String(text).replace(/[^ぁ-んァ-ヶー一-龥0-9A-Za-z]/g, "")].slice(0, maxChars);
       const n = Math.min(maxChars, Math.max(3, chars.length));
       const step = 0.082;
-      const t0 = actx.currentTime + 0.01 + delay;
+      const t0 = actx.currentTime + 0.01;
 
       // くちの かたちの ような フィルターを とおすと こえっぽく なる
       const band = actx.createBiquadFilter();
@@ -1112,9 +1163,10 @@
         g.connect(band);
         o.start(at); o.stop(at + dur + 0.01);
         vib.start(at); vib.stop(at + dur + 0.01);
+        trackNode(o); trackNode(vib);
       }
-      return true;
-    } catch { return false; }
+      return n * step + 0.05;
+    } catch { return 0; }
   }
 
   // ケロは「〜ケロ！」、コロは「〜コロ！」で しゃべる
@@ -1168,21 +1220,36 @@
   }
   const hasRec = (who, kind) => Boolean(recOn && recBuf[`${who}-${kind}`]);
 
-  function playRec(who, kind, opt = {}) {
+  // ならして いる おとを おぼえて おく（つぎの もんだいに いったら とめる ため）
+  let liveNodes = [], voiceSeq = 0, voiceTimer = 0;
+  const trackNode = (n) => { liveNodes.push(n); if (liveNodes.length > 40) liveNodes = liveNodes.slice(-40); };
+  function stopVoice() {
+    voiceSeq++;                       // いま ならんで いる こえの れつを うちきる
+    clearTimeout(voiceTimer);
+    for (const n of liveNodes) { try { n.stop(); } catch { /* もう とまって いる */ } }
+    liveNodes = [];
+    try { synth?.cancel(); } catch { /* つかえない ブラウザ */ }
+  }
+  const wait = (sec) => new Promise((r) => { voiceTimer = setTimeout(r, Math.max(0, sec) * 1000); });
+
+  // ならして、かかる びょうすうを かえす（0 なら ならって いない）
+  function playRec(who, kind) {
     const id = `${who}-${kind}`;
-    if (!recOn || !recBuf[id]) return false;
+    if (!recOn || !recBuf[id]) return 0;
     try {
       actx.resume?.();
       const src = actx.createBufferSource();
       src.buffer = recBuf[id];
       // はやさ＝こえの たかさ。コロは ケロより すこし たかく。
-      src.playbackRate.value = Math.min(2.2, recPitch() * (who === "koro" ? 1.12 : 1));
+      const rate = Math.min(2.2, recPitch() * (who === "koro" ? 1.12 : 1));
+      src.playbackRate.value = rate;
       const g = actx.createGain();
       g.gain.value = 1;
       src.connect(g); g.connect(actx.destination);
-      src.start(actx.currentTime + (opt.delay || 0));
-      return true;
-    } catch { return false; }
+      src.start(actx.currentTime);
+      trackNode(src);
+      return recBuf[id].duration / rate;
+    } catch { return 0; }
   }
 
   // わくの 中（iframe）で うごいて いるか。わくの 中では マイクが つかえない ことが おおい。
@@ -1396,10 +1463,10 @@
 
   // キャラクターの こえで しらせる。アニメごえ＋ことば／アニメごえ だけ の きりかえ。
   function voiceSay(line, who, mood = "ok") {
-    if (!voiceOn) return false;
-    const spoke = voiceType === "both" && speak(line, who);
-    // ことばを しゃべる ときは みじかい あいさつ ていどに、ならない ときは ぜんぶ アニメごえで
-    return babble(line, who, mood, spoke ? 3 : 8) || spoke;
+    const parts = voicePartsFor(line, who, mood);
+    if (parts.length === 0) return false;
+    playVoiceParts(parts);
+    return true;
   }
 
   /* ========== 学習用とけいの え ========== */
@@ -2443,6 +2510,7 @@
 
   /* ========== 出題 ========== */
   function startSet(mode) {
+    stopVoice();
     S.mode = mode;
     S.qs = Array.from({ length: TOTAL }, () => makeQuestion(mode, S.lv));
     S.i = 0;
@@ -2607,35 +2675,18 @@
     const koroSay = ok ? koroText : koroText.replace(/<[^>]+>/g, "");
     const mood = ok ? "ok" : "ng";
 
-    let sounded = false;
-    if (voiceOn) {
-      const kind = ok ? "ok" : "ng";
-      // ろくおんした こえが あれば それを つかう（ない ぶんだけ アニメごえ）
-      const rk = playRec("kero", kind);
-      const rc = playRec("koro", kind, { delay: rk ? 0.95 : 0.5 });
-      if (rk || rc) {
-        sounded = true;
-        if (!rk) babble(keroSay, "kero", mood, 5);
-        if (!rc) babble(koroSay, "koro", mood, 5, 0.55);
-        // まちがいの ときだけ、こたえは ことばで つたえる
-        if (!ok && voiceType === "both") {
-          speak(`こたえは ${sayable(q.answerText)} だよー`, "kero", { queue: true });
-        }
-      } else {
-        const spoke = voiceType === "both" && speak(keroSay, "kero");
-        if (spoke) {
-          speak(koroSay, "koro", { queue: true });     // ケロの あとに つづけて
-          babble(keroSay, "kero", mood, 3);
-          sounded = true;
-        } else {
-          // アニメごえ だけの ときは ふたりの こえを じゅんばんに
-          const b1 = babble(keroSay, "kero", mood, 6);
-          const b2 = babble(koroSay, "koro", mood, 6, 0.55);
-          sounded = b1 || b2;
-        }
-      }
+    // ケロが しゃべり おわってから コロ。かさならない ように じゅんばんに ならす。
+    const kind = ok ? "ok" : "ng";
+    const parts = [
+      ...voicePartsFor(keroSay, "kero", kind),
+      ...voicePartsFor(koroSay, "koro", kind),
+    ];
+    // ろくおんした こえで しらせた ときは こたえを 言って いないので、さいごに ことばで つたえる
+    if (!ok && voiceType === "both" && voiceReady() && hasRec("kero", kind)) {
+      parts.push(() => speakAsync(`こたえは ${sayable(q.answerText)} だよー`, "kero") ?? 0);
     }
-    if (!sounded) beep(ok ? "ok" : "ng");
+    const voiceDone = parts.length ? playVoiceParts(parts) : null;
+    if (!voiceDone) beep(ok ? "ok" : "ng");
     renderMarks();
 
     if (ok) {
@@ -2660,12 +2711,22 @@
     </div>`;
     $("input").querySelectorAll("button").forEach((b) => { b.disabled = true; });
     clearTimeout(S.timer);
-    // ふたりが しゃべる ときは、しゃべりきる まで すこし まつ
-    if (ok) S.timer = setTimeout(nextQuestion, voiceOn && voiceType === "both" ? 1800 : 1200);
+    if (ok) {
+      // ふたりが しゃべり おわってから つぎへ。ながびく ときの ほけんも おく。
+      const here = S.i;
+      S.timer = setTimeout(nextQuestion, voiceDone ? 4200 : 1200);
+      voiceDone?.then(() => {
+        if (S.locked && S.i === here) {
+          clearTimeout(S.timer);
+          S.timer = setTimeout(nextQuestion, 350);
+        }
+      });
+    }
   }
 
   function nextQuestion() {
     clearTimeout(S.timer);
+    stopVoice();                 // のこって いる こえを とめてから つぎへ
     if (!S.locked) return;
     document.querySelectorAll(".maru").forEach((el) => el.remove());
     if (S.i === TOTAL - 1) { showResult(); return; }
@@ -2718,8 +2779,6 @@
 
     // さいしょの ひとことは ケロちゃんと コロちゃんの ふきだしに
     $("bubble").textContent = `${callName()}${cheers[0]}`;
-    // 「すごいね！ケロー！」と ！ が かさならないように おしまいの ！ を とる
-    voiceSay(`${callName()}${cheers[0].replace(/[！!]+$/, "")}ケロー！`, "kero", "ok");
     $("result-frogs").innerHTML = frogPairHTML(58);
     $("cheers").innerHTML = cheers.slice(1).map((t) =>
       `<div class="cheer">${maruMark()}<span>${t}</span></div>`).join("");
@@ -2740,6 +2799,8 @@
         <span class="a">${r.q.answerText}</span>
       </li>`).join("");
     show("result");
+    // 「すごいね！ケロー！」と ！ が かさならないように おしまいの ！ を とる
+    voiceSay(`${callName()}${cheers[0].replace(/[！!]+$/, "")}ケロー！`, "kero", "ok");
   }
 
   /* ========== そうさ ========== */
@@ -2860,13 +2921,13 @@
     recOn = !recOn;
     store.set(REC_ON_KEY, recOn ? "1" : "0");
     renderRecAll();
-    if (recOn) playRec("kero", "ok");
+    if (recOn) { stopVoice(); playRec("kero", "ok"); }
   });
   $("rec-pitch").addEventListener("input", () => {
     store.set(REC_PITCH_KEY, $("rec-pitch").value);
     $("rec-pitch-v").textContent = `${recPitch().toFixed(2)}ばい`;
   });
-  $("rec-pitch").addEventListener("change", () => { playRec("kero", "ok") || playRec("koro", "ok"); });
+  $("rec-pitch").addEventListener("change", () => { stopVoice(); playRec("kero", "ok") || playRec("koro", "ok"); });
   $("recs").addEventListener("click", async (e) => {
     const recBtn = e.target.closest("[data-rec]");
     if (recBtn) {
@@ -2880,6 +2941,7 @@
           else {
             srvMsg("ろくおん できました。「▶ きいて みる」で たしかめて ください。", "ok", "rec-msg");
             const who = id.startsWith("kero") ? "kero" : "koro";
+            stopVoice();
             playRec(who, id.endsWith("ok") ? "ok" : "ng");
           }
         });
@@ -2894,6 +2956,7 @@
       const who = id.startsWith("kero") ? "kero" : "koro";
       const wasOn = recOn;
       recOn = true;                                 // ためす ときは オフでも ならす
+      stopVoice();
       const played = playRec(who, id.endsWith("ok") ? "ok" : "ng");
       recOn = wasOn;
       if (!played) srvMsg("ならせませんでした。とりなおして みて ください。", "ng", "rec-msg");
@@ -2939,7 +3002,7 @@
       await primeRecs();
       renderPlayers(); renderHistory(); renderVoiceBox(); renderRecAll(); teaseHistory();
       srvMsg(`もどしました。こえ <b>${res.voices}</b>こ・きろく <b>${res.sets}</b>セットを よみこみました。`, "ok", "bk-msg");
-      if (res.voices) playRec("kero", "ok");
+      if (res.voices) { stopVoice(); playRec("kero", "ok"); }
     } catch { srvMsg("ファイルを よめませんでした。", "ng", "bk-msg"); }
   });
 
@@ -2986,10 +3049,10 @@
     $("voice").textContent = voiceOn ? "こえ オン" : "こえ オフ";
     if (voiceOn) {
       pickVoices();
-      voiceSay(`${callName()}ケロだよー！`, "kero", "ok");
-      if (voiceType === "both" && voiceReady()) {
-        speak("コロだよー！ いっしょに がんばろうコロー！", "koro", { queue: true });
-      }
+      playVoiceParts([
+        ...voicePartsFor(`${callName()}ケロだよー！`, "kero", "ok"),
+        ...voicePartsFor("コロだよー！ いっしょに がんばろうコロー！", "koro", "ok"),
+      ]);
     } else if (synth) { synth.cancel(); }
   });
   $("sound").addEventListener("click", () => {
