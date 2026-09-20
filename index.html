@@ -554,6 +554,14 @@
     font-size: .82rem; font-weight: 700;
   }
   .mini-btns button.go2 { background: var(--ai); color: #fff; border-color: var(--ai); }
+  /* 「ためす」は えらぶ ボタンでは ないので、ぜんぶ おなじ みためで ならす ことを しめす */
+  .mini-btns.try button {
+    display: inline-flex; align-items: center; gap: 6px;
+    border-color: var(--ai); color: var(--ai); background: var(--ai-soft);
+  }
+  .mini-btns.try button:active { transform: translateY(1px); }
+  .mini-btns.try button .pl { font-size: .7rem; line-height: 1; }
+  .mini-btns.try button[disabled] { border-color: var(--line); color: var(--ink-soft); background: var(--card-2); }
   .person { margin-bottom: 14px; }
   .person .tiles { margin-bottom: 4px; }
   .person .tile { box-shadow: none; background: var(--card-2); }
@@ -1068,8 +1076,8 @@
         <label for="en-sel">えいごの こえ（この たんまつに ある もの）</label>
         <select id="en-sel"></select>
       </div>
-      <div class="mini-btns">
-        <button type="button" class="go2" id="try-en">えいごで ためす</button>
+      <div class="mini-btns try">
+        <button type="button" id="try-en"><span class="pl" aria-hidden="true">▶</span>えいごで ためす</button>
       </div>
     </section>
 
@@ -1086,9 +1094,9 @@
         <label for="voice-sel">ことばの こえ（この たんまつに ある もの）</label>
         <select id="voice-sel"></select>
       </div>
-      <div class="mini-btns">
-        <button type="button" class="go2" id="try-kero">ケロで ためす</button>
-        <button type="button" id="try-koro">コロで ためす</button>
+      <div class="mini-btns try">
+        <button type="button" id="try-kero"><span class="pl" aria-hidden="true">▶</span>ケロで ためす</button>
+        <button type="button" id="try-koro"><span class="pl" aria-hidden="true">▶</span>コロで ためす</button>
       </div>
       <p class="srv-msg idle" id="voice-note"></p>
     </section>
@@ -1204,7 +1212,7 @@
   };
 
   // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
-  const BUILD = "2026-09-19b";
+  const BUILD = "2026-09-20a";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
@@ -3831,20 +3839,26 @@
     speakEn("Hello! Let's study English.", { rate: 0.85 });
   });
   $("try-en").addEventListener("click", () => {
-    if (!speakEn("Hello! Apple, cat, blue.", { rate: 0.8 })) {
+    if (speakEn("Hello! Apple, cat, blue.", { rate: 0.8 })) {
+      srvMsg(`${esc(enVoice?.name || "えいごの こえ")}で よんで います（Hello! Apple, cat, blue.）。`, "ok", "en-note");
+    } else {
       srvMsg("こえが でません。ヘッダーの「こえ オン」も たしかめて ください。", "ng", "en-note");
     }
   });
-  $("try-kero").addEventListener("click", () => {
-    if (!voiceSay(`${callName()}ケロだよー！ せいかいケロー！`, "kero", "ok")) {
+  // 「ためす」を おしたら かならず がめんにも でる（おとが きこえない ときの てがかり）
+  function tryVoice(who, line) {
+    if (voiceSay(line, who, "ok")) {
+      const how = hasRec(who, "ok") ? "ろくおんした こえ"
+        : voiceType === "both" && voiceReady() ? "アニメごえ＋ことば"
+        : "アニメごえ";
+      srvMsg(`${frogName(who)}が しゃべって います（${how}）。きこえない ときは たんまつの
+        おとの おおきさと マナーモードも たしかめて ください。`, "ok", "voice-note");
+    } else {
       srvMsg("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
     }
-  });
-  $("try-koro").addEventListener("click", () => {
-    if (!voiceSay(`${callName()}コロだよー！ やったねコロー！`, "koro", "ok")) {
-      srvMsg("こえが でません。ヘッダーの「こえ オン」を たしかめて ください。", "ng", "voice-note");
-    }
-  });
+  }
+  $("try-kero").addEventListener("click", () => tryVoice("kero", `${callName()}ケロだよー！ せいかいケロー！`));
+  $("try-koro").addEventListener("click", () => tryVoice("koro", `${callName()}コロだよー！ やったねコロー！`));
 
   // じぶんの こえ（ろくおん）
   $("rec-toggle").addEventListener("click", () => {
