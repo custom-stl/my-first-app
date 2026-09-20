@@ -49,7 +49,9 @@
     --r-m: 13px;     /* ボタン・にゅうりょく */
     --r-l: 20px;     /* ノートの ページ */
 
-    /* もじの おおきさの ものさし（およそ 1.2ばいずつ） */
+    /* もじの おおきさの ものさし（およそ 1.15〜1.25ばいずつ）。**ここに ない 大きさは 足さない**。
+       これより 大きい「絵としての 字」（かんじ・数字・花まる）だけ clamp などで べつに きめる。 */
+    --t-2xs: .64rem;
     --t-xs: .72rem;
     --t-s: .82rem;
     --t-m: .94rem;
@@ -185,7 +187,7 @@
   .lead {
     font-family: var(--f-disp);
     flex: 1;
-    font-size: 1.02rem;
+    font-size: var(--t-m);
     line-height: 1.85;
     color: var(--ink-soft);
     margin: 18px 0 22px;
@@ -215,7 +217,7 @@
     line-height: 1.35;
   }
   .lv span { display: block; font-weight: 700; font-size: var(--t-m); }
-  .lv small { display: block; font-size: .66rem; color: var(--ink-soft); margin-top: 2px; }
+  .lv small { display: block; font-size: var(--t-2xs); color: var(--ink-soft); margin-top: 2px; }
   .lv[aria-pressed="true"] {
     border-color: var(--accent, var(--shu));
     background: color-mix(in srgb, var(--accent, var(--shu)) 11%, var(--card));
@@ -224,7 +226,7 @@
   }
   .lv[aria-pressed="true"] small { color: inherit; }
 
-  .modes { display: grid; gap: 10px; }
+  .modes { display: grid; }        /* けい線で くぎるので すきまは あけない（ノートの 行） */
 
   /* --- アプリの 中の もんだい選び：ノートの もくじの 行 --- */
   .mode {
@@ -234,13 +236,13 @@
     gap: 14px;
     text-align: left;
     border: 0;
-    border-bottom: 1.5px solid var(--grid);
+    border-bottom: 1.5px solid var(--line);
     background: none;
     padding: 13px 4px 13px 14px;
     position: relative;
     border-radius: 0;
   }
-  .modes .mode:last-of-type { border-bottom: 0; }
+  .modes .mode:first-of-type { border-top: 1.5px solid var(--line); }
   /* えんぴつで つけた しるし。えらぶ ものが どれか ひと目で わかる */
   .mode::before {
     content: "";
@@ -263,16 +265,18 @@
     height: 60px; overflow: hidden;
   }
   .mode .peek > * { max-height: 100%; }
-  .mode .peek .peek-en { font-size: .76rem; line-height: 1.45; }
-  .mode .peek .peek-en em { font-size: 1.05rem; }
-  .mode .peek-emoji { font-size: 1.12rem; line-height: 1.35; }
-  .mode .peek-calc { font-size: .76rem; }
+  .mode .peek .peek-en { font-size: var(--t-xs); line-height: 1.45; }
+  .mode .peek .peek-en em { font-size: var(--t-l); }
+  .mode .peek-emoji { font-size: var(--t-l); line-height: 1.35; }
+  .mode .peek-calc { font-size: var(--t-xs); }
   .mode:active .peek { transform: translateY(1px); }
 
   /* --- トップの 2つ：色も かたちも ちがう おおきな ブロック --- */
-  .apps { display: grid; gap: 12px; margin-bottom: 18px; }
-  .app-card, .modes .app-card:last-of-type { border-bottom: 0; }
-  .app-card::before { content: none; }
+  /* トップの もくじ。**中の メニュー（.mode）と おなじ ことばで かく** ——
+     えんぴつの しるし ＋ けい線。ちがうのは 大きさだけで、しるしも 字も ひとまわり 大きい。
+     （まえは ここだけ わくと かげの ついた カードを 4まい ならべて いたが、
+      中の メニューと 見た目が つながらず、4つの ちがいも 色だけに なって いた。） */
+  .apps { display: grid; margin: 4px 0 20px; }
   .app-card {
     --accent: var(--ai);
     display: grid;
@@ -280,23 +284,33 @@
     align-items: center;
     gap: 14px;
     text-align: left;
-    border: 2px solid var(--accent);
-    border-radius: var(--r-l);
-    background: var(--card);
-    padding: 18px 18px 18px 20px;
+    border: 0;
+    border-bottom: 1.5px solid var(--line);
+    border-radius: 0;
+    background: none;
+    padding: 16px 4px 16px 24px;
     position: relative;
     overflow: hidden;
-    box-shadow: 3px 3px 0 var(--accent);
-    transition: transform .1s ease, box-shadow .1s ease;
   }
-  .app-card:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--accent); }
+  .apps .app-card:first-of-type { border-top: 1.5px solid var(--line); }
+  /* ノートの 見出しの つめ。.mode の しるしと おなじ ものを たてに のばした */
+  .app-card::before {
+    content: "";
+    position: absolute; left: 0; top: 11px; bottom: 11px;
+    width: 9px; height: auto; margin-top: 0;
+    border-radius: 5px;
+    background: var(--accent);
+    transition: width .1s ease;
+  }
+  .app-card:active::before { width: 13px; }
+  .app-card:active { background: var(--grid-fine); }
   .app-card h2 {
     font-family: var(--f-disp); font-weight: 500;
     font-size: var(--t-2xl); margin: 0 0 3px; color: var(--accent);
     line-height: 1.25;
   }
   .app-card p { margin: 0; font-size: var(--t-s); color: var(--ink-soft); line-height: 1.7; }
-  .app-card .appmark { flex: 0 0 auto; color: var(--accent); }
+  .app-card .appmark { justify-self: end; color: var(--accent); }
   /* さんすう：筆算。えいご：おおきな もじ。中身そのものを しるしに する */
   .appmark-calc {
     font-family: var(--f-num); font-weight: 800;
@@ -309,15 +323,15 @@
     font-family: var(--f-en, var(--f-num)); font-weight: 800;
     font-size: 2.1rem; line-height: 1; letter-spacing: -.02em;
   }
-  .appmark-abc small { display: block; font-size: .95rem; letter-spacing: .06em; opacity: .75; }
+  .appmark-abc small { display: block; font-size: var(--t-m); letter-spacing: .06em; opacity: .75; }
   .peek-calc {
-    font-family: var(--f-num); font-weight: 800; font-size: .84rem;
+    font-family: var(--f-num); font-weight: 800; font-size: var(--t-s);
     line-height: 1.45; text-align: right; font-variant-numeric: tabular-nums;
     color: var(--ink-soft);
   }
   .peek-calc u { text-decoration: none; display: block; border-bottom: 2px solid var(--ink-soft); padding-bottom: 2px; }
   .peek-word {
-    font-size: .56rem; line-height: 1.55; color: var(--ink-soft);
+    font-size: var(--t-2xs); line-height: 1.55; color: var(--ink-soft);
   }
   .peek-word b { color: var(--shu); font-weight: 700; }
   .mode .peek-mix { display: flex; gap: 7px; align-items: center; color: var(--ink-soft); }
@@ -336,6 +350,9 @@
     font-size: var(--t-xs); font-weight: 700; color: var(--ink-soft);
   }
   .qmeta .n { font-family: var(--f-num); font-size: var(--t-m); color: var(--ink); }
+  /* 出題画面の 見出し ＝ いま どの きょうかかを あらわす ところ。
+     もくじの しるしと おなじ 色を ここでも つかう（ページを めくっても 色が つづく）。 */
+  #qmode { color: var(--accent); }
 
   /* いま かいて いる ページ。うかぶのは この 1まいだけ */
   .sheet {
@@ -353,10 +370,10 @@
   }
   .ask {
     font-family: var(--f-disp);
-    font-size: 1.04rem; line-height: 2; margin: 0 0 14px;
+    font-size: var(--t-l); line-height: 2; margin: 0 0 14px;
     text-wrap: balance;
   }
-  .ask.small { font-size: .95rem; }
+  .ask.small { font-size: var(--t-m); }
   /* わかち書きの すきまだけで ぎょうを おりかえす（「ケロちゃ/んの」の ように きれない） */
   .ask, .lead, .bubble, .cheer, .done .q, .review .q, .peek-word {
     word-break: keep-all;
@@ -408,12 +425,12 @@
   }
   .field.empty { color: var(--ink-soft); }
   @keyframes blink { 50% { opacity: 0; } }
-  .unit { font-size: 1.15rem; font-weight: 700; }
+  .unit { font-size: var(--t-l); font-weight: 700; }
 
   /* とけい */
   .clockwrap { display: grid; justify-items: center; gap: 10px; }
   .clock { width: min(258px, 68vw); height: auto; }
-  .legend { display: flex; gap: 14px; font-size: .72rem; font-weight: 700; color: var(--ink-soft); }
+  .legend { display: flex; gap: 14px; font-size: var(--t-xs); font-weight: 700; color: var(--ink-soft); }
   .legend b { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; }
   .legend i { width: 16px; height: 5px; border-radius: 3px; display: inline-block; }
   .legend .h i { background: var(--shu); width: 11px; }
@@ -427,7 +444,7 @@
     display: grid; justify-items: center; gap: 2px;
   }
   .pick svg { width: 100%; max-width: 118px; height: auto; }
-  .pick span { font-family: var(--f-num); font-weight: 800; font-size: .8rem; color: var(--ink-soft); }
+  .pick span { font-family: var(--f-num); font-weight: 800; font-size: var(--t-s); color: var(--ink-soft); }
   .pick:hover { border-color: var(--ai); }
 
   /* キーパッド */
@@ -442,7 +459,7 @@
     font-variant-numeric: tabular-nums;
   }
   .key:active { transform: translateY(2px); box-shadow: none; }
-  .key.fn { font-family: var(--f-body); font-size: .92rem; color: var(--ink-soft); }
+  .key.fn { font-family: var(--f-body); font-size: var(--t-m); color: var(--ink-soft); }
   .go {
     margin-top: 10px; width: 100%;
     border: 0; border-radius: var(--r-m);
@@ -468,19 +485,19 @@
   .say { display: flex; align-items: center; gap: 9px; }
   .say .frog { flex: 0 0 36px; }
   .say p {
-    margin: 0; font-size: .82rem; font-weight: 700; line-height: 1.6; color: var(--ink);
+    margin: 0; font-size: var(--t-s); font-weight: 700; line-height: 1.6; color: var(--ink);
     word-break: keep-all; overflow-wrap: break-word;
   }
   .say strong {
-    font-family: var(--f-disp); font-weight: 400; font-size: 1.02rem;
+    font-family: var(--f-disp); font-weight: 400; font-size: var(--t-m);
     color: var(--shu); letter-spacing: .04em; margin-right: .4em;
   }
   .judge.ng .say strong { color: var(--ai); }
-  .say p b { font-family: var(--f-num); font-size: 1.06rem; }
+  .say p b { font-family: var(--f-num); font-size: var(--t-l); }
   .judge .next {
     align-self: flex-end;
     border: 0; background: var(--ink); color: var(--paper);
-    border-radius: 999px; padding: 10px 20px; font-weight: 900; font-size: .88rem;
+    border-radius: 999px; padding: 10px 20px; font-weight: 900; font-size: var(--t-m);
     white-space: nowrap;
   }
 
@@ -526,13 +543,13 @@
   }
   .stamp .big { font-size: var(--t-m); white-space: nowrap; }
   .stamp .sub { font-family: var(--f-num); font-weight: 800; font-size: 2.5rem; letter-spacing: -.02em; }
-  .stamp .sub small { font-size: .95rem; letter-spacing: 0; }
+  .stamp .sub small { font-size: var(--t-m); letter-spacing: 0; }
   .stars { text-align: center; font-size: 1.7rem; color: var(--kin); letter-spacing: .18em; margin-bottom: 4px; }
   .stars span { color: var(--line); }
-  .score-note { font-size: .84rem; color: var(--ink-soft); font-weight: 700; margin: 0 0 10px; }
+  .score-note { font-size: var(--t-s); color: var(--ink-soft); font-weight: 700; margin: 0 0 10px; }
   .frogs { display: flex; gap: 16px; align-items: flex-end; justify-content: center; }
   .frogs figure { margin: 0; display: grid; justify-items: center; gap: 1px; }
-  .frogs figcaption { font-size: .66rem; font-weight: 700; color: var(--ink-soft); letter-spacing: .02em; }
+  .frogs figcaption { font-size: var(--t-2xs); font-weight: 700; color: var(--ink-soft); letter-spacing: .02em; }
   .frog { display: block; }
   .cheer-lead { display: grid; justify-items: center; margin-top: 16px; }
   .bubble {
@@ -544,7 +561,7 @@
     max-width: 300px;
     text-align: center;
     font-family: var(--f-disp);
-    font-size: 1.02rem; line-height: 1.75; letter-spacing: .03em;
+    font-size: var(--t-m); line-height: 1.75; letter-spacing: .03em;
     margin-bottom: 13px;
   }
   .bubble::after {
@@ -566,11 +583,11 @@
     background: var(--shu-soft);
     border-radius: var(--r-m);
     padding: 10px 13px;
-    font-size: .88rem; font-weight: 700; line-height: 1.6;
+    font-size: var(--t-m); font-weight: 700; line-height: 1.6;
   }
   .cheer.top {
     background: var(--kin-soft);
-    font-family: var(--f-disp); font-size: 1.02rem; font-weight: 400;
+    font-family: var(--f-disp); font-size: var(--t-m); font-weight: 400;
     letter-spacing: .03em;
   }
   .mk { flex: 0 0 18px; width: 18px; height: 18px; }
@@ -580,7 +597,7 @@
   .done li {
     display: flex; gap: 9px; align-items: flex-start;
     border-top: 1px dashed var(--line); padding-top: 8px;
-    font-size: .88rem; line-height: 1.7;
+    font-size: var(--t-m); line-height: 1.7;
   }
   .done li:first-child { border-top: 0; }
   .done .q { flex: 1; }
@@ -591,7 +608,7 @@
   .review li {
     display: flex; gap: 10px; align-items: flex-start;
     border-top: 1px dashed var(--line); padding-top: 8px;
-    font-size: .88rem; line-height: 1.7;
+    font-size: var(--t-m); line-height: 1.7;
   }
   .review li:first-child { border-top: 0; }
   .review .q { flex: 1; }
@@ -627,28 +644,28 @@
   .pchip {
     border: 1.5px solid var(--line); background: var(--card);
     border-radius: 999px; padding: 9px 16px;
-    font-family: var(--f-disp); font-size: .98rem;
+    font-family: var(--f-disp); font-size: var(--t-m);
   }
   .pchip[aria-pressed="true"] {
     border-color: var(--shu); background: var(--shu-soft); color: var(--shu);
     box-shadow: inset 0 0 0 1px var(--shu);
   }
-  .pchip.add { font-family: var(--f-body); font-size: .82rem; font-weight: 700; color: var(--ink-soft); }
+  .pchip.add { font-family: var(--f-body); font-size: var(--t-s); font-weight: 700; color: var(--ink-soft); }
   .pform { display: flex; gap: 7px; margin: -14px 0 22px; flex-wrap: wrap; }
   .pform input {
     flex: 1; min-width: 120px;
     border: 1.5px solid var(--ai); border-radius: var(--r-m);
     background: var(--card); color: var(--ink);
-    font: inherit; font-size: 1rem; padding: 10px 12px;
+    font: inherit; font-size: var(--t-m); padding: 10px 12px;
   }
   .pform button {
     border: 0; border-radius: var(--r-m); padding: 10px 16px;
-    font-weight: 700; font-size: .88rem;
+    font-weight: 700; font-size: var(--t-m);
     background: var(--ai); color: #fff;
   }
   .pform button.ghost { background: none; color: var(--ink-soft); border: 1.5px solid var(--line); }
-  .whoami { font-size: .72rem; font-weight: 700; color: var(--ink-soft); }
-  .whoami b { color: var(--ink); font-size: .82rem; }
+  .whoami { font-size: var(--t-xs); font-weight: 700; color: var(--ink-soft); }
+  .whoami b { color: var(--ink); font-size: var(--t-s); }
 
   /* ---------- サーバー（みんなの きろく） ---------- */
   .field-row { display: grid; gap: 5px; margin-bottom: 10px; }
@@ -661,7 +678,7 @@
   .seg button {
     flex: 1; border: 1.5px solid var(--line); background: var(--card);
     border-radius: var(--r-m); padding: 10px 6px;
-    font-size: .82rem; font-weight: 700; line-height: 1.3;
+    font-size: var(--t-s); font-weight: 700; line-height: 1.3;
   }
   .seg button[aria-pressed="true"] {
     border-color: var(--accent, var(--shu));
@@ -682,7 +699,7 @@
     font: inherit; font-size: var(--t-s); padding: 11px 12px;
   }
   .field-row input:focus { outline: 2px solid var(--ai); outline-offset: 1px; }
-  .srv-msg { font-size: .78rem; font-weight: 700; line-height: 1.7; margin: 0 0 10px; }
+  .srv-msg { font-size: var(--t-s); font-weight: 700; line-height: 1.7; margin: 0 0 10px; }
   .srv-msg.ok { color: var(--chart-ok); }
   .srv-msg.ng { color: var(--chart-ng); }
   .srv-msg.idle { color: var(--ink-soft); }
@@ -690,7 +707,7 @@
   .mini-btns button {
     border: 1.5px solid var(--line); background: var(--card);
     border-radius: var(--r-m); padding: 9px 14px;
-    font-size: .82rem; font-weight: 700;
+    font-size: var(--t-s); font-weight: 700;
   }
   .mini-btns button.go2 { background: var(--ai); color: #fff; border-color: var(--ai); }
   /* 「ためす」は えらぶ ボタンでは ないので、ぜんぶ おなじ みためで ならす ことを しめす */
@@ -699,21 +716,21 @@
     border-color: var(--ai); color: var(--ai); background: var(--ai-soft);
   }
   .mini-btns.try button:active { transform: translateY(1px); }
-  .mini-btns.try button .pl { font-size: .7rem; line-height: 1; }
+  .mini-btns.try button .pl { font-size: var(--t-xs); line-height: 1; }
   .mini-btns.try button[disabled] { border-color: var(--line); color: var(--ink-soft); background: var(--card-2); }
   .person { margin-bottom: 14px; }
   .person .tiles { margin-bottom: 4px; }
   .person .tile { box-shadow: none; background: var(--card-2); }
   .person-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 11px; }
-  .person-h strong { font-family: var(--f-disp); font-size: 1.16rem; font-weight: 400; }
-  .person-h span { margin-left: auto; font-size: .74rem; font-weight: 700; color: var(--ink-soft); }
-  .person-h span b { font-family: var(--f-num); font-size: .92rem; color: var(--ink); }
+  .person-h strong { font-family: var(--f-disp); font-size: var(--t-l); font-weight: 400; }
+  .person-h span { margin-left: auto; font-size: var(--t-xs); font-weight: 700; color: var(--ink-soft); }
+  .person-h span b { font-family: var(--f-num); font-size: var(--t-m); color: var(--ink); }
   .hist-who { margin-bottom: 10px; }
   .hist-app { margin-bottom: 14px; }
   .hist-app .pchip { font-family: var(--f-body); font-size: var(--t-s); font-weight: 700; padding: 8px 14px; }
-  .hist-who .pchip { padding: 7px 14px; font-size: .9rem; }
+  .hist-who .pchip { padding: 7px 14px; font-size: var(--t-m); }
   .genre { display: grid; gap: 9px; }
-  .g-row { display: flex; align-items: center; gap: 10px; font-size: .84rem; font-weight: 700; }
+  .g-row { display: flex; align-items: center; gap: 10px; font-size: var(--t-s); font-weight: 700; }
   .g-name { flex: 0 0 7.2em; }
   .g-bar { flex: 1; height: 9px; border-radius: 999px; background: var(--line); overflow: hidden; }
   .g-bar i { display: block; height: 100%; background: var(--chart-ok); border-radius: 999px; }
@@ -726,15 +743,15 @@
   }
   .recs li:first-child { border-top: 0; padding-top: 0; }
   .rec-h { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-  .rec-h b { font-size: .86rem; }
-  .rec-h span { font-size: .74rem; color: var(--ink-soft); font-weight: 700; }
+  .rec-h b { font-size: var(--t-s); }
+  .rec-h span { font-size: var(--t-xs); color: var(--ink-soft); font-weight: 700; }
   .rec-h .state { margin-left: auto; white-space: nowrap; }
   .rec-h .state.done { color: var(--chart-ok); }
   .rec-btns { display: flex; gap: 7px; flex-wrap: wrap; }
   .rec-btns button {
     border: 1.5px solid var(--line); background: var(--card);
     border-radius: var(--r-m); padding: 8px 13px;
-    font-size: .8rem; font-weight: 700;
+    font-size: var(--t-s); font-weight: 700;
   }
   .rec-btns button.rec { border-color: var(--shu); color: var(--shu); }
   .rec-btns button.rec[data-on="1"] { background: var(--shu); color: #fff; }
@@ -745,11 +762,11 @@
     width: 100%; margin-top: 12px;
     border: 1.5px solid var(--line); background: var(--card-2);
     border-radius: var(--r-m); padding: 11px 0;
-    font-size: .86rem; font-weight: 700;
+    font-size: var(--t-s); font-weight: 700;
   }
-  .qs.empty { font-size: .78rem; color: var(--ink-soft); font-weight: 700; padding: 2px 12px 11px; margin: 0; }
+  .qs.empty { font-size: var(--t-s); color: var(--ink-soft); font-weight: 700; padding: 2px 12px 11px; margin: 0; }
   .plist { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
-  .plist li { display: flex; align-items: center; gap: 8px; font-size: .84rem; font-weight: 700; }
+  .plist li { display: flex; align-items: center; gap: 8px; font-size: var(--t-s); font-weight: 700; }
   .plist li span { flex: 1; }
   .plist li button {
     border: 1.5px solid var(--line); background: var(--card);
@@ -793,55 +810,55 @@
     font-family: var(--f-num); font-weight: 800; font-size: 1.55rem;
     font-variant-numeric: tabular-nums; line-height: 1.2;
   }
-  .tile .v small { font-size: .72rem; margin-left: 1px; }
-  .tile .k { font-size: .66rem; font-weight: 700; color: var(--ink-soft); letter-spacing: .06em; }
+  .tile .v small { font-size: var(--t-xs); margin-left: 1px; }
+  .tile .k { font-size: var(--t-2xs); font-weight: 700; color: var(--ink-soft); letter-spacing: .06em; }
   .chart { width: 100%; height: auto; display: block; touch-action: manipulation; }
   .chart .hit:focus-visible { outline: 2px solid var(--ai); }
   .chart-cap {
-    margin: 6px 0 0; font-size: .8rem; font-weight: 700; color: var(--ink);
+    margin: 6px 0 0; font-size: var(--t-s); font-weight: 700; color: var(--ink);
     min-height: 1.5em;
   }
   .chart-cap b { font-family: var(--f-num); }
-  .legend2 { display: flex; gap: 14px; margin-top: 9px; font-size: .72rem; font-weight: 700; color: var(--ink-soft); }
+  .legend2 { display: flex; gap: 14px; margin-top: 9px; font-size: var(--t-xs); font-weight: 700; color: var(--ink-soft); }
   .legend2 b { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; }
   .legend2 i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
   .legend2 i.ok { background: var(--chart-ok); }
   .legend2 i.ng { background: var(--chart-ng); }
   .day + .day { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
   .day-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 7px; }
-  .day-d { font-family: var(--f-disp); font-size: 1rem; flex: 1; }
-  .day-n { font-size: .78rem; font-weight: 700; color: var(--ink-soft); white-space: nowrap; }
-  .day-n b { font-family: var(--f-num); font-size: 1rem; color: var(--shu); }
+  .day-d { font-family: var(--f-disp); font-size: var(--t-m); flex: 1; }
+  .day-n { font-size: var(--t-s); font-weight: 700; color: var(--ink-soft); white-space: nowrap; }
+  .day-n b { font-family: var(--f-num); font-size: var(--t-m); color: var(--shu); }
   .set { border: 1.5px solid var(--line); border-radius: var(--r-m); background: var(--card-2); }
   .set + .set { margin-top: 6px; }
   .set summary {
     display: flex; align-items: center; gap: 8px;
-    padding: 9px 12px; cursor: pointer; font-size: .82rem; font-weight: 700;
+    padding: 9px 12px; cursor: pointer; font-size: var(--t-s); font-weight: 700;
     list-style: none;
   }
   .set summary::-webkit-details-marker { display: none; }
   .set summary::after {
-    content: "＋"; margin-left: auto; color: var(--ink-soft); font-size: .9rem;
+    content: "＋"; margin-left: auto; color: var(--ink-soft); font-size: var(--t-m);
   }
   .set[open] summary::after { content: "−"; }
-  .set summary .sc { font-family: var(--f-num); color: var(--shu); font-size: .95rem; }
-  .set summary .tm { color: var(--ink-soft); font-weight: 700; font-size: .72rem; }
+  .set summary .sc { font-family: var(--f-num); color: var(--shu); font-size: var(--t-m); }
+  .set summary .tm { color: var(--ink-soft); font-weight: 700; font-size: var(--t-xs); }
   .qs { list-style: none; margin: 0; padding: 2px 12px 11px; display: grid; gap: 7px; }
   .qs li {
     display: flex; gap: 8px; align-items: flex-start;
-    font-size: .82rem; line-height: 1.65;
+    font-size: var(--t-s); line-height: 1.65;
     border-top: 1px dashed var(--line); padding-top: 7px;
   }
   .qs li:first-child { border-top: 0; }
   .qs .mk { flex: 0 0 15px; width: 15px; height: 15px; margin-top: 2px; }
   .qs .x {
     flex: 0 0 15px; text-align: center; color: var(--chart-ng);
-    font-weight: 900; font-size: .95rem; line-height: 1.4;
+    font-weight: 900; font-size: var(--t-m); line-height: 1.4;
   }
   .qs .q { flex: 1; word-break: keep-all; overflow-wrap: break-word; }
   .qs .a { font-family: var(--f-num); font-weight: 800; white-space: nowrap; }
   .qs li.ng .a { color: var(--chart-ok); }
-  .qs .mine { display: block; font-size: .68rem; color: var(--ink-soft); font-weight: 700; }
+  .qs .mine { display: block; font-size: var(--t-xs); color: var(--ink-soft); font-weight: 700; }
   .hist-link {
     width: 100%; display: flex; align-items: baseline; gap: 10px;
     border: 0; border-top: 1.5px solid var(--grid); background: none;
@@ -862,10 +879,10 @@
     font-size: var(--t-xs); font-weight: 700; text-decoration: underline;
     text-underline-offset: 3px; padding: 9px 8px;
   }
-  .wipe .ask2 { font-size: .78rem; font-weight: 700; }
+  .wipe .ask2 { font-size: var(--t-s); font-weight: 700; }
   .wipe .yes { color: var(--shu); text-decoration: none; border: 1.5px solid var(--shu); border-radius: 999px; padding: 6px 14px; }
   .wipe .no { text-decoration: none; border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 14px; }
-  .foot { margin-top: 26px; font-size: .68rem; color: var(--ink-soft); text-align: center; line-height: 1.8; }
+  .foot { margin-top: 26px; font-size: var(--t-xs); color: var(--ink-soft); text-align: center; line-height: 1.8; }
 
   /* ---------- えいご（ききとり・えいたんご・あいさつ・ABC） ---------- */
   :root { --f-en: "M PLUS Rounded 1c", "Verdana", system-ui, sans-serif; }
@@ -885,7 +902,7 @@
   .bigpic .num { font-family: var(--f-num); font-weight: 800; }
   .picname {
     text-align: center; font-family: var(--f-disp);
-    font-size: 1.02rem; color: var(--ink-soft);
+    font-size: var(--t-m); color: var(--ink-soft);
     margin: 4px 0 12px;
   }
   .phrase {
@@ -900,10 +917,10 @@
   }
   .letter i { color: var(--shu); font-style: normal; }
   .hint {
-    text-align: center; font-size: .84rem; font-weight: 700;
+    text-align: center; font-size: var(--t-s); font-weight: 700;
     color: var(--ink-soft); margin: 10px 0 0; line-height: 1.7;
   }
-  .hint b { font-family: var(--f-en); font-size: .95rem; color: var(--ink); }
+  .hint b { font-family: var(--f-en); font-size: var(--t-m); color: var(--ink); }
   .judge b.en { font-family: var(--f-en); }
 
   /* きく ボタン */
@@ -912,7 +929,7 @@
     width: 100%; margin: 10px 0 0;
     border: 2px solid var(--ai); background: var(--ai-soft); color: var(--ai);
     border-radius: var(--r-m); padding: 13px 10px;
-    font-family: var(--f-disp); font-size: 1.02rem; letter-spacing: .04em;
+    font-family: var(--f-disp); font-size: var(--t-m); letter-spacing: .04em;
   }
   .playbtn:active { transform: translateY(2px); }
   .playbtn .spk { font-size: 1.25rem; line-height: 1; }
@@ -930,11 +947,11 @@
   .picks.en .pick:active { transform: translateY(2px); }
   .pick .pemoji { font-size: clamp(2.1rem, 11vw, 2.7rem); line-height: 1.25; }
   .pick .pjp {
-    font-family: var(--f-body); font-size: .82rem; font-weight: 700;
+    font-family: var(--f-body); font-size: var(--t-s); font-weight: 700;
     color: var(--ink-soft); line-height: 1.5;
   }
   .pick .pjp.big {
-    font-family: var(--f-disp); font-weight: 400; font-size: 1.04rem;
+    font-family: var(--f-disp); font-weight: 400; font-size: var(--t-l);
     color: var(--ink); line-height: 1.7;
     word-break: keep-all; overflow-wrap: break-word;
   }
@@ -954,7 +971,7 @@
   .pick.miss { border-color: var(--ai); background: var(--ai-soft); }
   .pick.ans::after, .pick.miss::after {
     position: absolute; top: 4px; right: 9px;
-    font-size: .95rem; font-weight: 900; line-height: 1;
+    font-size: var(--t-m); font-weight: 900; line-height: 1;
   }
   .pick.ans::after { content: "○"; color: var(--shu); }
   .pick.miss::after { content: "✕"; color: var(--ai); }
@@ -962,24 +979,26 @@
   .pick[disabled]:active { transform: none; }
   .picknum {
     position: absolute; top: 5px; left: 8px;
-    font-size: .62rem; font-weight: 900; color: var(--ink-soft);
+    font-size: var(--t-2xs); font-weight: 900; color: var(--ink-soft);
   }
 
   /* トップ・えいごの みほん */
   .peek-en {
-    font-family: var(--f-en); font-weight: 800; font-size: .92rem;
+    font-family: var(--f-en); font-weight: 800; font-size: var(--t-m);
     color: var(--ink-soft); line-height: 1.6; text-align: center;
   }
   .peek-en em { font-style: normal; font-size: 1.5rem; display: block; }
   .peek-en b { color: var(--shu); }
   .peek-emoji { font-size: 1.5rem; line-height: 1.35; text-align: center; letter-spacing: .06em; }
   .peek-key {
-    font-family: var(--f-en, var(--f-num)); font-weight: 800; font-size: .84rem;
+    font-family: var(--f-en, var(--f-num)); font-weight: 800; font-size: var(--t-s);
     color: var(--ink-soft); text-align: center; line-height: 1.5; letter-spacing: .06em;
   }
+  /* 「はじめて」の しるし。その画面の 色で つける（1つの画面で 色を ばらけさせない） */
   .mode h3 .tag {
-    font-family: var(--f-body); font-size: .58rem; font-weight: 900;
-    color: var(--shu); background: var(--shu-soft);
+    font-family: var(--f-body); font-size: var(--t-2xs); font-weight: 900;
+    color: var(--accent, var(--shu));
+    background: color-mix(in srgb, var(--accent, var(--shu)) 14%, transparent);
     border-radius: 999px; padding: 2px 7px; vertical-align: .18em;
   }
   /* えらぶ 行（タイピングの コース）。えらんで いない ものは しるしを うすく */
@@ -1019,7 +1038,7 @@
   .medal { margin: 0; display: grid; justify-items: center; gap: 4px; opacity: .45; }
   .medal.got { opacity: 1; }
   .medal figcaption {
-    font-size: .6rem; font-weight: 700; line-height: 1.45; text-align: center; color: var(--ink-soft);
+    font-size: var(--t-2xs); font-weight: 700; line-height: 1.45; text-align: center; color: var(--ink-soft);
     word-break: keep-all; overflow-wrap: break-word;
   }
   .medal.got figcaption { color: var(--ink); }
@@ -1071,7 +1090,7 @@
     line-height: 1; text-align: right;
   }
   .combo b { font-size: 1.7rem; }
-  .combo small { display: block; font-size: .6rem; font-family: var(--f-body); }
+  .combo small { display: block; font-size: var(--t-2xs); font-family: var(--f-body); }
   .combo.hit { animation: pop .3s ease-out; }
   @keyframes pop { 0% { transform: scale(1.5); } 100% { transform: scale(1); } }
   .tycard.shake { animation: shake .3s ease-in-out; }
@@ -1124,7 +1143,7 @@
   .kbd-key.next { background: var(--shu); color: #fff; border-color: var(--shu); }
   .kbd-key.bad { background: var(--ai-soft); color: var(--ai); border-color: var(--ai); }
   .kbd-legend { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 9px; }
-  .kbd-legend b { display: inline-flex; align-items: center; gap: 4px; font-size: .62rem; font-weight: 700; color: var(--ink-soft); }
+  .kbd-legend b { display: inline-flex; align-items: center; gap: 4px; font-size: var(--t-2xs); font-weight: 700; color: var(--ink-soft); }
   .kbd-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 
   /* けっか */
@@ -1143,10 +1162,10 @@
     padding: 7px 12px; background: var(--card-2);
     font-family: var(--f-en, var(--f-num)); font-weight: 800; font-size: var(--t-l);
   }
-  .weak small { font-family: var(--f-body); font-size: .6rem; font-weight: 700; color: var(--ink-soft); }
+  .weak small { font-family: var(--f-body); font-size: var(--t-2xs); font-weight: 700; color: var(--ink-soft); }
   .sec-label.gap { margin-top: 24px; }
   .seg .md { display: grid; gap: 2px; }
-  .seg .md small { font-size: .62rem; font-weight: 700; color: var(--ink-soft); }
+  .seg .md small { font-size: var(--t-2xs); font-weight: 700; color: var(--ink-soft); }
   .seg .md[aria-pressed="true"] small { color: inherit; }
 
   /* トップの タイピングの しるし */
@@ -1156,7 +1175,7 @@
     width: 34px; height: 34px;
     border: 2px solid var(--accent); border-bottom-width: 4px;
     border-radius: var(--r-s);
-    font-family: var(--f-en, var(--f-num)); font-weight: 800; font-size: 1rem;
+    font-family: var(--f-en, var(--f-num)); font-weight: 800; font-size: var(--t-m);
   }
 
 
@@ -1229,8 +1248,8 @@
 
   /* えらぶ がめんの みほん */
   .peek-kj { font-weight: 700; font-size: 1.9rem; line-height: 1.1; text-align: center; color: var(--ink-soft); }
-  .peek-kj.sm { font-size: 1.4rem; }
-  .peek-kj small { display: block; font-size: .56rem; font-weight: 700; font-family: var(--f-body); }
+  .peek-kj.sm { font-size: var(--t-xl); }
+  .peek-kj small { display: block; font-size: var(--t-2xs); font-weight: 700; font-family: var(--f-body); }
 
   /* トップの しるし */
   .appmark-kj {
@@ -1484,7 +1503,7 @@
       <button type="button" class="mode" data-mode="kj-trace">
         <div>
           <h3>なぞりがき</h3>
-          <p>マスの かんじを ゆびで なぞる</p>
+          <p>お手本を 1かくずつ なぞる</p>
         </div>
         <div class="peek" aria-hidden="true"><div class="peek-kj">山</div></div>
       </button>
@@ -1837,7 +1856,7 @@
   };
 
   // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
-  const BUILD = "2026-09-20e";
+  const BUILD = "2026-09-20f";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
