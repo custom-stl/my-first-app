@@ -824,8 +824,21 @@
   .legend2 i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
   .legend2 i.ok { background: var(--chart-ok); }
   .legend2 i.ng { background: var(--chart-ng); }
-  .day + .day { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
-  .day-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 7px; }
+  /* 1日 ＝ ノートの 1ページ。ひらいて あるのは いちばん あたらしい 日だけ。 */
+  .day + .day { border-top: 1px solid var(--line); }
+  .day-h {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 11px 2px; cursor: pointer; list-style: none;
+  }
+  .day-h::-webkit-details-marker { display: none; }
+  .day[open] .day-h { padding-bottom: 7px; }
+  .day-c {
+    font-family: var(--f-num); font-weight: 800; font-size: var(--t-xs);
+    color: var(--ink-soft); white-space: nowrap;
+  }
+  .day-h::after { content: "＋"; color: var(--ink-soft); font-size: var(--t-m); width: 1em; text-align: center; }
+  .day[open] > .day-h::after { content: "−"; }
+  .day > .set:last-child { margin-bottom: 12px; }
   .day-d { font-family: var(--f-disp); font-size: var(--t-m); flex: 1; }
   .day-n { font-size: var(--t-s); font-weight: 700; color: var(--ink-soft); white-space: nowrap; }
   .day-n b { font-family: var(--f-num); font-size: var(--t-m); color: var(--shu); }
@@ -1856,7 +1869,7 @@
   };
 
   // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
-  const BUILD = "2026-09-20f";
+  const BUILD = "2026-09-20g";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
@@ -4047,6 +4060,40 @@
     url: String(url).trim().replace(/\/+$/, ""), key: String(key).trim(),
   }));
 
+  /* サーバーの エラーを、なにを すれば いいか わかる ことばに する。
+     404 は「その URL は ただの サイトで、きろくサーバーが 入って いない」ことが ほとんど。
+     まえは (404) と 出るだけで、URLが まちがって いるのか サーバーが 無いのか わからなかった。 */
+  function srvErrorText(status) {
+    if (status === 404) {
+      return "その URL に きろくサーバーが ありません（404）。"
+        + "<br>Netlify の サイトなら、GitHubリポジトリを つないで デプロイし なおすと つかえるように なります。";
+    }
+    if (status === 401) return "あいことばが ちがいます。";
+    if (status >= 500) return `サーバーが こんで いるか こわれて います（${status}）。きろくは この たんまつに のこして あるので、あとで もう いちど おくれます。`;
+    return `サーバーが エラーを かえしました（${status}）。`;
+  }
+
+  /* この ページと おなじ ところに きろくサーバーが あるかを 見に いく。
+     サイトと サーバーを いっしょに 出して いる とき（Netlify など）は、
+     **URL を 入れなくても** きろくが サーバーに たまる ように する。
+     じぶんで べつの URL を 入れて ある ときは さわらない。 */
+  async function autoDetectServer() {
+    if (!/^https?:$/.test(location.protocol)) return false;   // file:// では しない
+    if (srvCfg().url) return false;                           // もう きまって いる
+    try {
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), 5000);
+      const res = await fetch(`${location.origin}/api/health`, { cache: "no-store", signal: ac.signal });
+      clearTimeout(timer);
+      if (!res.ok) return false;                              // ただの サイト（404）
+      const data = await res.json();
+      if (!data || data.ok !== true) return false;
+      setSrvCfg(location.origin, srvCfg().key);
+      await flushOutbox();                                    // たまって いた ぶんを おくる
+      return true;
+    } catch { return false; }                                 // つながらなければ そのまま
+  }
+
   function loadOutbox() {
     try { const v = JSON.parse(store.get(OUTBOX_KEY, "[]")); return Array.isArray(v) ? v : []; } catch { return []; }
   }
@@ -4079,7 +4126,7 @@
         } catch { error = "サーバーに つながりません"; break; }
         if (res.status === 401) { error = "あいことばが ちがいます"; break; }
         // 400（データが おかしい）は なんど おくっても だめなので すすめる
-        if (!res.ok && res.status !== 400) { error = `サーバーが エラーを かえしました (${res.status})`; break; }
+        if (!res.ok && res.status !== 400) { error = srvErrorText(res.status); break; }
         const left = loadOutbox().filter((r) => r.id !== run.id);
         saveOutbox(left);
         sent++;
@@ -4317,15 +4364,19 @@
     $("days").innerHTML = daysHTML(days);
   }
 
-  // 日ごとの きろく（セットを ひらくと 1もんごとの なかみ）。
-  // この たんまつの きろくと、サーバーから とってきた きろくの りょうほうで つかう。
+  /* 日ごとの きろく（日を ひらくと その日の セット、セットを ひらくと 1もんごとの なかみ）。
+     **あけて おくのは いちばん あたらしい 1日だけ**。ノートは きょうの ページを ひらいて
+     おく ものだし、2しゅうかんぶんを ぜんぶ ひろげると スマホで 1まんピクセルを こえて、
+     下に ある「おとなの かたへ」の せっていに たどりつけなく なる。
+     この たんまつの きろくと、サーバーから とってきた きろくの りょうほうで つかう。 */
   function daysHTML(days) {
-    return days.map((e) => `
-      <div class="day">
-        <div class="day-h">
+    return days.map((e, i) => `
+      <details class="day"${i === 0 ? " open" : ""}>
+        <summary class="day-h">
           <span class="day-d">${dayLabel(e.d)}</span>
           <span class="day-n">せいかい <b>${e.ok}</b>/${e.q}もん</span>
-        </div>
+          <span class="day-c">${e.sets.length}かい</span>
+        </summary>
         ${e.sets.map((set) => {
           const total = totalOf(set);
           return `<details class="set">
@@ -4341,7 +4392,7 @@
                   : `<li class="ng"><span class="x">✕</span><span class="q">${esc(q.q)}</span><span class="a">${esc(q.a)}${q.g ? `<span class="mine">かいた こたえ ${esc(q.g)}</span>` : ""}</span></li>`).join("")}</ul>`}
           </details>`;
         }).join("")}
-      </div>`).join("");
+      </details>`).join("");
   }
 
   // しゅるいべつの せいかいりつ
@@ -4517,6 +4568,8 @@
       + "どの たんまつで やった ぶんも 1つに あつまります。<br>"
       + "いれないと、きろくは やった たんまつの 中だけに のこります。");
     else if (left > 0) srvMsg(`おくれて いない きろくが <b>${left}</b>件 あります。「いま おくる」を おしてください。`, "ng");
+    else if (url === location.origin) srvMsg("この サイトの <b>きろくサーバー</b>に つながって います。"
+      + "<br>どの たんまつからでも、おなじ なまえを えらべば きろくが 1つに あつまります。", "ok");
     else srvMsg(`サーバー: ${esc(url)}`, "idle");
   }
   async function testServer() {
@@ -4534,7 +4587,7 @@
       if (key) u.searchParams.set("key", key);
       const res = await fetch(u, { cache: "no-store" });
       if (res.status === 401) { srvMsg("あいことばが ちがいます。", "ng"); return; }
-      if (!res.ok) { srvMsg(`サーバーが エラーを かえしました (${res.status})`, "ng"); return; }
+      if (!res.ok) { srvMsg(srvErrorText(res.status), "ng"); return; }
       const data = await res.json();
       const n = (data.players || []).length;
       srvMsg(`つながりました。いま <b>${n}</b>人ぶんの きろくが あります。`, "ok");
@@ -4648,7 +4701,7 @@
         return;
       }
       if (!res.ok) {
-        showLocalTeam(`サーバーが エラーを かえしました（${res.status}）。`, "ng");
+        showLocalTeam(srvErrorText(res.status), "ng");
         return;
       }
       data = await res.json();
@@ -6226,7 +6279,11 @@
   teaseHistory();
   renderHello();
   primeRecs();          // ろくおんした こえを すぐ ならせる ように
-  flushOutbox();      // まえに おくれなかった きろくを おくる
+  // おなじ ところに きろくサーバーが あれば つかう。なければ そのまま（この たんまつだけ）。
+  autoDetectServer().then((found) => {
+    if (found && !$("history").hidden) renderSrvBox();
+    flushOutbox();    // まえに おくれなかった きろくを おくる
+  });
   $("hello-frogs").innerHTML = `${frogSVG("kero", { size: 52, mood: "open" })}${frogSVG("koro", { size: 52, mood: "open" })}`;
 })();
 </script>

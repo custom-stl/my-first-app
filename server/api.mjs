@@ -151,7 +151,14 @@ export async function handle({ method, path, query = {}, body = null, store, app
     let rows = await store.listRuns({ since: query.since && DAY_RE.test(query.since) ? query.since : null });
     if (player) rows = rows.filter((r) => r.player_id === player);
     rows = rows.slice(-limit).reverse();
-    return ok({ ok: true, runs: rows.map((r) => ({ ...r, detail: r.detail ? JSON.parse(r.detail) : null })) });
+    // detail が こわれて いても そこだけ null に する。
+    // 1行の ために きろく画面 ぜんぶが 見られなく なる ほうが こまる。
+    const parseDetail = (v) => {
+      if (!v) return null;
+      if (Array.isArray(v)) return v;
+      try { return JSON.parse(v); } catch { return null; }
+    };
+    return ok({ ok: true, runs: rows.map((r) => ({ ...r, detail: parseDetail(r.detail) })) });
   }
 
   return bad(404, "そんな API は ありません");

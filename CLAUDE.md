@@ -64,7 +64,40 @@
 
 ## どの端末からやっても 記録を あつめる
 
-`server/` を 立てて、きろく画面の「サーバー」に URL を いれると そろう。
+きろくサーバーは **3つの すがた**が ある。**本体は `server/api.mjs` 1つ**で、
+HTTP の さほう（どの URL が なにを かえすか・なにを ことわるか）は ぜんぶ ここ。
+ほぞん先だけが ちがう。
+
+| どこで | 入口 | ほぞん先 |
+| --- | --- | --- |
+| **Netlify**（いま つかって いる） | `netlify/functions/api.mjs` | Netlify Blobs（1か月ぶん＝1つの JSON。etag で CAS） |
+| Cloudflare Workers | `server/worker.js` | D1（SQLite） |
+| 手もとの PC | `server/dev-server.mjs` | JSONファイル |
+
+**あたらしい ほぞん先を 足す ときも `server/api.mjs` は さわらない**
+（`insertRun` / `listRuns` の 2つを もつ オブジェクトを わたすだけ）。
+
+### URL を 入れなくても つながる（Netlify）
+
+サイトと サーバーが おなじ ところに あるので、`autoDetectServer()` が
+`${location.origin}/api/health` を 1かい たたいて、こたえたら その URL を じどうで つかう。
+ただの 静的サイト（404）なら なにも せず、この端末だけで うごきつづける。
+**だから お子さんも 親も なにも 入力しなくて よい。**
+べつの URL を じぶんで 入れて ある ときは さわらない。
+
+### Netlify の きろくサーバーが うごく じょうけん
+
+`netlify/functions/api.mjs` が サイトと いっしょに あがって いる ひつようが ある。
+
+- **GitHub を つないだ ばあい**（おすすめ）: Netlify が `netlify.toml` を 見て
+  `npm install`（`@netlify/blobs`）→ `node scripts/build-site.mjs` → `dist/` を 公開し、
+  Functions も いっしょに あがる。**ZIP の 手わたしも いらなく なる。**
+- **フォルダを ドラッグする ばあい**: npm install が はしらないので、
+  `scripts/build-site.mjs --with-function` が **esbuild で 1ファイルに まとめた**
+  ものを 入れる。それでも Netlify 側の つごうで Functions が あがらない ことは ある。
+  そのときも サイトは ふつうに うごく（`autoDetectServer()` が 404 を 見て なにも しない）。
+
+あいことばを つけたい ときは Netlify の Environment variables に `APP_KEY` を いれる。
 
 - おくる: `saveRun()` → `queueRun()` → `flushOutbox()`（おくれなくても outbox に のこって 次に おくる）
 - とってくる: きろく画面を ひらくと `syncHistory()` が `/api/runs?player=…` を よんで、
@@ -87,11 +120,12 @@
 
 配布用ZIPの名前は **`Study-note-site.zip`**（ユーザーの希望。かってに 変えない）。
 
+**どのファイルを公開するかは `scripts/build-site.mjs` の `SITE_FILES` 1か所**（Netlify のビルドもここを見る）。
+
 ```bash
-# 配布用ZIPを作る（サイトに必要なファイルだけ。README/CLAUDE.md/tests/server は入れない）
+# 配布用ZIPを作る（サイトのファイル ＋ 1ファイルにまとめたきろくサーバー）
 SD="${SCRATCHPAD:-/tmp}"; rm -rf "$SD/Study-note-site" "$SD/Study-note-site.zip"
-mkdir -p "$SD/Study-note-site"
-cp index.html config.js manifest.webmanifest icon.svg icon-180.png icon-192.png icon-512.png "$SD/Study-note-site/"
+node scripts/build-site.mjs "$SD/Study-note-site" --with-function
 (cd "$SD" && zip -qr Study-note-site.zip Study-note-site)
 ```
 
@@ -102,7 +136,8 @@ cp index.html config.js manifest.webmanifest icon.svg icon-180.png icon-192.png 
 
 **録音した声は公開先には載らない**（端末のブラウザの中にある）。デプロイしても声は増えも減りもしないので、「声が更新されているか」を聞かれたらその点を先に伝え、消えていれば「バックアップ（こえと きろく）」からの復元を案内する。
 
-> ユーザーが Netlify サイトを GitHub リポジトリに連携したら、`main` への push で自動デプロイされるようになる。その場合はZIPの受け渡しは不要になるので、このメモを更新する。
+> ユーザーが Netlify サイトを GitHub リポジトリに連携したら、`main` への push で自動デプロイされるようになる。
+> その場合はZIPの受け渡しは不要になり、**きろくサーバー（Functions）も確実に動く**ので、このメモを更新する。
 
 ## 変更したときの確認
 
@@ -112,6 +147,8 @@ node tests/verify-questions.mjs   # 3レベル×7種類×10問×4セット=840�
 node tests/verify-kanji.mjs       # かんじの画数・よみ・4択、なぞりがきの判定を照合
 node tests/verify-typing.mjs      # タイピングの出題・指の割り当て・点数の計算を照合
 node tests/verify-api.mjs         # きろくサーバー（server/）のAPIを検証
+node tests/verify-netlify.mjs     # Netlify版（Blobs）の保存・重複・同時書き込み・あいことば
+node tests/verify-netlify-site.mjs # Netlifyと同じ形（サイト＋/api）で、URL未入力のまま2台がそろうか
 node tests/verify-sync.mjs        # 3台の端末で記録が1つにまとまるか（本物のサーバーを立てて）
 node tests/verify-voice-order.mjs # ケロとコロの声が重ならないか（ことば／アニメごえ／録音）を実時間で計測
 ```
@@ -129,6 +166,14 @@ node tests/verify-voice-order.mjs # ケロとコロの声が重ならないか�
 ぜんぶ 出るか、2かい ひらいても ふえないか、アプリごとに しぼれるか。
 `server/api.mjs` の `MODES` に しゅるいを たし忘れると ここで 落ちる。
 
+`verify-netlify.mjs` は **Netlify Blobs と同じ約束（etag つき）で動くにせものの Store** につないで、
+自分で書いたところ ―― 月ごとのキー・二重送信・**2台から同時に届いても消えないか（CAS のやり直し）**・
+あいことば・保存に失敗したら 500（400 だと端末が outbox から捨ててしまう）―― を照合する。
+
+`verify-netlify-site.mjs` は **`dist/` を実際に配って `/api/…` を関数につなぎ**、
+ブラウザから通しで見る。`autoDetectServer()` が URL 未入力のまま自分のサイトをサーバーとして
+見つけるか、2台がそろうか、**サーバーのないただの静的サイトでも行き止まりにならないか**。
+
 `verify-voice-order.mjs` は `127.0.0.1` に http-server を立てて測る（`file://` だと録音のテストができない）。
 
 `verify-questions.mjs` は**答えを画面から独立に計算して**照合する（筆算は問題文、時計は針の角度から）。
@@ -145,7 +190,9 @@ node tests/verify-voice-order.mjs # ケロとコロの声が重ならないか�
 | --- | --- |
 | `index.html` | アプリ本体（4つとも。HTML+CSS+JS、SVGのキャラクター・時計・花まる・かんじのマスもコード生成） |
 | `config.js` | きろくサーバーのURL・あいことばの既定値（空でよい） |
-| `server/` | きろくサーバー。`api.mjs` が本体で、Workers版（`worker.js`）とローカル版（`dev-server.mjs`）が共用 |
+| `server/` | きろくサーバーの本体。`api.mjs` に HTTP の作法があり、Netlify版・Workers版（`worker.js`）・ローカル版（`dev-server.mjs`）が共用 |
+| `netlify/functions/api.mjs` | Netlify版の入口。保存先は Netlify Blobs |
+| `netlify.toml` / `package.json` / `scripts/build-site.mjs` | Netlify のビルド設定と、公開するファイルの一覧（ZIP もここを見る） |
 | `tests/` | 上記の検証スクリプト |
 | `.github/workflows/pages.yml` | GitHub Pages 用（リポジトリが private のままなので現在は動かない） |
 

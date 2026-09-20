@@ -1,0 +1,17 @@
+{
+  "name": "study-note-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "べんきょうノート（さんすう・えいご・かんじ・タイピング）と、きろくサーバー",
+  "scripts": {
+    "build": "node scripts/build-site.mjs",
+    "test": "node tests/verify-questions.mjs && node tests/verify-kanji.mjs && node tests/verify-typing.mjs && node tests/verify-api.mjs && node tests/verify-netlify.mjs && node tests/verify-sync.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

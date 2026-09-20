@@ -1,3 +1,4 @@
-tests/.tmp-runs.json
-server-data/
 node_modules/
+dist/
+server-data/
+tests/.tmp-*

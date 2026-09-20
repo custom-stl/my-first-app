@@ -30,7 +30,30 @@
 - タイピングの 1行は 「`total` ＝ うてた もんだいすう / `correct` ＝ ミスなしで うてた かず」。
   スコアや せいかいりつは `detail` に 入ります。
 
-## 1. Cloudflare Workers で動かす（無料枠・おすすめ）
+## 0. Netlify で動かす（いま使っているやりかた・設定なし）
+
+サイトを Netlify に置いているなら、**同じサイトの中で** この API が動きます
+（`https://……netlify.app/api/health` など）。保存先は Netlify Blobs で、追加の設定はいりません。
+入口は [`../netlify/functions/api.mjs`](../netlify/functions/api.mjs)、この `api.mjs` をそのまま使っています。
+
+アプリ側は、開いたときに自分のサイトの `/api/health` を一度だけ叩いて、答えたらそれを
+記録サーバーとして使います。**URL もあいことばも入力する必要はありません。**
+
+動くために必要なのは、`netlify/functions/api.mjs` がサイトと一緒に上がっていることだけです。
+
+- **GitHub リポジトリを Netlify につなぐ**（おすすめ）: `netlify.toml` を見て `npm install` →
+  `node scripts/build-site.mjs` → `dist/` を公開し、Functions も一緒に上がります。
+- **フォルダをドラッグする**: `npm install` が走らないので、`scripts/build-site.mjs --with-function`
+  が esbuild で 1ファイルにまとめたものを同梱します。それでも Netlify 側の都合で
+  Functions が上がらないことがあります（そのときもサイトは普通に動き、記録はその端末に残ります）。
+
+あいことばを付けたいときは、Netlify の Environment variables に `APP_KEY` を入れてください。
+
+保存のかたちは **1か月ぶん＝1つの JSON**（`2026-09` → その月の記録の配列）。
+1件ずつ別に保存すると1年分を読むのに何百回も取りに行くことになるためです。
+2台から同時に届いても消えないよう、etag を見て書きます（ぶつかったら読み直してやり直し）。
+
+## 1. Cloudflare Workers で動かす（無料枠）
 
 ```bash
 cd server

@@ -1,0 +1,15 @@
+# Netlify の せってい。
+# GitHub リポジトリを Netlify に つなぐと、push するたび ここを 見て
+# 「公開する ファイル」と「きろくサーバー（Functions）」が いっしょに 出る。
+#
+# きろくの ほぞん先は Netlify Blobs。つけたす せっていは なにも いらない。
+# あいことばを つけたい ときだけ、Netlify の Environment variables に
+# APP_KEY を いれる（いれなければ あいことば なしで つかえる）。
+
+[build]
+  command = "node scripts/build-site.mjs"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
