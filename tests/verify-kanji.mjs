@@ -2,7 +2,9 @@
 //  1) かんじの ひょう（かくすう・よみ・がくねん）が おかしく ないか
 //  2) よみ／かきとりの せんたくしが 4つで ダブって いないか、○と こたえが あうか
 //  3) なぞりがきの はんていが ほんとうに 見わけられるか
-//     （ぴったり／すこし ずれ／おおきく ずれ／らくがき／なにも かかない の 5とおりで くらべる）
+//     お手本の せんは 1かくずつ SVGで もって いるので、テストも「ほんものの ように
+//     1かくずつ なぞる」ことが できる。かきじゅん・むき・かくすうを 見て いるかを、
+//     わざと まちがえた ひきかたで てらす（ぬりつぶしも ここで おとす）。
 // つかいかた: node tests/verify-kanji.mjs （リポジトリの ルートで）
 let chromium;
 try { ({ chromium } = await import('playwright')); }
@@ -55,72 +57,64 @@ pg.on('pageerror', e => errs.push(String(e)));
 await pg.goto('file://' + process.cwd() + '/index.html');
 await pg.waitForTimeout(1300);
 
-// なぞりを 中に つくって はんていさせる。
-//   'trace'   … かんじの ドットを ぬりつぶす（ぴったり）
-//   'real'    … ペンの ふとさぶん とびとびに、手ぶれつきで なぞる … ほんものの 子に いちばん ちかい
-//   'way'     … おおきく（62ドット）ずらす … これは とおさない
-//   'scrawl'  … マスに ななめの せんを 2ほん（らくがき）
-//   'none'    … なにも かかない
+/* なぞりを 中から つくる。ざひょうは お手本と おなじ 109×109。
+     'real'   … お手本を 1かくずつ、かきじゅんの とおりに 手ぶれつきで なぞる
+                （ほんものの 子に いちばん ちかい。これが とおらないと はなしに ならない）
+     'fast'   … おなじだが てんが 4つだけ（さっと ひく子）
+     'order'  … かきじゅんを さかさまに する（ばしょは あって いる）
+     'back'   … いちは あって いるが、1かくずつ ぎゃくむきに ひく
+     'few'    … さいごの 1かくを かかない
+     'extra'  … ぜんぶ かいた あと よけいに 1かく ふやす
+     'nuri'   … よこに ぬりつぶす（むかしの しくみなら とおって いた やりかた）
+     'scrawl' … ななめの せんを 2ほん（らくがき）
+     'none'   … なにも かかない                                            */
 async function traceAs(kind) {
   return pg.evaluate((kind) => {
+    const VB = 109;
     const cv = document.getElementById('kj-canvas');
-    const N = cv.width;
-    const down = (x, y) => cv.dispatchEvent(new PointerEvent('pointerdown', {
-      clientX: 0, clientY: 0, bubbles: true, pointerId: 1 }));
-    // ポインタの イベントは がめんの ざひょうで くるので、
-    // アプリと おなじ へんかんを つかって「かきたい ドット」を つくる
     const r = cv.getBoundingClientRect();
-    const toClient = (px, py) => ({ clientX: r.left + px * (r.width / N), clientY: r.top + py * (r.height / N) });
-    const send = (type, px, py) => cv.dispatchEvent(new PointerEvent(type, {
-      ...toClient(px, py), bubbles: true, pointerId: 1 }));
-
-    if (kind === 'none') return;
+    const send = (type, x, y) => cv.dispatchEvent(new PointerEvent(type, {
+      clientX: r.left + x * (r.width / VB), clientY: r.top + y * (r.height / VB),
+      bubbles: true, pointerId: 1,
+    }));
+    const draw = (pts) => {
+      if (pts.length < 2) return;
+      send('pointerdown', pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) send('pointermove', pts[i].x, pts[i].y);
+      send('pointerup', pts[pts.length - 1].x, pts[pts.length - 1].y);
+    };
+    if (kind === 'none') return 0;
 
     if (kind === 'scrawl') {
-      send('pointerdown', 20, 20); for (let i = 0; i <= 20; i++) send('pointermove', 20 + i * 13, 20 + i * 13);
-      send('pointerup', 280, 280);
-      send('pointerdown', 280, 20); for (let i = 0; i <= 20; i++) send('pointermove', 280 - i * 13, 20 + i * 13);
-      send('pointerup', 20, 280);
-      return;
+      draw(Array.from({ length: 21 }, (_, i) => ({ x: 10 + i * 4.4, y: 10 + i * 4.4 })));
+      draw(Array.from({ length: 21 }, (_, i) => ({ x: 99 - i * 4.4, y: 10 + i * 4.4 })));
+      return 2;
+    }
+    if (kind === 'nuri') {
+      let n = 0;
+      for (let y = 10; y < 100; y += 4) { draw([{ x: 10, y }, { x: 99, y }]); n++; }
+      return n;
     }
 
-    // かんじの かたちを オフスクリーンに かいて、その ドットを よこに たどる
-    const off = document.createElement('canvas');
-    off.width = off.height = N;
-    const oc = off.getContext('2d', { willReadFrequently: true });
-    const px = Math.round(N * 0.72);
-    oc.font = `700 ${px}px "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif`;
-    oc.textAlign = 'center'; oc.textBaseline = 'middle';
-    oc.fillStyle = '#000';
-    oc.fillText(document.querySelector('#kj-canvas').getAttribute('aria-label').slice(0, 1),
-      N / 2, N / 2 + px * 0.03);
-    const d = oc.getImageData(0, 0, N, N).data;
-    const shift = kind === 'way' ? 62 : 0;
-    // 'real' は ペンの ふとさに あわせて とびとびに なぞる（ぬりつぶさない）
-    const step = kind === 'real' ? 16 : 4;
-    const wob = (y) => (kind === 'real' ? Math.round(Math.sin(y / 34) * 6) : 0);
-    // よこの れつごとに、ドットの ある ところを ひとつづきの せんに する
-    for (let y = 2; y < N; y += step) {
-      let run = null;
-      for (let x = 0; x < N; x++) {
-        const on = d[(y * N + x) * 4 + 3] > 40;
-        if (on && !run) run = [x, x];
-        else if (on) run[1] = x;
-        else if (run) {
-          if (run[1] - run[0] >= 2) {
-            send('pointerdown', run[0] + shift + wob(y), y + shift);
-            send('pointermove', run[1] + shift + wob(y), y + shift);
-            send('pointerup', run[1] + shift + wob(y), y + shift);
-          }
-          run = null;
-        }
-      }
-      if (run && run[1] - run[0] >= 2) {
-        send('pointerdown', run[0] + shift + wob(y), y + shift);
-        send('pointermove', run[1] + shift + wob(y), y + shift);
-        send('pointerup', run[1] + shift + wob(y), y + shift);
-      }
+    const els = [...document.querySelectorAll('#kj-gstrokes .gs')];
+    const sample = (el, n) => {
+      const len = el.getTotalLength(), out = [];
+      for (let i = 0; i <= n; i++) { const p = el.getPointAtLength((len * i) / n); out.push({ x: p.x, y: p.y }); }
+      return out;
+    };
+    // 子どもの 手ぶれ（マスの 3％ぐらい ゆれる）
+    const wob = (pts) => pts.map((p, i) => ({ x: p.x + Math.sin(i * 1.7) * 3, y: p.y + Math.cos(i * 2.3) * 3 }));
+
+    let order = els.map((_, i) => i);
+    if (kind === 'order') order = order.slice().reverse();
+    if (kind === 'few') order = order.slice(0, -1);
+    for (const i of order) {
+      let pts = sample(els[i], kind === 'fast' ? 3 : 14);
+      if (kind === 'back') pts = pts.slice().reverse();
+      draw(kind === 'fast' ? pts : wob(pts));
     }
+    if (kind === 'extra') draw([{ x: 12, y: 96 }, { x: 40, y: 96 }]);
+    return order.length + (kind === 'extra' ? 1 : 0);
   }, kind);
 }
 
@@ -144,8 +138,11 @@ try {
   for (let i = 0; i < 90; i++) {
     const got = await pg.evaluate(() => ({
       kanji: document.getElementById('kj-canvas').getAttribute('aria-label').slice(0, 1),
-      yomi: document.querySelector('.kjyomi').textContent,
-      strokes: Number(document.querySelector('.kjstrokes').textContent.match(/(\d+)かく/)[1]),
+      yomi: document.querySelector('.kjyomi').firstChild.textContent.trim(),
+      ex: document.querySelector('.kjyomi span')?.textContent || '',
+      // かくすうは お手本の せんを かぞえて とる（画面の 字を 見ない）
+      strokes: document.querySelectorAll('#kj-gstrokes .gs').length,
+      step: document.getElementById('kj-step').textContent,
       n: document.getElementById('qnum').textContent,
     }));
     seen.set(got.kanji, got);
@@ -155,7 +152,7 @@ try {
       return el.textContent === '10';
     });
     if (last) { await startKanji('kj-trace', 3); } else {
-      await traceAs('trace');
+      await traceAs('real');
       await pg.click('#go');
       await pg.waitForTimeout(120);
       await pg.evaluate(() => document.querySelector('#next')?.click());
@@ -166,55 +163,106 @@ try {
     if (STROKES[k] === undefined) continue;              // テスト側に ない かんじは とばす
     if (STROKES[k] !== v.strokes) fails.push(`かくすう が ちがう: ${k} は ${STROKES[k]}かく（アプリは ${v.strokes}）`);
     if (!/^[ぁ-んー]+$/.test(v.yomi)) fails.push(`よみが ひらがなで ない: ${k} → ${v.yomi}`);
+    if (!v.ex.includes(k)) fails.push(`見本の ことばに その字が ない: ${k} → ${v.ex}`);
+    if (v.step !== `1／${STROKES[k]}かく目`) fails.push(`かくの あんない が ちがう: ${k} → ${v.step}`);
   }
-  check('かんじの かくすうが テスト側の ひょうと あう', !fails.some(f => f.includes('かくすう')),
+  check('お手本の せんの かずが テスト側の かくすうと あう', !fails.some(f => f.includes('かくすう')),
     `${seen.size}字 しらべた`);
   check('よみは ぜんぶ ひらがな', !fails.some(f => f.includes('よみが')));
+  check('見本の ことばに その かんじが 入って いる', !fails.some(f => f.includes('見本の')));
+  check('「1／○かく目」の あんないが かくすうと あう', !fails.some(f => f.includes('かくの あんない')));
 
   // ===== 2) なぞりがきの はんてい =====
-  const scoreOf = async (kind) => {
+  // 1かいぶん：けして → ひいて →「できた」を おして、○か ✕かと ケロの ことばを とる
+  const tryOnce = async (kind) => {
     await pg.evaluate(() => { document.getElementById('kj-clear')?.click(); });
-    await traceAs(kind);
-    return pg.evaluate(() => {
-      const el = document.getElementById('go');
-      return { can: !el.disabled };
-    }).then(async (st) => {
-      if (!st.can) return { cover: 0, over: 0, ok: false, empty: true };
-      await pg.click('#go');
-      await pg.waitForTimeout(200);
-      const r = await pg.evaluate(() => ({
-        ok: !document.querySelector('.judge').classList.contains('ng'),
-        given: document.querySelector('.judge')?.textContent || '',
-      }));
-      const m = r.given.match(/なぞれた\s*(\d+)/);
-      await pg.evaluate(() => document.querySelector('#next')?.click());
-      await pg.waitForTimeout(150);
-      return { ok: r.ok, cover: m ? Number(m[1]) : null, empty: false };
-    });
+    const kanji = await pg.evaluate(() =>
+      document.getElementById('kj-canvas').getAttribute('aria-label').slice(0, 1));
+    const drew = await traceAs(kind);
+    const can = await pg.evaluate(() => !document.getElementById('go').disabled);
+    if (!can) return { kanji, drew, empty: true, ok: false, said: '' };
+    await pg.click('#go');
+    await pg.waitForTimeout(220);
+    const r = await pg.evaluate(() => ({
+      ok: !document.querySelector('.judge').classList.contains('ng'),
+      said: document.querySelector('.judge')?.textContent.replace(/\s+/g, ' ').trim() || '',
+      shu: document.querySelectorAll('#kj-gstrokes .gs.bad').length,
+    }));
+    await pg.evaluate(() => document.querySelector('#next')?.click());
+    await pg.waitForTimeout(150);
+    return { kanji, drew, empty: false, ...r };
   };
-  // おなじ やりかたを 3もんずつ ためす（かんじに よって あたり方が ちがうので）
-  const tryKind = async (kind, n = 3) => {
-    await startKanji('kj-trace', 1);      // 1セット10もんを こえない ように かけなおす
+  // おなじ ひきかたを 3もんずつ ためす（かんじに よって あたり方が ちがうので）
+  const tryKind = async (kind, n = 3, lv = 2) => {
+    await startKanji('kj-trace', lv);        // 1セット10もんを こえない ように かけなおす
     const got = [];
-    for (let i = 0; i < n; i++) got.push(await scoreOf(kind));
+    for (let i = 0; i < n; i++) got.push(await tryOnce(kind));
     return got;
   };
-  const good = await tryKind('trace');
+  const shown = (a) => a.map((x) => `${x.kanji}${x.empty ? 'かけない' : x.ok ? '○' : '✕'}`).join(' / ');
+
   const real = await tryKind('real');
-  const way = await tryKind('way');
+  const real1 = await tryKind('real', 3, 1);
+  const real3 = await tryKind('real', 3, 3);
+  const fast = await tryKind('fast');
+  const order = await tryKind('order');
+  const back = await tryKind('back');
+  const few = await tryKind('few');
+  const extra = await tryKind('extra');
+  const nuri = await tryKind('nuri');
   const scrawl = await tryKind('scrawl');
   const none = await tryKind('none', 1);
-  const shown = (a) => a.map((x) => (x.empty ? 'かけない' : `${x.cover}%${x.ok ? '○' : '✕'}`)).join(' / ');
 
-  check('ぴったり ぬりつぶせば せいかい', good.every((x) => x.ok === true), shown(good));
-  check('ほんものの ように せんを 1ぽんずつ なぞっても せいかい（いちばん たいせつ）',
+  check('ほんものの ように 1かくずつ なぞったら せいかい（いちばん たいせつ）',
     real.every((x) => x.ok === true), shown(real));
-  check('おおきく ずれたら せいかいに しない', way.every((x) => x.ok === false), shown(way));
+  check('レベル1（かくすうの すくない 字）でも せいかい', real1.every((x) => x.ok === true), shown(real1));
+  check('レベル3（かくすうの おおい 字）でも せいかい', real3.every((x) => x.ok === true), shown(real3));
+  check('てんが すくない さっとした せんでも せいかい', fast.every((x) => x.ok === true), shown(fast));
+  check('かきじゅんが さかさまなら まちがい', order.every((x) => x.ok === false), shown(order));
+  check('1かくずつ ぎゃくむきに ひいたら まちがい', back.every((x) => x.ok === false), shown(back));
+  check('さいごの 1かくが ぬけたら まちがい', few.every((x) => x.ok === false), shown(few));
+  check('よけいに 1かく ふえたら まちがい', extra.every((x) => x.ok === false), shown(extra));
+  check('ぬりつぶしは とおらない（むかしの しくみとの ちがい）',
+    nuri.every((x) => x.ok === false), shown(nuri));
   check('らくがきは まちがい', scrawl.every((x) => x.ok === false), shown(scrawl));
   check('なにも かかないと「できた」が おせない', none[0].empty === true, shown(none));
-  check('ちゃんと なぞった ほうが かならず わりあいが 高い',
-    Math.min(...real.map((x) => x.cover)) > Math.max(...scrawl.map((x) => x.cover)),
-    `なぞり さいてい ${Math.min(...real.map((x) => x.cover))}% > らくがき さいこう ${Math.max(...scrawl.map((x) => x.cover))}%`);
+
+  // ケロの ことばが 「なにを まちがえたか」を いって いるか
+  check('かくすうが ちがう ときは かくすうを おしえる',
+    few.every((x) => /ほんとうは/.test(x.said)), few.map((x) => x.said.slice(0, 40)).join(' | '));
+  check('ずれた ときは なんかく目かを おしえる',
+    back.every((x) => /かく目|ほんとうは/.test(x.said)), back.map((x) => x.said.slice(0, 40)).join(' | '));
+  // なぞれなかった かくは お手本が 朱に なる（先生の 赤ペン）
+  check('なぞれなかった かくは お手本が 朱に なる',
+    few.every((x) => x.shu >= 1) && real.every((x) => x.shu === 0),
+    `ぬけたとき ${few.map((x) => x.shu).join(',')}ぽん / なぞれたとき ${real.map((x) => x.shu).join(',')}ぽん`);
+
+  // 「1かく もどす」と かきじゅんの さいせい
+  await startKanji('kj-trace', 2);
+  const undo = await pg.evaluate(async () => {
+    const VB = 109, cv = document.getElementById('kj-canvas');
+    const r = cv.getBoundingClientRect();
+    const send = (t, x, y) => cv.dispatchEvent(new PointerEvent(t, {
+      clientX: r.left + x * (r.width / VB), clientY: r.top + y * (r.height / VB), bubbles: true, pointerId: 1 }));
+    const el = document.querySelector('#kj-gstrokes .gs'), len = el.getTotalLength();
+    const p = (i) => el.getPointAtLength((len * i) / 8);
+    send('pointerdown', p(0).x, p(0).y);
+    for (let i = 1; i <= 8; i++) send('pointermove', p(i).x, p(i).y);
+    send('pointerup', p(8).x, p(8).y);
+    const after = document.getElementById('kj-step').textContent;
+    document.getElementById('kj-undo').click();
+    return { after, back: document.getElementById('kj-step').textContent,
+      go: document.getElementById('go').disabled };
+  });
+  check('1かく ひくと あんないが つぎの かくに すすむ', /^2／/.test(undo.after), undo.after);
+  check('「1かく もどす」で 1つ まえに もどる', /^1／/.test(undo.back) && undo.go === true,
+    `${undo.back} / できた=${undo.go ? 'おせない' : 'おせる'}`);
+
+  await pg.click('#kj-order');
+  await pg.waitForTimeout(900);
+  const playing = await pg.evaluate(() => document.querySelectorAll('#kj-anim .kjanim').length);
+  check('「かきじゅん」で お手本が 1かくずつ 出る', playing >= 1, `${playing}ぽん 出て いる`);
+  await pg.waitForTimeout(400);
 
   // ===== 3) よみ・かきとりの せんたくし =====
   for (const [mode, label] of [['kj-yomi', 'よみ'], ['kj-kaki', 'かきとり']]) {

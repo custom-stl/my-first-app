@@ -88,7 +88,7 @@ async function playEigo(pg) {
   await pg.waitForTimeout(400);
 }
 
-// かんじを 1セット（なぞりがき。かんじの かたちを たどって なぞる）
+// かんじを 1セット（なぞりがき。お手本の せんを 1かくずつ かきじゅんどおりに なぞる）
 async function playKanji(pg) {
   await pg.click('#tohome');
   await pg.click('.mode[data-app="kanji"]');
@@ -96,30 +96,16 @@ async function playKanji(pg) {
   await pg.waitForTimeout(250);
   for (let i = 0; i < 10; i++) {
     await pg.evaluate(() => {
-      const cv = document.getElementById('kj-canvas');
-      const N = cv.width, r = cv.getBoundingClientRect();
-      const send = (type, px, py) => cv.dispatchEvent(new PointerEvent(type, {
-        clientX: r.left + px * (r.width / N), clientY: r.top + py * (r.height / N),
+      const VB = 109, cv = document.getElementById('kj-canvas');
+      const r = cv.getBoundingClientRect();
+      const send = (t, x, y) => cv.dispatchEvent(new PointerEvent(t, {
+        clientX: r.left + x * (r.width / VB), clientY: r.top + y * (r.height / VB),
         bubbles: true, pointerId: 1 }));
-      const off = document.createElement('canvas');
-      off.width = off.height = N;
-      const oc = off.getContext('2d', { willReadFrequently: true });
-      const px = Math.round(N * 0.72);
-      oc.font = `700 ${px}px "Zen Kaku Gothic New", sans-serif`;
-      oc.textAlign = 'center'; oc.textBaseline = 'middle'; oc.fillStyle = '#000';
-      oc.fillText(cv.getAttribute('aria-label').slice(0, 1), N / 2, N / 2 + px * 0.03);
-      const d = oc.getImageData(0, 0, N, N).data;
-      for (let y = 2; y < N; y += 4) {
-        let run = null;
-        for (let x = 0; x < N; x++) {
-          const on = d[(y * N + x) * 4 + 3] > 40;
-          if (on && !run) run = [x, x];
-          else if (on) run[1] = x;
-          else if (run) {
-            if (run[1] - run[0] >= 2) { send('pointerdown', run[0], y); send('pointermove', run[1], y); send('pointerup', run[1], y); }
-            run = null;
-          }
-        }
+      for (const el of document.querySelectorAll('#kj-gstrokes .gs')) {
+        const len = el.getTotalLength(), p = (k) => el.getPointAtLength((len * k) / 12);
+        send('pointerdown', p(0).x, p(0).y);
+        for (let k = 1; k <= 12; k++) send('pointermove', p(k).x, p(k).y);
+        send('pointerup', p(12).x, p(12).y);
       }
     });
     await pg.click('#go');
