@@ -1,10 +1,41 @@
 # さんすう・えいごノート — 作業メモ
 
-小学1〜2年生向けの算数＋英語ドリル。`index.html` 1枚で動く静的アプリ（依存ライブラリなし）。
+小学1〜2年生向けの算数＋英語＋タイピング。`index.html` 1枚で動く静的アプリ（依存ライブラリなし）。
 
-トップ（`#top`）から **さんすう（`#home`）／えいご（`#eigo`）／きろく（`#history`）** に わかれる。
-レベル・なまえ・キャラクター・こえ（ろくおんを ふくむ）・きろくは **2つの アプリで きょうよう**。
-えいごの もんだいは 4たく（`input: "choice"`）で、`makeEigo(kind, lv)` が つくる。
+トップ（`#top`）から **さんすう（`#home`）／えいご（`#eigo`）／タイピング（`#typing`）／きろく（`#history`）**。
+レベル・なまえ・キャラクター・こえ（ろくおんを ふくむ）・きろくは **3つの アプリで きょうよう**。
+
+| アプリ | 出題 | 画面 | mode |
+| --- | --- | --- | --- |
+| さんすう | `makeCalc`/`makeWord`/`makeClock` | `#quiz` → `#result` | `calc` `word` `clock` `mix` |
+| えいご | `makeEigo(kind, lv)`（4たく） | `#quiz` → `#result` | `eigo` `listen` `eword` `talk` `abc` |
+| タイピング | `COURSES[*].make(lv)` | `#tyquiz` → `#tyresult` | `ty-moji` `ty-word` `ty-roma` `ty-num` |
+
+タイピングの じょうたいは `T`（さんすう・えいごは `S`）。DOM の id は ぜんぶ `ty-` で はじまる。
+
+## きろく（3つとも おなじ ところに のこる）
+
+- のこすのは **`saveRun({ m, lv, total, n, qs })` 1本だけ**。さんすう・えいご・タイピングの どれも ここを とおす。
+  たんまつ内（`sn-log-v1`）と サーバー行き（`queueRun` → `flushOutbox`）の りょうほうを ここで やる。
+- 1行は `{ d, t, m, lv, n, p, total, qs }`。**`total` は かならず 入れる**。
+  もんだいすうは `totalOf(set)` で とる（`qs.length` を もんだいすうと して つかわない。
+  タイピングは `qs` が「スコア・せいかいりつ…」の まとめなので かずが あわない）。
+- タイピングの 1行は `total` ＝ うてた もんだいすう、`n` ＝ ミスなしで うてた かず。
+  キーの かずで かぞえると グラフが タイピングだけに なって しまう。
+- アプリごとの しゅるいは `APP_MODES`。きろく画面の しぼり（`S.histApp`）と
+  しゅるいべつの 集計は これを 見る。**出題の しゅるいを ふやしたら `APP_MODES` と
+  `MODE_NAME`、それに `server/api.mjs` の `MODES` の 3つに たす**。
+
+## どの端末からやっても 記録を あつめる
+
+`server/` を 立てて、きろく画面の「サーバー」に URL を いれると そろう。
+
+- おくる: `saveRun()` → `queueRun()` → `flushOutbox()`（おくれなくても outbox に のこって 次に おくる）
+- とってくる: きろく画面を ひらくと `syncHistory()` が `/api/runs?player=…` を よんで、
+  たんまつに ない ぶんを `sn-log-v1` に とりこむ。おなじ セットかは **`t`（といた じこく）** で 見わける
+- 人の まとまりは `player_id = playerId(name)` ＝ `n:` + 名前の 小文字。
+  **べつの端末で おなじ名前を えらべば 1人ぶんに まとまる**
+- サーバーが なくても 行き止まりに しない（この端末の ぶんだけを 出して、理由を 画面に 出す）
 
 ## 公開先（変更したら必ず更新する）
 
@@ -39,9 +70,16 @@ cp index.html config.js manifest.webmanifest icon.svg icon-180.png icon-192.png 
 ```bash
 npm i playwright            # 未インストールなら（この環境では /opt/node22 に既にある）
 node tests/verify-questions.mjs   # 3レベル×7種類×10問×4セット=840問を自動で解いて答え合わせを照合
+node tests/verify-typing.mjs      # タイピングの出題・指の割り当て・点数の計算を照合
 node tests/verify-api.mjs         # きろくサーバー（server/）のAPIを検証
+node tests/verify-sync.mjs        # 3台の端末で記録が1つにまとまるか（本物のサーバーを立てて）
 node tests/verify-voice-order.mjs # ケロとコロの声が重ならないか（ことば／アニメごえ／録音）を実時間で計測
 ```
+
+`verify-sync.mjs` は **いちばん こわれやすい ところを 見て いる**。
+端末A で さんすう → 端末B で えいご・タイピング → **まっさらな 端末C で きろくを ひらくだけ** で
+ぜんぶ 出るか、2かい ひらいても ふえないか、アプリごとに しぼれるか。
+`server/api.mjs` の `MODES` に しゅるいを たし忘れると ここで 落ちる。
 
 `verify-voice-order.mjs` は `127.0.0.1` に http-server を立てて測る（`file://` だと録音のテストができない）。
 

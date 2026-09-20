@@ -33,6 +33,8 @@
     --kin: #e8a51c;
     --kin-soft: #fdf1d8;
     --midori: #5c8a2f;
+    --momo: #d3468a;
+    --yubi-1: #e4523f; --yubi-2: #e8a51c; --yubi-3: #5c8a2f; --yubi-4: #2b6ca3; --yubi-5: #7d5bbd;
     --chart-ok: #e4523f;
     --chart-ng: #2b6ca3;
     --shadow: 0 1px 0 rgba(31,47,69,.06), 0 6px 18px -10px rgba(31,47,69,.35);
@@ -76,6 +78,8 @@
       --kin: #ffc95c;
       --kin-soft: #33290f;
       --midori: #9ccc65;
+      --momo: #f07ab0;
+      --yubi-1: #ff7d67; --yubi-2: #ffc95c; --yubi-3: #9ccc65; --yubi-4: #74b6ea; --yubi-5: #b79bf0;
       --chart-ok: #e8603f;
       --chart-ng: #3f8fd0;
       --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 22px -12px rgba(0,0,0,.8);
@@ -98,6 +102,8 @@
     --kin: #ffc95c;
     --kin-soft: #33290f;
     --midori: #9ccc65;
+    --momo: #f07ab0;
+    --yubi-1: #ff7d67; --yubi-2: #ffc95c; --yubi-3: #9ccc65; --yubi-4: #74b6ea; --yubi-5: #b79bf0;
     --chart-ok: #e8603f;
     --chart-ng: #3f8fd0;
     --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 22px -12px rgba(0,0,0,.8);
@@ -433,10 +439,10 @@
   .go {
     margin-top: 10px; width: 100%;
     border: 0; border-radius: var(--r-m);
-    background: var(--shu); color: #fff;
+    background: var(--accent, var(--shu)); color: #fff;
     font-family: var(--f-disp); font-weight: 500; font-size: var(--t-xl);
     padding: 15px 0;
-    box-shadow: 0 3px 0 color-mix(in srgb, var(--shu) 70%, #000);
+    box-shadow: 0 3px 0 color-mix(in srgb, var(--accent, var(--shu)) 70%, #000);
   }
   .go:active { transform: translateY(3px); box-shadow: none; }
   .go[disabled] { background: var(--line); color: var(--ink-soft); box-shadow: none; cursor: default; }
@@ -492,6 +498,8 @@
     .shake { animation: none; }
     .field .cursor { animation: none; }
     .app-card, .mode .peek { transition: none; }
+    .combo.hit, .fx .gain, .fx .kira, .tycard.shake { animation: none; }
+    .fx { display: none; }
   }
 
   /* ---------- けっか ---------- */
@@ -638,8 +646,10 @@
     font-size: .82rem; font-weight: 700; line-height: 1.3;
   }
   .seg button[aria-pressed="true"] {
-    border-color: var(--shu); background: var(--shu-soft); color: var(--shu);
-    box-shadow: inset 0 0 0 1px var(--shu);
+    border-color: var(--accent, var(--shu));
+    background: color-mix(in srgb, var(--accent, var(--shu)) 11%, var(--card));
+    color: var(--accent, var(--shu));
+    box-shadow: inset 0 0 0 1px var(--accent, var(--shu));
   }
   .field-row select {
     width: 100%;
@@ -680,7 +690,9 @@
   .person-h strong { font-family: var(--f-disp); font-size: 1.16rem; font-weight: 400; }
   .person-h span { margin-left: auto; font-size: .74rem; font-weight: 700; color: var(--ink-soft); }
   .person-h span b { font-family: var(--f-num); font-size: .92rem; color: var(--ink); }
-  .hist-who { margin-bottom: 14px; }
+  .hist-who { margin-bottom: 10px; }
+  .hist-app { margin-bottom: 14px; }
+  .hist-app .pchip { font-family: var(--f-body); font-size: var(--t-s); font-weight: 700; padding: 8px 14px; }
   .hist-who .pchip { padding: 7px 14px; font-size: .9rem; }
   .genre { display: grid; gap: 9px; }
   .g-row { display: flex; align-items: center; gap: 10px; font-size: .84rem; font-weight: 700; }
@@ -745,6 +757,7 @@
 
   #home { --accent: var(--shu); }
   #eigo { --accent: var(--midori); }
+  #typing, #tyquiz, #tyresult { --accent: var(--ai); }
   .page-title {
     font-family: var(--f-disp); font-weight: 500;
     font-size: var(--t-xl); margin: 14px 0 16px;
@@ -939,11 +952,191 @@
   .peek-en em { font-style: normal; font-size: 1.5rem; display: block; }
   .peek-en b { color: var(--shu); }
   .peek-emoji { font-size: 1.5rem; line-height: 1.35; text-align: center; letter-spacing: .06em; }
+  .peek-key {
+    font-family: var(--f-en, var(--f-num)); font-weight: 800; font-size: .84rem;
+    color: var(--ink-soft); text-align: center; line-height: 1.5; letter-spacing: .06em;
+  }
+  .mode h3 .tag {
+    font-family: var(--f-body); font-size: .58rem; font-weight: 900;
+    color: var(--shu); background: var(--shu-soft);
+    border-radius: 999px; padding: 2px 7px; vertical-align: .18em;
+  }
+  /* えらぶ 行（タイピングの コース）。えらんで いない ものは しるしを うすく */
+  .mode[aria-pressed]::before { background: var(--line); }
+  .mode[aria-pressed="true"]::before { background: var(--accent); height: 100%; margin-top: 0; top: 0; border-radius: 3px; }
+  .mode[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 7%, transparent); border-radius: var(--r-s); }
+  .mode[aria-pressed="true"] h3 { color: var(--accent); }
+  .mode[aria-pressed="true"] .peek { border-color: color-mix(in srgb, var(--accent) 45%, var(--grid)); }
 
   /* もんだいを だす ケロ・コロ */
   .asker { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 14px; }
   .asker .frog { flex: 0 0 auto; margin-top: -1px; }
   .asker .ask { margin: 0; flex: 1; }
+
+
+  /* ---------- タイピング ---------- */
+  /* そだちぐあい（つうさんの てんすう） */
+  .rank { display: flex; align-items: center; gap: 14px; padding: 15px 16px; }
+  .rank-art { flex: 0 0 auto; line-height: 0; }
+  .rank-txt { flex: 1; min-width: 0; }
+  .rank-name {
+    font-family: var(--f-disp); font-weight: 500; font-size: var(--t-l);
+    margin: 0 0 6px; color: var(--accent);
+  }
+  .rank-name small {
+    display: block; font-family: var(--f-body); font-size: var(--t-xs);
+    font-weight: 700; color: var(--ink-soft); margin-top: 1px;
+  }
+  .rank-bar { height: 9px; border-radius: 999px; background: var(--card-2); overflow: hidden; }
+  .rank-bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+  .rank-next { margin: 7px 0 0; font-size: var(--t-xs); font-weight: 700; color: var(--ink-soft); line-height: 1.7; }
+  .rank-next b { font-family: var(--f-num); font-size: var(--t-s); color: var(--ink); }
+
+  /* メダル */
+  .sec-label .medal-count { font-family: var(--f-num); font-weight: 800; color: var(--ink); margin-left: 4px; }
+  .medals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+  .medal { margin: 0; display: grid; justify-items: center; gap: 4px; opacity: .45; }
+  .medal.got { opacity: 1; }
+  .medal figcaption {
+    font-size: .6rem; font-weight: 700; line-height: 1.45; text-align: center; color: var(--ink-soft);
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+  .medal.got figcaption { color: var(--ink); }
+
+  /* あそぶ がめん */
+  .barwrap { height: 10px; border-radius: 999px; background: var(--card-2); overflow: hidden; margin: 12px 0 10px; }
+  .barwrap i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+  .barwrap.hot i { background: var(--shu); }
+  .hasu { display: flex; gap: 5px; margin: 12px 0 10px; }
+  .hasu div { flex: 1; height: 10px; border-radius: 999px; background: var(--line); }
+  .hasu div.done { background: var(--accent); }
+  .hasu div.now { background: var(--kin); box-shadow: 0 0 0 3px var(--kin-soft); }
+
+  .sheet.tycard { position: relative; overflow: hidden; min-height: 208px; display: grid; align-content: center; }
+  .ready {
+    position: absolute; inset: 0; margin: 0; z-index: 3;
+    display: grid; place-content: center;
+    background: var(--card);
+    font-family: var(--f-disp); font-size: 3.4rem; color: var(--accent);
+  }
+  .ready.go2 { font-size: 2.2rem; color: var(--shu); }
+  .tyask {
+    font-family: var(--f-disp); font-size: var(--t-xl); text-align: center;
+    margin: 0 0 10px; color: var(--ink-soft);
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+  .tyask.small { font-size: var(--t-m); }
+  .chips { display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; }
+  .chips span {
+    font-family: var(--f-en, var(--f-num)); font-weight: 800;
+    font-size: clamp(1.8rem, 10vw, 2.5rem); line-height: 1.15;
+    min-width: 1.1em; text-align: center;
+    border-bottom: 4px solid var(--line);
+    color: var(--ink-soft);
+  }
+  .chips span.done { color: var(--accent); border-bottom-color: var(--accent); }
+  .chips span.now {
+    color: var(--shu); border-bottom-color: var(--shu);
+    background: var(--shu-soft); border-radius: var(--r-s) var(--r-s) 0 0;
+  }
+  .buddy { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; min-height: 46px; }
+  .buddy .say {
+    font-size: var(--t-s); font-weight: 700; color: var(--ink-soft);
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+  .combo {
+    position: absolute; top: 10px; right: 12px; margin: 0;
+    font-family: var(--f-num); font-weight: 800; color: var(--momo);
+    line-height: 1; text-align: right;
+  }
+  .combo b { font-size: 1.7rem; }
+  .combo small { display: block; font-size: .6rem; font-family: var(--f-body); }
+  .combo.hit { animation: pop .3s ease-out; }
+  @keyframes pop { 0% { transform: scale(1.5); } 100% { transform: scale(1); } }
+  .tycard.shake { animation: shake .3s ease-in-out; }
+  .fx { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+  .fx .gain {
+    position: absolute; left: 50%; top: 42%;
+    font-family: var(--f-num); font-weight: 800; font-size: 1.5rem; color: var(--kin);
+    animation: gainup .7s ease-out forwards;
+  }
+  @keyframes gainup { to { transform: translate(-50%, -46px); opacity: 0; } }
+  .fx .kira {
+    position: absolute; width: 8px; height: 8px; border-radius: 2px;
+    animation: kira .7s ease-out forwards;
+  }
+  @keyframes kira { to { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
+
+  .tystats {
+    display: flex; gap: 9px; justify-content: space-between;
+    font-size: var(--t-xs); font-weight: 700; color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .tystats b { font-family: var(--f-num); font-size: var(--t-m); color: var(--ink); margin-left: 4px; }
+  .tystats .score b { color: var(--accent); }
+
+  /* キーボード。したの ふちの 色が「どの ゆびで うつか」 */
+  .yubi-say {
+    text-align: center; font-size: var(--t-s); font-weight: 700;
+    color: var(--ink-soft); margin: 0 0 8px; min-height: 1.6em;
+  }
+  .yubi-say b { color: var(--ink); }
+  .kbd { display: grid; gap: 4px; }
+  .kbd-row { display: flex; gap: 4px; justify-content: center; }
+  .kbd-row[data-r="2"] { padding-left: 3%; }
+  .kbd-row[data-r="3"] { padding-left: 6%; }
+  .kbd-row[data-r="4"] { padding-left: 9%; }
+  .kbd-key {
+    flex: 1 1 0; min-width: 0; max-width: 42px;
+    border: 1.5px solid var(--line); background: var(--card);
+    border-radius: var(--r-s); padding: 9px 0 8px;
+    font-family: var(--f-en, var(--f-num)); font-weight: 800; font-size: var(--t-s);
+    color: var(--ink-soft);
+    border-bottom: 3px solid var(--yubi, var(--line));
+  }
+  .kbd-key[data-y="1"] { --yubi: var(--yubi-1); }
+  .kbd-key[data-y="2"] { --yubi: var(--yubi-2); }
+  .kbd-key[data-y="3"] { --yubi: var(--yubi-3); }
+  .kbd-key[data-y="4"] { --yubi: var(--yubi-4); }
+  .kbd-key[data-y="5"] { --yubi: var(--yubi-5); max-width: none; flex: 0 1 46%; }
+  .kbd-key.home { box-shadow: inset 0 -3px 0 -1px var(--ink-soft); }
+  .kbd-key.next { background: var(--shu); color: #fff; border-color: var(--shu); }
+  .kbd-key.bad { background: var(--ai-soft); color: var(--ai); border-color: var(--ai); }
+  .kbd-legend { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 9px; }
+  .kbd-legend b { display: inline-flex; align-items: center; gap: 4px; font-size: .62rem; font-weight: 700; color: var(--ink-soft); }
+  .kbd-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  /* けっか */
+  .score-note.ctr { text-align: center; }
+  .rankup, .newmedal {
+    display: flex; align-items: center; gap: 11px;
+    background: var(--kin-soft); border-radius: var(--r-m);
+    padding: 11px 13px; margin-bottom: 8px;
+  }
+  .rankup span, .newmedal span { font-size: var(--t-s); font-weight: 700; line-height: 1.6; }
+  .rankup small, .newmedal small { display: block; font-size: var(--t-xs); color: var(--ink-soft); font-weight: 700; margin-top: 2px; }
+  .weak { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 9px; }
+  .weak span {
+    display: grid; justify-items: center; gap: 2px;
+    border: 1.5px solid var(--line); border-radius: var(--r-s);
+    padding: 7px 12px; background: var(--card-2);
+    font-family: var(--f-en, var(--f-num)); font-weight: 800; font-size: var(--t-l);
+  }
+  .weak small { font-family: var(--f-body); font-size: .6rem; font-weight: 700; color: var(--ink-soft); }
+  .sec-label.gap { margin-top: 24px; }
+  .seg .md { display: grid; gap: 2px; }
+  .seg .md small { font-size: .62rem; font-weight: 700; color: var(--ink-soft); }
+  .seg .md[aria-pressed="true"] small { color: inherit; }
+
+  /* トップの タイピングの しるし */
+  .appmark-key { display: flex; gap: 5px; }
+  .appmark-key span {
+    display: grid; place-content: center;
+    width: 34px; height: 34px;
+    border: 2px solid var(--accent); border-bottom-width: 4px;
+    border-radius: var(--r-s);
+    font-family: var(--f-en, var(--f-num)); font-weight: 800; font-size: 1rem;
+  }
 
   /* えいごの もんだいは したに こたえ欄が ないので、花まるは まんなかに */
   .sheet.eigo .maru {
@@ -1000,6 +1193,16 @@
           <p>たんご・あいさつ・アルファベット</p>
         </div>
         <div class="appmark appmark-abc" aria-hidden="true">Aa<small>bc</small></div>
+      </button>
+
+      <button type="button" class="app-card mode" data-app="typing" style="--accent: var(--ai)">
+        <div>
+          <h2>タイピング</h2>
+          <p>もじ・たんご・ローマじ・すうじ</p>
+        </div>
+        <div class="appmark appmark-key" aria-hidden="true">
+          <span>F</span><span>J</span>
+        </div>
       </button>
     </div>
 
@@ -1133,6 +1336,105 @@
     </div>
   </main>
 
+
+  <!-- ======== タイピング ======== -->
+  <main id="typing" hidden>
+    <h2 class="page-title">タイピング</h2>
+
+    <section class="sheet rank">
+      <div class="rank-art" id="ty-rank-art" aria-hidden="true"></div>
+      <div class="rank-txt">
+        <p class="rank-name" id="ty-rank-name"></p>
+        <div class="rank-bar"><i id="ty-rank-bar"></i></div>
+        <p class="rank-next" id="ty-rank-next"></p>
+      </div>
+    </section>
+
+    <h2 class="sec-label">コースを えらぶ</h2>
+    <div class="modes" id="ty-courses"></div>
+
+    <h2 class="sec-label">レベル</h2>
+    <div class="levels" id="ty-levels" role="group" aria-label="レベルを えらぶ"></div>
+
+    <h2 class="sec-label">やりかた</h2>
+    <div class="seg" id="ty-modes" role="group" aria-label="やりかたを えらぶ">
+      <button type="button" class="md" data-md="practice">れんしゅう<small>10もん・じかん むせいげん</small></button>
+      <button type="button" class="md" data-md="game">ゲーム<small>60びょうで なんもん</small></button>
+    </div>
+    <div class="mini-btns try" style="margin-bottom:12px">
+      <button type="button" id="ty-kbd-toggle" aria-pressed="true"></button>
+    </div>
+    <p class="note" id="ty-best"></p>
+    <p class="note" id="ty-tip"></p>
+    <button type="button" class="go" id="ty-start">スタート</button>
+
+    <h2 class="sec-label gap">メダル <span class="medal-count" id="ty-medal-count"></span></h2>
+    <div class="medals" id="ty-medals"></div>
+
+    <div class="btnrow back">
+      <button type="button" class="btn quiet" id="ty-back">ホームへ もどる</button>
+    </div>
+  </main>
+
+  <!-- ======== タイピング：あそぶ ======== -->
+  <main id="tyquiz" hidden>
+    <div class="barwrap" id="ty-barwrap" hidden><i id="ty-bar"></i></div>
+    <div class="hasu" id="ty-hasu" aria-hidden="true" hidden></div>
+    <div class="qmeta">
+      <span id="ty-hud-course"></span>
+      <span class="whoami" id="ty-hud-who"></span>
+      <span id="ty-hud-left"></span>
+    </div>
+
+    <section class="sheet tycard" id="ty-card">
+      <p class="ready" id="ty-ready" hidden></p>
+      <p class="tyask" id="ty-prompt" hidden></p>
+      <div class="chips" id="ty-chips" role="status" aria-live="assertive"></div>
+      <div class="buddy" id="ty-buddy" aria-hidden="true"></div>
+      <p class="combo" id="ty-combo" hidden></p>
+      <div class="fx" id="ty-fx" aria-hidden="true"></div>
+    </section>
+
+    <div class="tystats">
+      <span>うてた<b id="ty-st-hit">0</b></span>
+      <span>ミス<b id="ty-st-miss">0</b></span>
+      <span>せいかい<b id="ty-st-acc">100%</b></span>
+      <span class="score">スコア<b id="ty-st-score">0</b></span>
+    </div>
+
+    <div id="ty-kbd-box">
+      <p class="yubi-say" id="ty-yubi"></p>
+      <div class="kbd" id="ty-kbd"></div>
+      <div class="kbd-legend" id="ty-kbd-legend"></div>
+    </div>
+  </main>
+
+  <!-- ======== タイピング：けっか ======== -->
+  <main id="tyresult" hidden>
+    <section class="sheet">
+      <div class="stamp" id="ty-stamp"></div>
+      <p class="score-note ctr" id="ty-result-sub"></p>
+      <div class="stars" id="ty-stars"></div>
+      <div class="cheer-lead">
+        <div class="bubble" id="ty-bubble"></div>
+        <div class="frogs" id="ty-frogs" aria-hidden="true"></div>
+      </div>
+      <div class="rankup" id="ty-rankup" hidden></div>
+      <div class="newmedals" id="ty-new-medals"></div>
+      <div class="cheers" id="ty-cheers"></div>
+      <div id="ty-weakbox" hidden>
+        <h2 class="sec-label">にがてな キー</h2>
+        <div class="weak" id="ty-weak"></div>
+        <p class="note" id="ty-weak-tip"></p>
+      </div>
+    </section>
+    <div class="btnrow">
+      <button type="button" class="btn primary" id="ty-again">もういちど</button>
+      <button type="button" class="btn" id="ty-to-history">きろく</button>
+      <button type="button" class="btn" id="ty-home">ホームへ</button>
+    </div>
+  </main>
+
   <!-- ======== 出題 ======== -->
   <main id="quiz" hidden>
     <div class="marks" id="marks" aria-hidden="true"></div>
@@ -1186,6 +1488,8 @@
   <main id="history" hidden>
     <h2 class="page-title">きろく</h2>
     <div class="players hist-who" id="hist-who" role="group" aria-label="だれの きろくを みるか" hidden></div>
+    <div class="players hist-app" id="hist-app" role="group" aria-label="どの アプリの きろくを みるか" hidden></div>
+    <p class="srv-msg idle" id="hist-sync"></p>
     <div class="tiles" id="tiles"></div>
     <section class="sheet" id="chartbox">
       <h3 class="sec-label">この 2しゅうかん</h3>
@@ -1265,7 +1569,7 @@
     </section>
 
     <section class="sheet">
-      <h3 class="sec-label">サーバー（みんなの きろく）</h3>
+      <h3 class="sec-label">サーバー（どの たんまつからでも きろくを あつめる）</h3>
       <p class="srv-msg idle" id="srv-msg"></p>
       <div class="field-row">
         <label for="srv-url">サーバーの URL</label>
@@ -1351,13 +1655,15 @@
   };
 
   // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
-  const BUILD = "2026-09-20b";
+  const BUILD = "2026-09-20c";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
   const MODE_NAME = {
     calc: "ひっさん", word: "ぶんしょうだい", clock: "とけい", mix: "ミックス",
     eigo: "えいご ぜんぶ", listen: "ききとり", eword: "えいたんご", talk: "あいさつ", abc: "アルファベット",
+    "ty-moji": "タイピング：もじ", "ty-word": "タイピング：たんご",
+    "ty-roma": "タイピング：ローマじ", "ty-num": "タイピング：すうじ",
   };
 
   /* ========== おと ========== */
@@ -2889,6 +3195,16 @@
   }
 
   /* ========== きろく（日ごとの じっせき） ========== */
+  // どの しゅるいが どの アプリの ものか。きろくを アプリごとに 分けて 見る ときに つかう。
+  const APP_MODES = {
+    sansu: ["calc", "word", "clock", "mix"],
+    eigo: ["eigo", "listen", "eword", "talk", "abc"],
+    typing: ["ty-moji", "ty-word", "ty-roma", "ty-num"],
+  };
+  const APP_NAME = { all: "ぜんぶ", sansu: "さんすう", eigo: "えいご", typing: "タイピング" };
+  const appOfMode = (m) => Object.keys(APP_MODES).find((a) => APP_MODES[a].includes(m)) || "sansu";
+  const inApp = (set, app) => app === "all" || appOfMode(set.m) === app;
+
   const LOG_KEY = "sn-log-v1";
   const LOG_MAX = 300;              // ふるい セットから きえていく
   const LV_NAME = { 1: "やさしい", 2: "ふつう", 3: "むずかしい" };
@@ -2921,20 +3237,31 @@
     const qs = S.results.map((r) => ({ q: r.q.text, a: r.q.answerText, g: r.given || "", o: r.ok ? 1 : 0 }));
     // ほぞんの ときは ぜんいんぶんを よむ。
     // ここで 人で しぼった ものを かきもどすと、ほかの 子の きろくが きえて しまう。
+    saveRun({ m: S.mode, lv: S.lv, total: qs.length, n: score, qs });
+  }
+
+  // 1セットぶんを たんまつに のこして、サーバーにも おくる。
+  // さんすう・えいご・タイピングの どれも ここを とおす。
+  function saveRun({ m, lv, total, n, qs }) {
+    const now = new Date();
+    const player = currentPlayer();
     const list = loadLogAll();
-    list.push({ d: ymd(now), t: now.getTime(), m: S.mode, lv: S.lv, n: score, p: player, qs });
+    list.push({ d: ymd(now), t: now.getTime(), m, lv, n, p: player, total, qs });
     store.set(LOG_KEY, JSON.stringify(list.slice(-LOG_MAX)));
 
-    // サーバーにも のこす（なまえが きまって いる ときだけ）
+    // サーバーにも のこす（なまえが きまって いる ときだけ）。
+    // これが どの たんまつから やっても 1つに まとまる もと。
     if (player) {
       queueRun({
         id: rid(), player_id: playerId(player), player_name: player,
-        day: ymd(now), ts: now.getTime(), mode: S.mode, level: S.lv,
-        total: qs.length, correct: score, detail: qs,
+        day: ymd(now), ts: now.getTime(), mode: m, level: lv,
+        total, correct: n, detail: qs,
       });
       flushOutbox();      // おくれなくても、つぎに ひらいた ときに おくる
     }
   }
+  // ふるい きろくには total が ない（もんだいすう ＝ なかみの かず だった ころ）
+  const totalOf = (set) => set.total ?? (set.qs ? set.qs.length : 0);
 
   // 日ごとに まとめる（あたらしい日が さき）
   function byDay(list) {
@@ -2942,7 +3269,7 @@
     for (const set of list) {
       const e = map.get(set.d) || { d: set.d, sets: [], q: 0, ok: 0 };
       e.sets.push(set);
-      e.q += set.qs.length;
+      e.q += totalOf(set);
       e.ok += set.n;
       map.set(set.d, e);
     }
@@ -3054,11 +3381,21 @@
     $("hist-who").hidden = names.length < 2;
     $("hist-who").innerHTML = names.map((n) =>
       `<button type="button" class="pchip" data-who="${esc(n)}" aria-pressed="${n === who}">${esc(n)}</button>`).join("");
-    const list = loadLog(who);
+
+    // アプリごとに 見る。その 人が やった ことの ある アプリだけ ならべる。
+    const mine = loadLog(who);
+    const hasApp = (a) => a === "all" || mine.some((set) => appOfMode(set.m) === a);
+    const apps = ["all", "sansu", "eigo", "typing"].filter(hasApp);
+    if (!apps.includes(S.histApp)) S.histApp = "all";
+    $("hist-app").hidden = apps.length < 3;     // 1つの アプリしか やって いない うちは ださない
+    $("hist-app").innerHTML = apps.map((a) =>
+      `<button type="button" class="pchip" data-app-filter="${a}" aria-pressed="${a === S.histApp}">${APP_NAME[a]}</button>`).join("");
+
+    const list = mine.filter((set) => inApp(set, S.histApp));
     const days = byDay(list);
     const today = ymd(new Date());
     const t = days.find((e) => e.d === today);
-    const all = list.reduce((a, s) => a + s.qs.length, 0);
+    const all = list.reduce((a, s) => a + totalOf(s), 0);
     const allOk = list.reduce((a, s) => a + s.n, 0);
 
     $("tiles").innerHTML = `
@@ -3068,7 +3405,9 @@
 
     if (list.length === 0) {
       $("chartbox").hidden = true;
-      $("days").innerHTML = `<p class="empty">まだ きろくが ありません。<br>もんだいを 10もん ときおわると、ここに のこります。</p>`;
+      $("days").innerHTML = S.histApp === "all"
+        ? `<p class="empty">まだ きろくが ありません。<br>もんだいを 10もん ときおわると、ここに のこります。</p>`
+        : `<p class="empty">${APP_NAME[S.histApp]}の きろくは まだ ありません。</p>`;
       return;
     }
     $("chartbox").hidden = false;
@@ -3089,7 +3428,7 @@
           <span class="day-n">せいかい <b>${e.ok}</b>/${e.q}もん</span>
         </div>
         ${e.sets.map((set) => {
-          const total = set.total ?? set.qs.length;
+          const total = totalOf(set);
           return `<details class="set">
             <summary>
               <span>${MODE_NAME[set.m] || "もんだい"}・${LV_NAME[set.lv] || "?"}</span>
@@ -3108,9 +3447,9 @@
 
   // しゅるいべつの せいかいりつ
   function genreHTML(sets) {
-    const rows = ["calc", "word", "clock", "mix", "eigo", ...EIGO_KINDS].map((m) => {
+    const rows = [...APP_MODES.sansu, ...APP_MODES.eigo, ...APP_MODES.typing].map((m) => {
       const mine = sets.filter((x) => x.m === m);
-      const total = mine.reduce((a, x) => a + (x.total ?? x.qs.length), 0);
+      const total = mine.reduce((a, x) => a + totalOf(x), 0);
       const ok = mine.reduce((a, x) => a + x.n, 0);
       return { m, total, ok };
     }).filter((r) => r.total > 0);
@@ -3275,7 +3614,9 @@
     $("srv-key").value = key;
     renderPlist();
     const left = loadOutbox().length;
-    if (!url) srvMsg("サーバーの URL を いれると、みんなの きろくを まとめられます。<br>いれなくても この たんまつの きろくは のこります。");
+    if (!url) srvMsg("サーバーの URL を いれると、<b>スマホでも タブレットでも パソコンでも</b>、"
+      + "どの たんまつで やった ぶんも 1つに あつまります。<br>"
+      + "いれないと、きろくは やった たんまつの 中だけに のこります。");
     else if (left > 0) srvMsg(`おくれて いない きろくが <b>${left}</b>件 あります。「いま おくる」を おしてください。`, "ng");
     else srvMsg(`サーバー: ${esc(url)}`, "idle");
   }
@@ -3430,6 +3771,68 @@
 
   /* ========== ひとりぶんの くわしい きろく（サーバーから） ========== */
   // サーバーの きろくを、この たんまつの きろくと おなじ かたちに そろえる
+  // サーバーから とってきた ぶんを、この たんまつの きろくと あわせる。
+  // おなじ セットが 2かい 出ないように、といた じこく（ts）で 見わける。
+  function mergeSets(local, remote) {
+    const seen = new Set(local.map((x) => `${x.t}`));
+    const out = local.slice();
+    for (const r of remote) if (!seen.has(`${r.t}`)) { seen.add(`${r.t}`); out.push(r); }
+    return out.sort((a, b) => a.t - b.t);
+  }
+
+  // その人の きろくを サーバーから とってくる（つかえない ときは null）
+  async function fetchPlayerSets(name) {
+    const { url, key } = srvCfg();
+    if (!url || !name) return null;
+    try {
+      const u = new URL(`${url}/api/runs`);
+      u.searchParams.set("player", playerId(name));
+      u.searchParams.set("limit", "200");
+      if (key) u.searchParams.set("key", key);
+      const res = await fetch(u, { cache: "no-store" });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return serverRunsToSets(data.runs);
+    } catch { return null; }
+  }
+
+  // きろく がめんを サーバーの ぶんも いれて つくりなおす
+  async function syncHistory() {
+    const who = S.histPlayer || currentPlayer();
+    const { url } = srvCfg();
+    if (!url || !who) { srvMsg("", "idle", "hist-sync"); return; }
+    srvMsg("ほかの たんまつの きろくを とって います…", "idle", "hist-sync");
+    await flushOutbox();                       // まず この たんまつの ぶんを おくる
+    const remote = await fetchPlayerSets(who);
+    if (!remote) {
+      srvMsg("サーバーに つながりませんでした。この たんまつの きろくだけを 出して います。", "ng", "hist-sync");
+      return;
+    }
+    const before = loadLog(who).length;
+    // とってきた ぶんを この たんまつにも のこす（つぎから すぐ 出る）
+    const all = loadLogAll();
+    const seen = new Set(all.filter((r) => (r.p || "") === who).map((r) => `${r.t}`));
+    let added = 0;
+    for (const r of remote) {
+      if (seen.has(`${r.t}`)) continue;
+      seen.add(`${r.t}`);
+      all.push({ d: r.d, t: r.t, m: r.m, lv: r.lv, n: r.n, p: who, total: r.total, qs: r.qs });
+      added++;
+    }
+    if (added) {
+      all.sort((a, b) => a.t - b.t);
+      if (!store.set(LOG_KEY, JSON.stringify(all.slice(-LOG_MAX)))) {
+        srvMsg("とってきましたが この ブラウザには のこせませんでした。", "ng", "hist-sync");
+      }
+      renderHistory();
+    }
+    const left = loadOutbox().length;
+    srvMsg(added
+      ? `ほかの たんまつの きろくを ${added}セット とりこみました（ぜんぶで ${before + added}セット）。`
+      : `ほかの たんまつとも そろって います（${before}セット）。`
+      + (left ? ` おくれて いない ぶんが ${left}セット あります。` : ""), "ok", "hist-sync");
+  }
+
   const serverRunsToSets = (runs) => (runs || []).map((r) => ({
     d: r.day, t: r.ts, m: r.mode, lv: r.level, n: r.correct, total: r.total,
     qs: (r.detail || []).map((q) => ({ q: q.q, a: q.a, g: q.g, o: q.o })),
@@ -3438,7 +3841,7 @@
   // この たんまつの きろくから、その 人の セットだけ とりだす
   const localSetsOf = (id) => loadLogAll()
     .filter((r) => playerId(r.p || "（なまえなし）") === id)
-    .map((r) => ({ d: r.d, t: r.t, m: r.m, lv: r.lv, n: r.n, total: r.qs?.length || 0, qs: r.qs || [] }));
+    .map((r) => ({ d: r.d, t: r.t, m: r.m, lv: r.lv, n: r.n, total: totalOf(r), qs: r.qs || [] }));
 
   async function openChild(id) {
     const p = lastTeam.find((x) => x.id === id);
@@ -3520,15 +3923,17 @@
     best: 0,
     saved: false,  // この セットを きろくに のこしたか
     histPlayer: "", // きろく がめんで みて いる 人
+    histApp: "all", // きろく がめんで みて いる アプリ
   };
 
   /* ========== がめんの きりかえ ========== */
-  const SCREENS = ["top", "home", "eigo", "quiz", "result", "history", "team", "child"];
+  const SCREENS = ["top", "home", "eigo", "typing", "quiz", "tyquiz", "result", "tyresult",
+    "history", "team", "child"];
   function show(name) {
     clearTimeout(S.timer);
     stopVoice();                 // がめんを かえる ときは こえも とめる
     for (const id of SCREENS) $(id).hidden = id !== name;
-    $("quit").hidden = name !== "quiz";
+    $("quit").hidden = name !== "quiz" && name !== "tyquiz";
     window.scrollTo({ top: 0, behavior: "instant" });
   }
   // トップへ もどる（きろくの みだしも あたらしく する）
@@ -3920,11 +4325,14 @@
     });
   }
   // トップの「さんすう」「えいご」、それぞれの がめんの もんだいボタン
-  document.querySelectorAll(".mode").forEach((b) => {
+  document.querySelectorAll(".mode[data-app]").forEach((b) => {
     b.addEventListener("click", () => {
-      if (b.dataset.app) show(b.dataset.app);
-      else startSet(b.dataset.mode);
+      show(b.dataset.app);
+      if (b.dataset.app === "typing") renderTyping();
     });
+  });
+  document.querySelectorAll(".mode[data-mode]").forEach((b) => {
+    b.addEventListener("click", () => startSet(b.dataset.mode));
   });
   $("home-back").addEventListener("click", openTop);
   $("eigo-back").addEventListener("click", openTop);
@@ -3957,17 +4365,29 @@
   $("judge").addEventListener("click", (e) => {
     if (e.target.closest("#next")) nextQuestion();
   });
-  $("quit").addEventListener("click", () => show(isEigoMode(S.mode) ? "eigo" : "home"));
+  $("quit").addEventListener("click", () => {
+    if (!$("tyquiz").hidden) { show("typing"); renderTyping(); return; }
+    show(isEigoMode(S.mode) ? "eigo" : "home");
+  });
   function openHistory() {
     S.histPlayer = currentPlayer();      // ひらいた ときは いま やって いる 人
     renderHistory(); renderVoiceBox(); renderRecBox(); renderBkBox(); renderSrvBox(); show("history");
+    syncHistory();          // ひらくたびに ほかの たんまつの ぶんも とってくる
   }
   // きろく がめんで だれの ぶんを みるか
+  $("hist-app").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-app-filter]");
+    if (!b) return;
+    S.histApp = b.dataset.appFilter;
+    renderHistory();
+  });
   $("hist-who").addEventListener("click", (e) => {
     const b = e.target.closest("[data-who]");
     if (!b) return;
     S.histPlayer = b.dataset.who;
+    S.histApp = "all";
     renderHistory();
+    syncHistory();          // その人の ぶんを ほかの たんまつからも とってくる
   });
   $("team-list").addEventListener("click", (e) => {
     const b = e.target.closest("[data-child]");
@@ -4206,6 +4626,623 @@
     else if (e.key === "ArrowLeft" && S.qs[S.i]?.input === "time") { S.tf = "h"; renderFields(); }
   });
 
+  /* ========== タイピング ==========
+     さんすう・えいごと おなじ 人・おなじ きろく・おなじ カエルを つかう。
+     ちがうのは 「うつ」ことだけ。 */
+  const TY_GAME_SEC = 60;
+  const TY_PRACTICE_N = 10;
+
+  // うつ おとは みじかく。まちがえても しかる おとには しない。
+  const TY_NOTES = {
+    ok: [880], clear: [784, 1046], combo: [784, 1046, 1318], ng: [262, 208],
+    tick: [523], fanfare: [523, 659, 784, 1046],
+  };
+  function tyBeep(kind) {
+    if (!soundOn) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      (TY_NOTES[kind] || TY_NOTES.ok).forEach((f, i) => {
+        const o = actx.createOscillator(), g = actx.createGain();
+        o.type = "triangle";
+        o.frequency.value = f;
+        const t = actx.currentTime + i * 0.08;
+        const vol = kind === "ok" ? 0.07 : 0.14;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(vol, t + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + (kind === "ok" ? 0.1 : 0.2));
+        o.connect(g); g.connect(actx.destination);
+        o.start(t); o.stop(t + 0.22);
+      });
+    } catch { /* おとが でなくても れんしゅうは できる */ }
+  }
+
+  // そだちぐあいの え（たまご → おたまじゃくし → あしが でた → カエル）
+  function growSVG(stage, size = 64) {
+    if (stage >= 3) return frogSVG("kero", { size });
+    const body = stage === 0
+      ? `<ellipse cx="50" cy="56" rx="26" ry="32" fill="var(--kin-soft)" stroke="var(--kin)" stroke-width="3"/>
+         <circle cx="42" cy="48" r="4" fill="var(--kin)" opacity=".5"/>
+         <circle cx="58" cy="62" r="5" fill="var(--kin)" opacity=".4"/>
+         <circle cx="53" cy="40" r="3" fill="var(--kin)" opacity=".5"/>`
+      : `<path d="M62 52 Q86 34 88 52 Q86 70 62 56 Z" fill="#5fae55" opacity=".8"/>
+         <ellipse cx="42" cy="54" rx="26" ry="22" fill="#5fae55"/>
+         <circle cx="33" cy="47" r="4.6" fill="#233b22"/><circle cx="34.6" cy="45.4" r="1.6" fill="#fff"/>
+         <circle cx="50" cy="47" r="4.6" fill="#233b22"/><circle cx="51.6" cy="45.4" r="1.6" fill="#fff"/>
+         <path d="M33 62 Q42 70 51 62" fill="none" stroke="#233b22" stroke-width="3" stroke-linecap="round"/>
+         ${stage >= 2 ? `<path d="M34 72 L26 84" stroke="#5fae55" stroke-width="7" stroke-linecap="round"/>
+                          <path d="M50 73 L58 85" stroke="#5fae55" stroke-width="7" stroke-linecap="round"/>` : ""}`;
+    return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="そだちぐあい">${body}</svg>`;
+  }
+  const medalSVG = (color, mark, size = 42) => `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true">
+      <circle cx="50" cy="50" r="44" fill="${color}"/>
+      <circle cx="50" cy="50" r="44" fill="none" stroke="#ffffff55" stroke-width="3"/>
+      <circle cx="50" cy="50" r="35" fill="none" stroke="#ffffff66" stroke-width="2.5" stroke-dasharray="4 5"/>
+      <text x="50" y="63" text-anchor="middle" font-size="34" font-weight="800"
+            font-family="M PLUS Rounded 1c, sans-serif" fill="#fff">${esc(mark)}</text>
+    </svg>`;
+
+  /* ---- キーボードと ゆび ---- */
+  const KBD_ROWS = ["1234567890", "qwertyuiop", "asdfghjkl;", "zxcvbnm,./"];
+  const YUBI = { 1: "ひとさしゆび", 2: "なかゆび", 3: "くすりゆび", 4: "こゆび", 5: "おやゆび" };
+  const FINGER = {};
+  const setF = (keys, y, hand) => { for (const k of keys) FINGER[k] = { y, hand }; };
+  setF("1qaz", 4, 0); setF("2wsx", 3, 0); setF("3edc", 2, 0); setF("45rtfgvb", 1, 0);
+  setF("67yuhjnm", 1, 1); setF("8ik,", 2, 1); setF("9ol.", 3, 1); setF("0p;/", 4, 1);
+  setF(" ", 5, 1);
+  const HOME_KEYS = new Set(["f", "j"]);
+  const KEY_EL = new Map();        // キーの もじ -> がめんの ボタン
+  const handName = (h) => (h === 0 ? "ひだり" : "みぎ");
+
+  function drawKeyboard() {
+    $("ty-kbd").innerHTML = KBD_ROWS.map((row, i) => `<div class="kbd-row" data-r="${i + 1}">`
+      + [...row].map((k) => {
+        const f = FINGER[k] || {};
+        return `<button type="button" class="kbd-key${HOME_KEYS.has(k) ? " home" : ""}" `
+          + `data-k="${esc(k)}" data-y="${f.y || ""}">${esc(k.toUpperCase())}</button>`;
+      }).join("")
+      + `</div>`).join("")
+      + `<div class="kbd-row" data-r="5"><button type="button" class="kbd-key" data-k=" " data-y="5">スペース</button></div>`;
+    KEY_EL.clear();
+    $("ty-kbd").querySelectorAll(".kbd-key").forEach((el) => KEY_EL.set(el.dataset.k, el));
+    $("ty-kbd-legend").innerHTML = [1, 2, 3, 4, 5].map((y) =>
+      `<b><i style="background: var(--yubi-${y})"></i>${YUBI[y]}</b>`).join("");
+  }
+
+  /* ---- うつ もの ---- */
+  const TY_LETTERS = {
+    1: [..."asdfjkl;"],
+    2: [..."asdfjkl;qwertyuiop"],
+    3: [..."asdfjkl;qwertyuiopzxcvbnm"],
+  };
+  const TY_YOMI = {
+    a: "エー", b: "ビー", c: "シー", d: "ディー", e: "イー", f: "エフ", g: "ジー", h: "エイチ",
+    i: "アイ", j: "ジェー", k: "ケー", l: "エル", m: "エム", n: "エヌ", o: "オー", p: "ピー",
+    q: "キュー", r: "アール", s: "エス", t: "ティー", u: "ユー", v: "ブイ", w: "ダブリュー",
+    x: "エックス", y: "ワイ", z: "ゼット", ";": "セミコロン",
+  };
+  const TY_WORDS = {
+    1: [["cat", "ねこ"], ["dog", "いぬ"], ["sun", "たいよう"], ["red", "あか"], ["egg", "たまご"],
+        ["bus", "バス"], ["car", "くるま"], ["cup", "コップ"], ["box", "はこ"], ["pen", "ペン"],
+        ["hat", "ぼうし"], ["bed", "ベッド"], ["sea", "うみ"], ["sky", "そら"], ["cow", "うし"],
+        ["pig", "ぶた"], ["bag", "かばん"], ["ant", "あり"], ["tea", "おちゃ"], ["toy", "おもちゃ"]],
+    2: [["blue", "あお"], ["fish", "さかな"], ["bird", "とり"], ["book", "ほん"], ["cake", "ケーキ"],
+        ["star", "ほし"], ["tree", "き"], ["frog", "カエル"], ["rain", "あめ"], ["snow", "ゆき"],
+        ["hand", "て"], ["foot", "あし"], ["nose", "はな"], ["ball", "ボール"], ["milk", "ミルク"],
+        ["door", "ドア"], ["desk", "つくえ"], ["lion", "ライオン"], ["rice", "ごはん"], ["moon", "つき"]],
+    3: [["apple", "りんご"], ["green", "みどり"], ["water", "みず"], ["house", "いえ"], ["train", "でんしゃ"],
+        ["bread", "パン"], ["chair", "いす"], ["mouse", "ねずみ"], ["horse", "うま"], ["sheep", "ひつじ"],
+        ["river", "かわ"], ["cloud", "くも"], ["music", "おんがく"], ["pencil", "えんぴつ"], ["flower", "はな"],
+        ["school", "がっこう"], ["orange", "オレンジ"], ["banana", "バナナ"], ["rabbit", "うさぎ"], ["yellow", "きいろ"]],
+  };
+  const KANA1 = [["あ", "a"], ["い", "i"], ["う", "u"], ["え", "e"], ["お", "o"],
+    ["か", "ka"], ["き", "ki"], ["く", "ku"], ["け", "ke"], ["こ", "ko"],
+    ["さ", "sa"], ["し", "shi"], ["す", "su"], ["せ", "se"], ["そ", "so"]];
+  const KANA2 = [["た", "ta"], ["ち", "chi"], ["つ", "tsu"], ["て", "te"], ["と", "to"],
+    ["な", "na"], ["に", "ni"], ["ぬ", "nu"], ["ね", "ne"], ["の", "no"],
+    ["は", "ha"], ["ひ", "hi"], ["ふ", "fu"], ["へ", "he"], ["ほ", "ho"],
+    ["ま", "ma"], ["み", "mi"], ["む", "mu"], ["め", "me"], ["も", "mo"],
+    ["や", "ya"], ["ゆ", "yu"], ["よ", "yo"],
+    ["ら", "ra"], ["り", "ri"], ["る", "ru"], ["れ", "re"], ["ろ", "ro"], ["わ", "wa"]];
+  const KANA_WORDS = [["ねこ", "neko"], ["いぬ", "inu"], ["さかな", "sakana"], ["うみ", "umi"], ["そら", "sora"],
+    ["はな", "hana"], ["やま", "yama"], ["かわ", "kawa"], ["ほし", "hoshi"], ["つき", "tsuki"],
+    ["さくら", "sakura"], ["たまご", "tamago"], ["くるま", "kuruma"], ["あお", "ao"], ["みどり", "midori"],
+    ["ともだち", "tomodachi"], ["ありがとう", "arigatou"], ["おはよう", "ohayou"]];
+
+  const COURSES = {
+    moji: {
+      name: "もじ", about: "アルファベットを 1つずつ。ホームポジションから",
+      peek: "A S D F", lv: { 1: "ホームポジション（8キー）", 2: "＋ うえの だん", 3: "ぜんぶの もじ" },
+      make(lv) {
+        const c = pick(TY_LETTERS[lv]);
+        return { prompt: TY_YOMI[c] || "", promptSmall: true, disp: c.toUpperCase(), type: c };
+      },
+    },
+    word: {
+      name: "たんご", about: "えいたんごを うつ。いみも いっしょに おぼえよう",
+      peek: "cat", lv: { 1: "3もじの たんご", 2: "4もじの たんご", 3: "5〜6もじの たんご" },
+      make(lv) {
+        const [w, mean] = pick(TY_WORDS[lv]);
+        return { prompt: mean, promptSmall: false, disp: w, type: w };
+      },
+    },
+    roma: {
+      name: "ローマじ", about: "ひらがなを ローマじで うつ。日本語入力の れんしゅう",
+      peek: "か ka", lv: { 1: "あ行・か行・さ行", 2: "た行〜わ行も", 3: "ひらがなの ことば" },
+      make(lv) {
+        const [kana, roma] = lv === 1 ? pick(KANA1) : lv === 2 ? pick([...KANA1, ...KANA2]) : pick(KANA_WORDS);
+        return { prompt: kana, promptSmall: false, disp: roma.toUpperCase(), type: roma };
+      },
+    },
+    num: {
+      name: "すうじ", about: "すうじの キーに なれる。うえの だんを 見ないで",
+      peek: "4 7 2", lv: { 1: "1けた", 2: "2けた", 3: "3けた" },
+      make(lv) {
+        const lo = lv === 1 ? 0 : Math.pow(10, lv - 1);
+        const v = String(rnd(lo, Math.pow(10, lv) - 1));
+        return { prompt: "", promptSmall: true, disp: v, type: v };
+      },
+    },
+  };
+  const COURSE_NAME = Object.fromEntries(Object.entries(COURSES).map(([id, c]) => [`ty-${id}`, `タイピング：${c.name}`]));
+
+  /* ---- てんすう・そだちぐあい・メダル ---- */
+  const SC_CLEAR = 100;          // 1もん うてたら
+  const SC_PERFECT = 50;         // その 1もんを ミスなしで
+  const SC_COMBO = 10;           // れんぞく 1つに つき（10れんぞくまで）
+  const RANKS = [
+    { at: 0, name: "たまご", stage: 0 },
+    { at: 1500, name: "おたまじゃくし", stage: 1 },
+    { at: 5000, name: "あしが でた", stage: 2 },
+    { at: 12000, name: "こガエル", stage: 3 },
+    { at: 25000, name: "カエルはかせ", stage: 4 },
+  ];
+  const MEDALS = [
+    { id: "first", name: "はじめの いっぽ", how: "はじめて あそんだ", color: "#9db2ca", mark: "1" },
+    { id: "nomiss", name: "ノーミス", how: "ミス 0で おわった", color: "#2f8a5f", mark: "0" },
+    { id: "combo10", name: "10れんぞく", how: "10かい つづけて せいかい", color: "#d3468a", mark: "10" },
+    { id: "score1000", name: "1000てん", how: "1かいで 1000てん", color: "#e8a51c", mark: "K" },
+    { id: "game20", name: "ゲーム20もん", how: "ゲームで 20もん うてた", color: "#e4523f", mark: "20" },
+    { id: "fast", name: "はやうち", how: "れんしゅう10もんを 40びょう いない", color: "#2b6ca3", mark: "⚡" },
+    { id: "allcourse", name: "ぜんコース", how: "4つの コース ぜんぶで あそんだ", color: "#7d5bbd", mark: "4" },
+    { id: "lv3", name: "むずかしい", how: "むずかしいで さいごまで", color: "#1f2f45", mark: "3" },
+  ];
+  // なまえごとに わける（きろくと おなじ 人の わけかた）
+  const expKey = () => `sn-typing-exp-${currentPlayer()}`;
+  const medalKey = () => `sn-typing-medals-${currentPlayer()}`;
+  const playedKey = () => `sn-typing-played-${currentPlayer()}`;
+  const getExp = () => Number(store.get(expKey(), "0")) || 0;
+  const getMedals = () => { try { return new Set(JSON.parse(store.get(medalKey(), "[]"))); } catch { return new Set(); } };
+  const getPlayed = () => { try { return new Set(JSON.parse(store.get(playedKey(), "[]"))); } catch { return new Set(); } };
+  const rankOf = (exp) => { let r = RANKS[0]; for (const x of RANKS) if (exp >= x.at) r = x; return r; };
+  const nextRank = (exp) => RANKS.find((x) => x.at > exp) || null;
+
+  /* ---- いまの じょうたい ---- */
+  const T = {
+    course: store.get("sn-typing-course", "moji"),
+    lv: Number(store.get("sn-typing-lv", "1")) || 1,
+    mode: store.get("sn-typing-mode", "practice"),
+    kbdOn: store.get("sn-typing-kbd", "1") === "1",
+    on: false,
+    tick: 0, cd: 0, goT: 0, fxT: 0, sayT: 0,
+    startAt: 0, endAt: 0,
+    item: null, pos: 0, last: "", itemMiss: 0,
+    hit: 0, perfect: 0, miss: 0, keys: 0, score: 0, combo: 0, bestCombo: 0,
+    missKeys: {},
+  };
+  if (!COURSES[T.course]) T.course = "moji";
+  if (![1, 2, 3].includes(T.lv)) T.lv = 1;
+  if (!["practice", "game"].includes(T.mode)) T.mode = "practice";
+
+  const bestKey = () => `sn-typing-best-${currentPlayer()}-${T.course}-${T.lv}-${T.mode}`;
+  const bestOf = () => Number(store.get(bestKey(), "0")) || 0;
+
+  function tyStopAll() {
+    clearInterval(T.tick); clearInterval(T.cd);
+    clearTimeout(T.goT); clearTimeout(T.fxT); clearTimeout(T.sayT);
+    T.tick = T.cd = T.goT = T.fxT = T.sayT = 0;
+    T.on = false;
+    $("ty-fx").innerHTML = "";
+    $("ty-card").classList.remove("shake");
+  }
+
+  /* ---- コースを えらぶ がめん ---- */
+  function tyRenderRank() {
+    const exp = getExp(), r = rankOf(exp), nx = nextRank(exp);
+    const who = currentPlayer();
+    $("ty-rank-art").innerHTML = growSVG(r.stage, 66);
+    $("ty-rank-name").innerHTML = `${esc(r.name)}<small>${who ? esc(who) + "の そだちぐあい" : "そだちぐあい"}</small>`;
+    const from = r.at, to = nx ? nx.at : r.at + 1;
+    $("ty-rank-bar").style.width = `${nx ? Math.min(100, ((exp - from) / (to - from)) * 100) : 100}%`;
+    $("ty-rank-next").innerHTML = nx
+      ? `あと <b>${nx.at - exp}</b>てんで「${esc(nx.name)}」に なるよ（いままで <b>${exp}</b>てん）`
+      : `いちばん うえまで そだったよ！（いままで <b>${exp}</b>てん）`;
+  }
+  function tyRenderMedals() {
+    const got = getMedals();
+    $("ty-medal-count").textContent = `${got.size} / ${MEDALS.length}`;
+    $("ty-medals").innerHTML = MEDALS.map((m) => {
+      const has = got.has(m.id);
+      return `<figure class="medal${has ? " got" : ""}">
+        ${medalSVG(has ? m.color : "#9db2ca", has ? m.mark : "?")}
+        <figcaption>${has ? esc(m.name) + "<br>" : ""}${esc(m.how)}</figcaption>
+      </figure>`;
+    }).join("");
+  }
+  function tyRenderCourses() {
+    const played = getPlayed();
+    $("ty-courses").innerHTML = Object.entries(COURSES).map(([id, c]) =>
+      `<button type="button" class="mode" data-c="${id}" aria-pressed="${String(id === T.course)}">
+        <div>
+          <h3>${esc(c.name)}${played.has(id) ? "" : ' <span class="tag">はじめて</span>'}</h3>
+          <p>${esc(c.about)}</p>
+        </div>
+        <div class="peek" aria-hidden="true"><div class="peek-key">${esc(c.peek)}</div></div>
+      </button>`).join("");
+  }
+  function tyRenderLevels() {
+    const c = COURSES[T.course];
+    $("ty-levels").innerHTML = [1, 2, 3].map((lv) =>
+      `<button type="button" class="lv" data-lv="${lv}" aria-pressed="${String(lv === T.lv)}">
+        <span>${LV_NAME[lv]}</span><small>${esc(c.lv[lv])}</small>
+      </button>`).join("");
+  }
+  function tyRenderModes() {
+    $("ty-modes").querySelectorAll(".md").forEach((b) => {
+      b.setAttribute("aria-pressed", String(b.dataset.md === T.mode));
+    });
+  }
+  function tyRenderBest() {
+    const c = COURSES[T.course], b = bestOf();
+    const who = currentPlayer() ? esc(currentPlayer()) + "の" : "いままでの";
+    if (T.mode === "game") {
+      $("ty-best").innerHTML = b
+        ? `${who} さいこう スコアは <b>${b}</b>てん（${esc(c.name)}・60びょう）。これを こえられるかな？`
+        : `60びょうで なんてん とれるかな。まずは ためしに やって みよう。`;
+      $("ty-tip").innerHTML = "つづけて せいかいすると <b>れんぞく ボーナス</b>。"
+        + "ちがう キーは ミスを 1つ かぞえるだけで、先には すすみません。";
+    } else {
+      $("ty-best").innerHTML = b
+        ? `${who} さいこう スコアは <b>${b}</b>てん（${TY_PRACTICE_N}もん・${esc(c.name)}）。`
+        : `${TY_PRACTICE_N}もん を じかん むせいげんで。ゆっくり ただしく うつのが さきです。`;
+      $("ty-tip").innerHTML = `${TY_PRACTICE_N}もん とんだら ゴール。かかった じかんも はかります。`
+        + "ミスなしで うてると <b>パーフェクト ボーナス</b>が つきます。";
+    }
+  }
+  function tyRenderKbdToggle() {
+    const b = $("ty-kbd-toggle");
+    b.setAttribute("aria-pressed", String(T.kbdOn));
+    b.textContent = T.kbdOn ? "キーボードを 出す：オン" : "キーボードを 出す：オフ";
+    $("ty-kbd-box").hidden = !T.kbdOn;
+  }
+  function renderTyping() {
+    tyRenderRank(); tyRenderMedals(); tyRenderCourses(); tyRenderLevels();
+    tyRenderModes(); tyRenderBest(); tyRenderKbdToggle();
+  }
+
+  /* ---- あそぶ ---- */
+  function tyNextItem() {
+    const c = COURSES[T.course];
+    let it = c.make(T.lv);
+    if (it.type === T.last) it = c.make(T.lv);      // おなじ おだいが つづかない ように
+    T.last = it.type;
+    T.item = it;
+    T.pos = 0;
+    T.itemMiss = 0;
+    tyRenderItem();
+  }
+  function tyRenderItem() {
+    const it = T.item;
+    $("ty-prompt").hidden = !it.prompt;
+    $("ty-prompt").className = "tyask" + (it.promptSmall ? " small" : "");
+    $("ty-prompt").textContent = it.prompt;
+    $("ty-chips").innerHTML = [...it.disp].map((ch, i) =>
+      `<span class="${i < T.pos ? "done" : i === T.pos ? "now" : ""}">${esc(ch)}</span>`).join("");
+    tyRenderNextKey();
+  }
+  function tyRenderNextKey() {
+    KEY_EL.forEach((el) => el.classList.remove("next", "bad"));
+    const want = T.item && T.on ? T.item.type[T.pos] : null;
+    if (!want) { $("ty-yubi").innerHTML = ""; return; }
+    const el = KEY_EL.get(want);
+    if (el) el.classList.add("next");
+    const f = FINGER[want];
+    $("ty-yubi").innerHTML = f
+      ? `<b>${handName(f.hand)}</b>の <b>${YUBI[f.y]}</b>で <b>${esc(want.toUpperCase())}</b>`
+      : "";
+  }
+  function tyRenderStats() {
+    $("ty-st-hit").textContent = String(T.hit);
+    $("ty-st-miss").textContent = String(T.miss);
+    const total = T.keys + T.miss;
+    $("ty-st-acc").textContent = (total ? Math.round((T.keys / total) * 100) : 100) + "%";
+    $("ty-st-score").textContent = String(T.score);
+    const box = $("ty-combo");
+    box.hidden = T.combo < 2;
+    if (T.combo >= 2) box.innerHTML = `<b>${T.combo}</b><small>れんぞく</small>`;
+  }
+  function tyRenderHUD() {
+    const c = COURSES[T.course];
+    $("ty-hud-course").textContent = `${c.name}：${LV_NAME[T.lv]}`;
+    $("ty-hud-who").innerHTML = currentPlayer() ? `<b>${esc(currentPlayer())}</b>` : "";
+    if (T.mode === "game") {
+      const left = Math.max(0, T.endAt - Date.now());
+      $("ty-hud-left").innerHTML = `のこり <span class="n">${(left / 1000).toFixed(1)}</span>びょう`;
+      $("ty-bar").style.width = `${(left / (TY_GAME_SEC * 1000)) * 100}%`;
+      $("ty-barwrap").classList.toggle("hot", left <= 10000);
+    } else {
+      $("ty-hud-left").innerHTML = `<span class="n">${Math.min(T.hit + 1, TY_PRACTICE_N)}</span> / ${TY_PRACTICE_N}もん`;
+      $("ty-hasu").innerHTML = Array.from({ length: TY_PRACTICE_N }, (_, i) =>
+        `<div class="${i < T.hit ? "done" : i === T.hit ? "now" : ""}"></div>`).join("");
+    }
+  }
+  function tyBuddySay(text, mood = "happy") {
+    clearTimeout(T.sayT);
+    $("ty-buddy").innerHTML = `<span class="say">${esc(text)}</span>${frogSVG("kero", { size: 44, mood })}`;
+    if (text) T.sayT = setTimeout(() => { $("ty-buddy").innerHTML = frogSVG("kero", { size: 44 }); }, 1400);
+  }
+  function tyBurst(gain) {
+    const colors = ["var(--kin)", "var(--momo)", "var(--midori)", "var(--ai)"];
+    let html = `<span class="gain">+${gain}</span>`;
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      html += `<span class="kira" style="left:50%;top:45%;background:${colors[i % 4]};`
+        + `--dx:${Math.round(Math.cos(a) * 88)}px;--dy:${Math.round(Math.sin(a) * 66)}px"></span>`;
+    }
+    $("ty-fx").innerHTML = html;
+  }
+  // 1もん うてた。えんしゅつは うわに かさねる だけで、つぎの もんだいは すぐ 出す。
+  function tyClearItem(card) {
+    T.hit++;
+    T.combo++;
+    T.bestCombo = Math.max(T.bestCombo, T.combo);
+    const perfect = T.itemMiss === 0;
+    if (perfect) T.perfect++;
+    const gain = SC_CLEAR + (perfect ? SC_PERFECT : 0) + Math.min(T.combo, 10) * SC_COMBO;
+    T.score += gain;
+    tyBeep(T.combo >= 3 ? "combo" : "clear");
+    tyBurst(gain);
+    if (T.combo >= 10) tyBuddySay(`${T.combo}れんぞく！ すごいケロ！`);
+    else if (T.combo >= 5) tyBuddySay(`${T.combo}れんぞく！`);
+    else if (T.combo >= 3) tyBuddySay("いい ちょうし！");
+    else if (perfect) tyBuddySay("パーフェクト！");
+    $("ty-combo").classList.remove("hit");
+    void $("ty-combo").offsetWidth;
+    $("ty-combo").classList.add("hit");
+    clearTimeout(T.fxT);
+    T.fxT = setTimeout(() => { $("ty-fx").innerHTML = ""; }, 700);
+    tyRenderStats();
+    if (T.mode === "practice" && T.hit >= TY_PRACTICE_N) { tyFinish(); return; }
+    tyNextItem();
+    tyRenderHUD();
+  }
+  function typeKey(raw) {
+    if (!T.on || !T.item) return;
+    const k = String(raw).toLowerCase();
+    const want = T.item.type[T.pos];
+    const card = $("ty-card");
+    if (k === want) {
+      T.pos++; T.keys++;
+      if (T.pos >= T.item.type.length) { tyClearItem(card); return; }
+      tyBeep("ok");
+      tyRenderItem();
+    } else {
+      T.miss++;
+      T.itemMiss++;
+      if (T.combo >= 3) tyBuddySay("おしい！ もういちど", "open");
+      T.combo = 0;
+      T.missKeys[want] = (T.missKeys[want] || 0) + 1;
+      tyBeep("ng");
+      const bad = KEY_EL.get(k);
+      if (bad) { bad.classList.add("bad"); setTimeout(() => bad.classList.remove("bad"), 220); }
+      card.classList.remove("shake");
+      void card.offsetWidth;
+      card.classList.add("shake");
+    }
+    tyRenderStats();
+    tyRenderHUD();
+  }
+
+  function tyStart() {
+    tyStopAll();
+    T.hit = 0; T.perfect = 0; T.miss = 0; T.keys = 0; T.score = 0; T.combo = 0; T.bestCombo = 0;
+    T.missKeys = {}; T.last = ""; T.item = null; T.pos = 0; T.itemMiss = 0;
+    $("ty-combo").hidden = true;
+    T.endAt = Date.now() + TY_GAME_SEC * 1000;
+    show("tyquiz");
+    $("ty-kbd-box").hidden = !T.kbdOn;
+    $("ty-hasu").hidden = T.mode !== "practice";
+    $("ty-barwrap").hidden = T.mode !== "game";
+    $("ty-chips").innerHTML = "";
+    $("ty-prompt").hidden = true;
+    $("ty-fx").innerHTML = "";
+    $("ty-card").classList.remove("shake");
+    $("ty-buddy").innerHTML = frogSVG("kero", { size: 44 });
+    tyRenderStats(); tyRenderHUD();
+    let n = 3;
+    const ready = $("ty-ready");
+    const showReady = (t, cls) => {
+      ready.hidden = false;
+      ready.className = "ready" + (cls || "");
+      ready.textContent = t;
+    };
+    showReady("3");
+    tyBeep("tick");
+    T.cd = setInterval(() => {
+      n--;
+      if (n > 0) { showReady(String(n)); tyBeep("tick"); return; }
+      clearInterval(T.cd); T.cd = 0;
+      showReady("スタート！", " go2");
+      tyBeep("ok");
+      // やめられた ときに あとから はじまらない ように、この まちも tyStopAll() で とまる
+      T.goT = setTimeout(() => {
+        if ($("tyquiz").hidden) return;
+        ready.hidden = true;
+        tyRun();
+      }, 450);
+    }, 700);
+  }
+  function tyRun() {
+    T.on = true;
+    T.startAt = Date.now();
+    T.endAt = T.startAt + TY_GAME_SEC * 1000;
+    tyNextItem();
+    tyRenderHUD();
+    T.tick = setInterval(() => {
+      tyRenderHUD();
+      if (T.mode === "game" && Date.now() >= T.endAt) tyFinish();
+    }, 100);
+  }
+
+  /* ---- けっか ---- */
+  function tyFinish() {
+    const ms = Date.now() - T.startAt;
+    const { hit, perfect, miss, keys, score, bestCombo } = T;
+    const c = COURSES[T.course];
+    tyStopAll();
+
+    const acc = keys + miss ? Math.round((keys / (keys + miss)) * 100) : 100;
+    const prev = bestOf();
+    const isBest = score > prev;
+    // ほぞん できたか かならず 見る（できて いないのに「こうしん」と 言わない）
+    const saved = isBest ? store.set(bestKey(), String(score)) : true;
+
+    const expBefore = getExp();
+    const expAfter = expBefore + score;
+    store.set(expKey(), String(expAfter));
+    const rBefore = rankOf(expBefore), rAfter = rankOf(expAfter);
+
+    const played = getPlayed();
+    played.add(T.course);
+    store.set(playedKey(), JSON.stringify([...played]));
+
+    const got = getMedals();
+    const fresh = [];
+    const give = (id) => { if (!got.has(id)) { got.add(id); fresh.push(MEDALS.find((m) => m.id === id)); } };
+    if (hit > 0) give("first");
+    if (miss === 0 && hit > 0) give("nomiss");
+    if (bestCombo >= 10) give("combo10");
+    if (score >= 1000) give("score1000");
+    if (T.mode === "game" && hit >= 20) give("game20");
+    if (T.mode === "practice" && hit >= TY_PRACTICE_N && ms <= 40000) give("fast");
+    if (played.size >= 4) give("allcourse");
+    if (T.lv === 3 && hit > 0) give("lv3");
+    if (fresh.length) store.set(medalKey(), JSON.stringify([...got]));
+
+    // きろくに のこす。さんすう・えいごと おなじ ところへ。
+    //   もんだいすう ＝ うてた かず、せいかい ＝ ミスなしで うてた かず。
+    //   （キーの かずで かぞえると グラフが タイピングだけに なって しまう）
+    if (hit > 0) {
+      const secs = (ms / 1000).toFixed(1);
+      saveRun({
+        m: `ty-${T.course}`, lv: T.lv, total: hit, n: perfect,
+        qs: [
+          { q: "スコア", a: `${score}てん`, g: "", o: 1 },
+          { q: "せいかい（キー）", a: `${acc}%`, g: miss ? `ミス ${miss}かい` : "", o: acc >= 90 ? 1 : 0 },
+          { q: "さいこう れんぞく", a: `${bestCombo}かい`, g: "", o: bestCombo >= 3 ? 1 : 0 },
+          { q: T.mode === "game" ? "60びょうで うてた" : "かかった じかん",
+            a: T.mode === "game" ? `${hit}もん` : `${secs}びょう`, g: "", o: 1 },
+        ],
+      });
+    }
+
+    const stars = score >= 1800 ? 3 : score >= 900 ? 2 : score >= 300 ? 1 : 0;
+    $("ty-stamp").innerHTML = `<div><div class="big">スコア</div><div class="sub">${score}<small>てん</small></div></div>`;
+    $("ty-result-sub").textContent = T.mode === "game"
+      ? `${c.name}・${LV_NAME[T.lv]} ／ ${hit}もん ／ せいかい ${acc}%`
+      : `${c.name}・${LV_NAME[T.lv]} ／ ${hit}もん ／ ${(ms / 1000).toFixed(1)}びょう ／ せいかい ${acc}%`;
+    $("ty-stars").innerHTML = [0, 1, 2].map((i) => (i < stars ? "★" : "<span>★</span>")).join("");
+
+    const cheers = [];
+    cheers.push(score >= 1800 ? `${score}てん！ すごい はやさだね！`
+      : score >= 900 ? `${score}てん！ いい ちょうしだね！`
+      : score >= 300 ? `${score}てん！ がんばったね！`
+      : "さいごまで ちょうせん したね！");
+    if (hit > 0) {
+      cheers.push(T.mode === "game"
+        ? `${hit}もん うてたよ（1もん ${(TY_GAME_SEC / hit).toFixed(1)}びょう）。`
+        : `${hit}もん を ${(ms / 1000).toFixed(1)}びょうで うてたよ。`);
+    }
+    if (bestCombo >= 3) cheers.push(`さいこう ${bestCombo}れんぞく！`);
+    cheers.push(miss === 0 ? "ミス 0かい！ かんぺき！" : `せいかい ${acc}％（ミス ${miss}かい）。`);
+    if (isBest && !saved) cheers.push("さいこう スコア！（ただし この ブラウザには のこせませんでした）");
+    else if (isBest && prev > 0) cheers.push(`さいこう スコア こうしん！（まえは ${prev}てん）`);
+    else if (isBest) cheers.push("さいこう スコア！");
+    else if (prev > 0) cheers.push(`いままでの さいこうは ${prev}てん。あと ${prev - score + 1}てんで こえられるよ。`);
+
+    $("ty-bubble").textContent = `${callName()}${cheers[0]}`;
+    $("ty-frogs").innerHTML = frogPairHTML(52);
+    $("ty-cheers").innerHTML = cheers.slice(1).map((t) =>
+      `<div class="cheer">${maruMark()}<span>${esc(t)}</span></div>`).join("");
+
+    const up = rAfter.name !== rBefore.name;
+    $("ty-rankup").hidden = !up;
+    if (up) {
+      $("ty-rankup").innerHTML = `${growSVG(rAfter.stage, 46)}`
+        + `<span>そだった！ <b>${esc(rAfter.name)}</b> に なったよ`
+        + `<small>${esc(rBefore.name)} → ${esc(rAfter.name)}（つうさん ${expAfter}てん）</small></span>`;
+    }
+    $("ty-new-medals").innerHTML = fresh.map((m) =>
+      `<div class="newmedal">${medalSVG(m.color, m.mark, 40)}`
+      + `<span><b>メダル「${esc(m.name)}」を ゲット！</b><small>${esc(m.how)}</small></span></div>`).join("");
+
+    const weak = Object.entries(T.missKeys).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    $("ty-weakbox").hidden = weak.length === 0;
+    $("ty-weak").innerHTML = weak.map(([k, n]) => {
+      const f = FINGER[k];
+      const label = k === " " ? "スペース" : k.toUpperCase();
+      return `<span>${esc(label)}<small>${n}かい・${f ? handName(f.hand) + "の " + YUBI[f.y] : ""}</small></span>`;
+    }).join("");
+    $("ty-weak-tip").textContent = weak.length
+      ? "この キーを、つぎは ゆっくり ねらって みよう。ゆびの ばしょを たしかめてからで だいじょうぶ。"
+      : "";
+    show("tyresult");
+    tyBeep(up || fresh.length ? "fanfare" : "clear");
+  }
+
+  /* ---- そうさ ---- */
+  $("ty-courses").addEventListener("click", (e) => {
+    const b = e.target.closest(".mode");
+    if (!b) return;
+    T.course = b.dataset.c;
+    store.set("sn-typing-course", T.course);
+    tyRenderCourses(); tyRenderLevels(); tyRenderBest();
+  });
+  $("ty-levels").addEventListener("click", (e) => {
+    const b = e.target.closest(".lv");
+    if (!b) return;
+    T.lv = Number(b.dataset.lv);
+    store.set("sn-typing-lv", String(T.lv));
+    tyRenderLevels(); tyRenderBest();
+  });
+  $("ty-modes").addEventListener("click", (e) => {
+    const b = e.target.closest(".md");
+    if (!b) return;
+    T.mode = b.dataset.md;
+    store.set("sn-typing-mode", T.mode);
+    tyRenderModes(); tyRenderBest();
+  });
+  $("ty-kbd-toggle").addEventListener("click", () => {
+    T.kbdOn = !T.kbdOn;
+    store.set("sn-typing-kbd", T.kbdOn ? "1" : "0");
+    tyRenderKbdToggle();
+  });
+  $("ty-start").addEventListener("click", tyStart);
+  $("ty-again").addEventListener("click", tyStart);
+  $("ty-back").addEventListener("click", openTop);
+  $("ty-home").addEventListener("click", openTop);
+  $("ty-to-history").addEventListener("click", () => openHistory());
+  $("ty-kbd").addEventListener("click", (e) => {
+    const k = e.target.closest(".kbd-key");
+    if (k) typeKey(k.dataset.k);
+  });
+  document.addEventListener("keydown", (e) => {
+    if ($("tyquiz").hidden) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;      // ショートカットは そのまま
+    if (e.key === "Escape") { show("typing"); renderTyping(); return; }
+    const k = e.key.length === 1 ? e.key.toLowerCase() : "";
+    if (k && (FINGER[k] || /^[a-z0-9]$/.test(k))) { typeKey(k); e.preventDefault(); }
+  });
+
   /* ========== さいしょの ひょうじ ========== */
   setLevel(S.lv);
   $("sound").setAttribute("aria-pressed", String(soundOn));
@@ -4215,6 +5252,7 @@
   $("peek-clock").innerHTML = clockSVG(3, 40, { learn: false, size: 78, cls: "" });
   $("peek-mini").innerHTML = clockSVG(9, 20, { learn: false, size: 28, cls: "" });
   $("build").textContent = `バージョン ${BUILD}`;
+  drawKeyboard();
   renderPlayers();
   teaseHistory();
   renderHello();

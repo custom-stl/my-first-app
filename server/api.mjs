@@ -7,9 +7,20 @@
 //   store.insertRun(row)        -> true（あたらしく いれた）/ false（すでに ある）
 //   store.listRuns({ since })   -> row の はいれつ（ふるい→あたらしい）
 
-export const MODES = ["calc", "word", "clock", "mix"];
+// 3つの アプリの もんだいの しゅるい。ここに ない mode は うけとらない。
+// アプリに あたらしい しゅるいを ふやしたら、ここにも たす（たさないと
+// 400 で はじかれて、たんまつの outbox に たまりつづける）。
+export const MODES = [
+  // さんすう
+  "calc", "word", "clock", "mix",
+  // えいご
+  "eigo", "listen", "eword", "talk", "abc",
+  // タイピング
+  "ty-moji", "ty-word", "ty-roma", "ty-num",
+];
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
-const MAX_DETAIL = 50;      // 1セットの もんだいすうの うわぎり
+const MAX_DETAIL = 50;      // 1セットの こまかい なかみの かずの うわぎり
+const MAX_TOTAL = 300;     // 1セットの もんだいすうの うわぎり（タイピングは 60びょうで たくさん うつ）
 const MAX_STR = 400;        // もんだい文などの ながさの うわぎり
 
 const ok = (json, status = 200) => ({ status, json });
@@ -28,7 +39,7 @@ function normalizeRun(raw, now) {
   const playerId = clampStr(raw.player_id, 64).trim();
   if (!playerId) return { error: "player_id が ありません" };
   if (!DAY_RE.test(String(raw.day ?? ""))) return { error: "day は YYYY-MM-DD で おくって ください" };
-  if (!isInt(raw.total, 1, 100)) return { error: "total が ただしく ありません" };
+  if (!isInt(raw.total, 1, MAX_TOTAL)) return { error: "total が ただしく ありません" };
   if (!isInt(raw.correct, 0, raw.total)) return { error: "correct が ただしく ありません" };
   if (!isInt(raw.level, 1, 3)) return { error: "level が ただしく ありません" };
   if (!MODES.includes(raw.mode)) return { error: "mode が ただしく ありません" };
