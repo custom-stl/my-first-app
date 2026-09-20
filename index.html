@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>さんすう・えいごノート</title>
+<title>べんきょうノート</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="さんすう・えいご">
+<meta name="apple-mobile-web-app-title" content="べんきょうノート">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=M+PLUS+Rounded+1c:wght@700;800&display=swap">
@@ -34,6 +34,7 @@
     --kin-soft: #fdf1d8;
     --midori: #5c8a2f;
     --momo: #d3468a;
+    --murasaki: #6b4c9a;
     --yubi-1: #e4523f; --yubi-2: #e8a51c; --yubi-3: #5c8a2f; --yubi-4: #2b6ca3; --yubi-5: #7d5bbd;
     --chart-ok: #e4523f;
     --chart-ng: #2b6ca3;
@@ -79,6 +80,7 @@
       --kin-soft: #33290f;
       --midori: #9ccc65;
       --momo: #f07ab0;
+      --murasaki: #b79bf0;
       --yubi-1: #ff7d67; --yubi-2: #ffc95c; --yubi-3: #9ccc65; --yubi-4: #74b6ea; --yubi-5: #b79bf0;
       --chart-ok: #e8603f;
       --chart-ng: #3f8fd0;
@@ -103,6 +105,7 @@
     --kin-soft: #33290f;
     --midori: #9ccc65;
     --momo: #f07ab0;
+    --murasaki: #b79bf0;
     --yubi-1: #ff7d67; --yubi-2: #ffc95c; --yubi-3: #9ccc65; --yubi-4: #74b6ea; --yubi-5: #b79bf0;
     --chart-ok: #e8603f;
     --chart-ng: #3f8fd0;
@@ -593,8 +596,16 @@
     white-space: nowrap;
     border: 1.5px solid var(--line); background: var(--card); box-shadow: 0 2px 0 var(--line);
   }
-  .btn.primary { background: var(--shu); color: #fff; border-color: var(--shu); box-shadow: 0 3px 0 color-mix(in srgb, var(--shu) 70%, #000); }
+  .btn.primary {
+    background: var(--accent, var(--shu)); color: #fff; border-color: var(--accent, var(--shu));
+    box-shadow: 0 3px 0 color-mix(in srgb, var(--accent, var(--shu)) 70%, #000);
+  }
   .btn:active { transform: translateY(2px); box-shadow: none; }
+  .btn[disabled] {
+    background: var(--card-2); color: var(--ink-soft); border-color: var(--line);
+    box-shadow: none; cursor: default;
+  }
+  .btn[disabled]:active { transform: none; }
   /* アプリの がめんの「ホームへ」。すすむ ボタンと 見わけが つくように ひかえめに */
   .btnrow.back { margin-top: 22px; }
   .btn.quiet {
@@ -758,6 +769,9 @@
   #home { --accent: var(--shu); }
   #eigo { --accent: var(--midori); }
   #typing, #tyquiz, #tyresult { --accent: var(--ai); }
+  #kanji, #quiz[data-app="kanji"], #result[data-app="kanji"] { --accent: var(--murasaki); }
+  #quiz[data-app="eigo"], #result[data-app="eigo"] { --accent: var(--midori); }
+  #quiz[data-app="sansu"], #result[data-app="sansu"] { --accent: var(--shu); }
   .page-title {
     font-family: var(--f-disp); font-weight: 500;
     font-size: var(--t-xl); margin: 14px 0 16px;
@@ -1138,6 +1152,80 @@
     font-family: var(--f-en, var(--f-num)); font-weight: 800; font-size: 1rem;
   }
 
+
+  /* ---------- かんじ ----------
+     この アプリの しゅやくは「マス」。十字リーダーの 入った 漢字練習帳の マスを
+     まんなかに おおきく おいて、まわりは しずかに する。 */
+  .kjtrace { display: grid; justify-items: center; gap: 8px; }
+  .kjyomi {
+    font-family: var(--f-disp); font-weight: 500; font-size: var(--t-l);
+    color: var(--murasaki); margin: 0;
+  }
+  #kj-canvas {
+    width: min(300px, 78vw, 44vh); height: auto; aspect-ratio: 1;
+    touch-action: none;                 /* なぞる とき がめんが うごかない */
+    cursor: crosshair;
+    border-radius: var(--r-s);
+    background: var(--card);
+  }
+  .kjstrokes {
+    display: flex; align-items: baseline; gap: 10px;
+    font-family: var(--f-num); font-weight: 800; font-size: var(--t-s);
+    color: var(--ink-soft); margin: 0;
+  }
+  .kjstrokes span {
+    font-family: var(--f-body); font-weight: 700; font-size: var(--t-xs);
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+
+  /* よみの もんだい：かんじ そのものが いちばん おおきい */
+  .kjbig {
+    text-align: center; font-weight: 700;
+    font-size: clamp(5rem, 34vw, 7.5rem); line-height: 1.12;
+    margin: 4px 0 0; color: var(--ink);
+  }
+  .kjhint {
+    text-align: center; font-size: var(--t-s); font-weight: 700;
+    color: var(--ink-soft); margin: 6px 0 12px;
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+  .kjhint.big { font-family: var(--f-disp); font-weight: 500; font-size: var(--t-l); color: var(--ink); margin: 2px 0 14px; }
+  .pick .pkanji { font-weight: 700; font-size: clamp(2.2rem, 12vw, 2.9rem); line-height: 1.15; color: var(--ink); }
+
+  /* えらぶ がめんの みほん */
+  .peek-kj { font-weight: 700; font-size: 1.9rem; line-height: 1.1; text-align: center; color: var(--ink-soft); }
+  .peek-kj.sm { font-size: 1.4rem; }
+  .peek-kj small { display: block; font-size: .56rem; font-weight: 700; font-family: var(--f-body); }
+
+  /* トップの しるし */
+  .appmark-kj {
+    display: grid; place-content: center;
+    width: 54px; height: 54px;
+    font-weight: 700; font-size: 2rem; line-height: 1;
+    border: 2px solid var(--accent); border-radius: var(--r-s);
+    background:
+      linear-gradient(var(--accent) 1px, transparent 1px) center / 100% 50%,
+      linear-gradient(90deg, var(--accent) 1px, transparent 1px) center / 50% 100%;
+  }
+  /* マスの 中は 十字リーダー。しるし じたいが この アプリの せつめいに なって いる */
+  .appmark-kj { background-repeat: no-repeat; }
+
+  /* よみ・かきとりは こたえ欄が ないので、花まるは まんなかに */
+  .sheet.kanji .maru {
+    top: 50%; bottom: auto;
+    transform: translate(-50%, -50%) rotate(-1.5deg);
+    width: min(268px, 74%); height: 128px;
+    opacity: .85;
+  }
+  /* なぞりがきは マスごと かこむ。かんじが すけて 見えるよう せんは ほそく */
+  .sheet.kanji.trace .maru {
+    top: auto; bottom: 58px;
+    transform: translate(-50%, 0) rotate(-1.5deg);
+    width: min(330px, 86vw); height: 246px;
+    opacity: .9;
+  }
+  .sheet.kanji.trace .maru path { stroke-width: 2.6; }
+
   /* えいごの もんだいは したに こたえ欄が ないので、花まるは まんなかに */
   .sheet.eigo .maru {
     top: 50%; bottom: auto;
@@ -1151,7 +1239,7 @@
 <div class="app">
 
   <div class="bar">
-    <h1 class="brand">さんすう・えいご<b>ノート</b></h1>
+    <h1 class="brand">べんきょう<b>ノート</b></h1>
     <div class="bar-btns">
       <button type="button" class="chip-btn" id="voice" aria-pressed="true">こえ オン</button>
       <button type="button" class="chip-btn" id="sound" aria-pressed="true">おと オン</button>
@@ -1193,6 +1281,14 @@
           <p>たんご・あいさつ・アルファベット</p>
         </div>
         <div class="appmark appmark-abc" aria-hidden="true">Aa<small>bc</small></div>
+      </button>
+
+      <button type="button" class="app-card mode" data-app="kanji" style="--accent: var(--murasaki)">
+        <div>
+          <h2>かんじ</h2>
+          <p>なぞりがき・よみ・かきとり</p>
+        </div>
+        <div class="appmark appmark-kj" aria-hidden="true">山</div>
       </button>
 
       <button type="button" class="app-card mode" data-app="typing" style="--accent: var(--ai)">
@@ -1336,6 +1432,57 @@
     </div>
   </main>
 
+
+  <!-- ======== かんじ ======== -->
+  <main id="kanji" hidden>
+    <h2 class="page-title">かんじ</h2>
+
+    <h2 class="sec-label">レベル</h2>
+    <div class="levels" id="kj-levels" role="group" aria-label="レベルをえらぶ">
+      <button type="button" class="lv" data-lv="1"><span>やさしい</span><small>1年生の かんじ</small></button>
+      <button type="button" class="lv" data-lv="2"><span>ふつう</span><small>2年生の かんじ</small></button>
+      <button type="button" class="lv" data-lv="3"><span>むずかしい</span><small>にた かんじから えらぶ</small></button>
+    </div>
+
+    <h2 class="sec-label">もんだいを えらぶ</h2>
+    <div class="modes">
+      <button type="button" class="mode" data-mode="kj-trace">
+        <div>
+          <h3>なぞりがき</h3>
+          <p>マスの かんじを ゆびで なぞる</p>
+        </div>
+        <div class="peek" aria-hidden="true"><div class="peek-kj">山</div></div>
+      </button>
+
+      <button type="button" class="mode" data-mode="kj-yomi">
+        <div>
+          <h3>よみ</h3>
+          <p>かんじを 見て よみかたを えらぶ</p>
+        </div>
+        <div class="peek" aria-hidden="true"><div class="peek-kj sm">花<small>はな</small></div></div>
+      </button>
+
+      <button type="button" class="mode" data-mode="kj-kaki">
+        <div>
+          <h3>かきとり</h3>
+          <p>よみを 見て かんじを えらぶ</p>
+        </div>
+        <div class="peek" aria-hidden="true"><div class="peek-kj sm"><small>かわ</small>川</div></div>
+      </button>
+
+      <button type="button" class="mode" data-mode="kanji">
+        <div>
+          <h3>かんじ ぜんぶ</h3>
+          <p>3しゅるいを まとめて 10もん</p>
+        </div>
+        <div class="peek peek-emoji" aria-hidden="true">山花川</div>
+      </button>
+    </div>
+
+    <div class="btnrow back">
+      <button type="button" class="btn quiet" id="kanji-back">ホームへ もどる</button>
+    </div>
+  </main>
 
   <!-- ======== タイピング ======== -->
   <main id="typing" hidden>
@@ -1655,7 +1802,7 @@
   };
 
   // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
-  const BUILD = "2026-09-20c";
+  const BUILD = "2026-09-20d";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
@@ -1664,6 +1811,7 @@
     eigo: "えいご ぜんぶ", listen: "ききとり", eword: "えいたんご", talk: "あいさつ", abc: "アルファベット",
     "ty-moji": "タイピング：もじ", "ty-word": "タイピング：たんご",
     "ty-roma": "タイピング：ローマじ", "ty-num": "タイピング：すうじ",
+    kanji: "かんじ ぜんぶ", "kj-trace": "なぞりがき", "kj-yomi": "かんじの よみ", "kj-kaki": "かきとり",
   };
 
   /* ========== おと ========== */
@@ -2183,7 +2331,12 @@
 
   function hintFor(q, given) {
     const g = String(given ?? "");
-    if (q.eigo) return q.hint || "こえに だして いうと おぼえやすいコロ";
+    if (q.input === "trace") {
+      const over = S.trace ? S.trace.over : 0;
+      if (over > 0.45) return "マスの せんから はみ出して いるコロ。ゆっくりで いいコロ";
+      return q.hint || "マスの せんを めやすに なぞると いいコロ";
+    }
+    if (q.eigo || q.kanji_app) return q.hint || "こえに だして いうと おぼえやすいコロ";
     if (q.kind === "calc") {
       const m = q.text.match(/^(\d+)\s*([＋－])\s*(\d+)$/);
       const add = m ? m[2] === "＋" : true;
@@ -2552,6 +2705,10 @@
   }
 
   function makeQuestion(mode, lv) {
+    if (isKanjiMode(mode)) {
+      const kind = Object.keys(KJ_MODE).find((x) => KJ_MODE[x] === mode);
+      return makeKanji(kind || "", lv);
+    }
     if (isEigoMode(mode)) return makeEigo(mode === "eigo" ? "" : mode, lv);
     if (mode === "mix") mode = pick(["calc", "word", "clock"]);
     if (mode === "calc") return makeCalc(lv);
@@ -3075,6 +3232,513 @@
     return q;
   }
 
+  /* ========== かんじ ==========
+     しゅやくは「マス」。十字リーダーの 入った 漢字練習帳の マスに、
+     うすく 出た かんじを ゆびで なぞる。よみ・かきとりは 4たく。
+     k=かんじ / g=がくねん / s=かくすう / y=よみ（ひらがな）/ m=いみ・つかいかた */
+  const KANJI = [
+    // ---- 1年生（80字 ぜんぶ）----
+    { k: "一", g: 1, s: 1, y: "いち", m: "ひとつ" },
+    { k: "二", g: 1, s: 2, y: "に", m: "ふたつ" },
+    { k: "三", g: 1, s: 3, y: "さん", m: "みっつ" },
+    { k: "四", g: 1, s: 5, y: "よん", m: "よっつ" },
+    { k: "五", g: 1, s: 4, y: "ご", m: "いつつ" },
+    { k: "六", g: 1, s: 4, y: "ろく", m: "むっつ" },
+    { k: "七", g: 1, s: 2, y: "なな", m: "ななつ" },
+    { k: "八", g: 1, s: 2, y: "はち", m: "やっつ" },
+    { k: "九", g: 1, s: 2, y: "きゅう", m: "ここのつ" },
+    { k: "十", g: 1, s: 2, y: "じゅう", m: "とお" },
+    { k: "百", g: 1, s: 6, y: "ひゃく", m: "10が 10こ" },
+    { k: "千", g: 1, s: 3, y: "せん", m: "100が 10こ" },
+    { k: "上", g: 1, s: 3, y: "うえ", m: "たかい ほう" },
+    { k: "下", g: 1, s: 3, y: "した", m: "ひくい ほう" },
+    { k: "左", g: 1, s: 5, y: "ひだり", m: "はしを もつ ほうの ぎゃく" },
+    { k: "右", g: 1, s: 5, y: "みぎ", m: "ひだりの ぎゃく" },
+    { k: "中", g: 1, s: 4, y: "なか", m: "まんなか" },
+    { k: "大", g: 1, s: 3, y: "おおきい", m: "サイズが おおきい" },
+    { k: "小", g: 1, s: 3, y: "ちいさい", m: "サイズが ちいさい" },
+    { k: "月", g: 1, s: 4, y: "つき", m: "よるの そらに 出る" },
+    { k: "日", g: 1, s: 4, y: "ひ", m: "おひさま・1日" },
+    { k: "年", g: 1, s: 6, y: "とし", m: "1年・2年の とし" },
+    { k: "早", g: 1, s: 6, y: "はやい", m: "じかんが はやい" },
+    { k: "木", g: 1, s: 4, y: "き", m: "はえて いる き" },
+    { k: "林", g: 1, s: 8, y: "はやし", m: "きが あつまった ところ" },
+    { k: "山", g: 1, s: 3, y: "やま", m: "たかい やま" },
+    { k: "川", g: 1, s: 3, y: "かわ", m: "みずが ながれる" },
+    { k: "土", g: 1, s: 3, y: "つち", m: "じめんの つち" },
+    { k: "空", g: 1, s: 8, y: "そら", m: "あおい そら" },
+    { k: "田", g: 1, s: 5, y: "た", m: "おこめを つくる" },
+    { k: "天", g: 1, s: 4, y: "てん", m: "そらの うえ" },
+    { k: "生", g: 1, s: 5, y: "いきる", m: "いのちが ある" },
+    { k: "花", g: 1, s: 7, y: "はな", m: "さく はな" },
+    { k: "草", g: 1, s: 9, y: "くさ", m: "みどりの くさ" },
+    { k: "虫", g: 1, s: 6, y: "むし", m: "むしが とぶ" },
+    { k: "犬", g: 1, s: 4, y: "いぬ", m: "ワンと なく" },
+    { k: "人", g: 1, s: 2, y: "ひと", m: "にんげん" },
+    { k: "名", g: 1, s: 6, y: "な", m: "なまえ" },
+    { k: "女", g: 1, s: 3, y: "おんな", m: "おんなの 人" },
+    { k: "男", g: 1, s: 7, y: "おとこ", m: "おとこの 人" },
+    { k: "子", g: 1, s: 3, y: "こ", m: "こども" },
+    { k: "目", g: 1, s: 5, y: "め", m: "ものを 見る" },
+    { k: "耳", g: 1, s: 6, y: "みみ", m: "おとを きく" },
+    { k: "口", g: 1, s: 3, y: "くち", m: "たべる ところ" },
+    { k: "手", g: 1, s: 4, y: "て", m: "ものを もつ" },
+    { k: "足", g: 1, s: 7, y: "あし", m: "あるく ところ" },
+    { k: "見", g: 1, s: 7, y: "みる", m: "めで 見る" },
+    { k: "音", g: 1, s: 9, y: "おと", m: "みみで きく" },
+    { k: "力", g: 1, s: 2, y: "ちから", m: "ちからが つよい" },
+    { k: "気", g: 1, s: 6, y: "き", m: "げんきの き" },
+    { k: "円", g: 1, s: 4, y: "えん", m: "おかねの たんい" },
+    { k: "入", g: 1, s: 2, y: "はいる", m: "中に はいる" },
+    { k: "出", g: 1, s: 5, y: "でる", m: "そとに 出る" },
+    { k: "立", g: 1, s: 5, y: "たつ", m: "たって いる" },
+    { k: "休", g: 1, s: 6, y: "やすむ", m: "やすみの 日" },
+    { k: "先", g: 1, s: 6, y: "さき", m: "さきに すすむ" },
+    { k: "夕", g: 1, s: 3, y: "ゆう", m: "ゆうがた" },
+    { k: "本", g: 1, s: 5, y: "ほん", m: "よむ ほん" },
+    { k: "文", g: 1, s: 4, y: "ぶん", m: "ぶんしょう" },
+    { k: "字", g: 1, s: 6, y: "じ", m: "もじ" },
+    { k: "学", g: 1, s: 8, y: "がく", m: "がっこうで まなぶ" },
+    { k: "校", g: 1, s: 10, y: "こう", m: "がっこう" },
+    { k: "村", g: 1, s: 7, y: "むら", m: "ちいさな まち" },
+    { k: "町", g: 1, s: 7, y: "まち", m: "人が すむ ところ" },
+    { k: "森", g: 1, s: 12, y: "もり", m: "きが たくさん" },
+    { k: "正", g: 1, s: 5, y: "ただしい", m: "まちがいが ない" },
+    { k: "水", g: 1, s: 4, y: "みず", m: "のむ みず" },
+    { k: "火", g: 1, s: 4, y: "ひ", m: "もえる ひ" },
+    { k: "玉", g: 1, s: 5, y: "たま", m: "まるい たま" },
+    { k: "王", g: 1, s: 4, y: "おう", m: "おうさま" },
+    { k: "石", g: 1, s: 5, y: "いし", m: "かたい いし" },
+    { k: "竹", g: 1, s: 6, y: "たけ", m: "たけの き" },
+    { k: "糸", g: 1, s: 6, y: "いと", m: "ほそい いと" },
+    { k: "貝", g: 1, s: 7, y: "かい", m: "うみの かい" },
+    { k: "車", g: 1, s: 7, y: "くるま", m: "はしる くるま" },
+    { k: "金", g: 1, s: 8, y: "かね", m: "おかね・きんいろ" },
+    { k: "雨", g: 1, s: 8, y: "あめ", m: "そらから ふる" },
+    { k: "赤", g: 1, s: 7, y: "あか", m: "あかい いろ" },
+    { k: "青", g: 1, s: 8, y: "あお", m: "あおい いろ" },
+    { k: "白", g: 1, s: 5, y: "しろ", m: "しろい いろ" },
+
+    // ---- 2年生（よく つかう ものから）----
+    { k: "刀", g: 2, s: 2, y: "かたな", m: "きる どうぐ" },
+    { k: "万", g: 2, s: 3, y: "まん", m: "1000が 10こ" },
+    { k: "丸", g: 2, s: 3, y: "まる", m: "まるい かたち" },
+    { k: "才", g: 2, s: 3, y: "さい", m: "7さいの さい" },
+    { k: "今", g: 2, s: 4, y: "いま", m: "いまの じかん" },
+    { k: "元", g: 2, s: 4, y: "もと", m: "げんきの げん" },
+    { k: "公", g: 2, s: 4, y: "こう", m: "こうえんの こう" },
+    { k: "内", g: 2, s: 4, y: "うち", m: "中の ほう" },
+    { k: "分", g: 2, s: 4, y: "わける", m: "わけて くばる" },
+    { k: "切", g: 2, s: 4, y: "きる", m: "はさみで きる" },
+    { k: "午", g: 2, s: 4, y: "ご", m: "ごぜん・ごご" },
+    { k: "友", g: 2, s: 4, y: "とも", m: "ともだち" },
+    { k: "太", g: 2, s: 4, y: "ふとい", m: "ふとい せん" },
+    { k: "止", g: 2, s: 4, y: "とまる", m: "うごきが とまる" },
+    { k: "父", g: 2, s: 4, y: "ちち", m: "おとうさん" },
+    { k: "牛", g: 2, s: 4, y: "うし", m: "モーと なく" },
+    { k: "少", g: 2, s: 4, y: "すくない", m: "かずが すくない" },
+    { k: "心", g: 2, s: 4, y: "こころ", m: "こころの なか" },
+    { k: "戸", g: 2, s: 4, y: "と", m: "とを あける" },
+    { k: "方", g: 2, s: 4, y: "ほう", m: "あっちの ほう" },
+    { k: "兄", g: 2, s: 5, y: "あに", m: "おにいさん" },
+    { k: "冬", g: 2, s: 5, y: "ふゆ", m: "さむい きせつ" },
+    { k: "北", g: 2, s: 5, y: "きた", m: "きたの ほう" },
+    { k: "半", g: 2, s: 5, y: "はん", m: "はんぶん" },
+    { k: "古", g: 2, s: 5, y: "ふるい", m: "あたらしく ない" },
+    { k: "台", g: 2, s: 5, y: "だい", m: "だいの うえ" },
+    { k: "外", g: 2, s: 5, y: "そと", m: "そとで あそぶ" },
+    { k: "母", g: 2, s: 5, y: "はは", m: "おかあさん" },
+    { k: "市", g: 2, s: 5, y: "し", m: "まちの し" },
+    { k: "広", g: 2, s: 5, y: "ひろい", m: "ひろい へや" },
+    { k: "矢", g: 2, s: 5, y: "や", m: "ゆみと や" },
+    { k: "交", g: 2, s: 6, y: "こう", m: "こうさてんの こう" },
+    { k: "会", g: 2, s: 6, y: "あう", m: "人に あう" },
+    { k: "光", g: 2, s: 6, y: "ひかり", m: "ひかりが さす" },
+    { k: "合", g: 2, s: 6, y: "あう", m: "サイズが あう" },
+    { k: "同", g: 2, s: 6, y: "おなじ", m: "おなじ もの" },
+    { k: "回", g: 2, s: 6, y: "まわる", m: "ぐるぐる まわる" },
+    { k: "地", g: 2, s: 6, y: "ち", m: "じめんの ち" },
+    { k: "多", g: 2, s: 6, y: "おおい", m: "かずが おおい" },
+    { k: "自", g: 2, s: 6, y: "じ", m: "じぶんの じ" },
+    { k: "色", g: 2, s: 6, y: "いろ", m: "あか・あおの いろ" },
+    { k: "行", g: 2, s: 6, y: "いく", m: "あるいて いく" },
+    { k: "西", g: 2, s: 6, y: "にし", m: "にしの ほう" },
+    { k: "寺", g: 2, s: 6, y: "てら", m: "おてら" },
+    { k: "当", g: 2, s: 6, y: "あたる", m: "くじが あたる" },
+    { k: "米", g: 2, s: 6, y: "こめ", m: "ごはんの こめ" },
+    { k: "考", g: 2, s: 6, y: "かんがえる", m: "あたまで かんがえる" },
+    { k: "肉", g: 2, s: 6, y: "にく", m: "たべる にく" },
+    { k: "体", g: 2, s: 7, y: "からだ", m: "からだを うごかす" },
+    { k: "作", g: 2, s: 7, y: "つくる", m: "ものを つくる" },
+    { k: "図", g: 2, s: 7, y: "ず", m: "ずを かく" },
+    { k: "声", g: 2, s: 7, y: "こえ", m: "こえを 出す" },
+    { k: "売", g: 2, s: 7, y: "うる", m: "みせで うる" },
+    { k: "来", g: 2, s: 7, y: "くる", m: "こっちに くる" },
+    { k: "里", g: 2, s: 7, y: "さと", m: "ふるさとの さと" },
+    { k: "角", g: 2, s: 7, y: "かど", m: "まがりかど" },
+    { k: "言", g: 2, s: 7, y: "いう", m: "ことばを いう" },
+    { k: "近", g: 2, s: 7, y: "ちかい", m: "きょりが ちかい" },
+    { k: "弟", g: 2, s: 7, y: "おとうと", m: "おとうと" },
+    { k: "京", g: 2, s: 8, y: "きょう", m: "とうきょうの きょう" },
+    { k: "国", g: 2, s: 8, y: "くに", m: "にほんの くに" },
+    { k: "夜", g: 2, s: 8, y: "よる", m: "くらい よる" },
+    { k: "妹", g: 2, s: 8, y: "いもうと", m: "いもうと" },
+    { k: "姉", g: 2, s: 8, y: "あね", m: "おねえさん" },
+    { k: "東", g: 2, s: 8, y: "ひがし", m: "ひがしの ほう" },
+    { k: "歩", g: 2, s: 8, y: "あるく", m: "あるいて いく" },
+    { k: "明", g: 2, s: 8, y: "あかるい", m: "あかるい へや" },
+    { k: "岩", g: 2, s: 8, y: "いわ", m: "おおきい いし" },
+    { k: "店", g: 2, s: 8, y: "みせ", m: "おみせ" },
+    { k: "知", g: 2, s: 8, y: "しる", m: "こたえを しる" },
+    { k: "前", g: 2, s: 9, y: "まえ", m: "まえの ほう" },
+    { k: "南", g: 2, s: 9, y: "みなみ", m: "みなみの ほう" },
+    { k: "星", g: 2, s: 9, y: "ほし", m: "そらの ほし" },
+    { k: "春", g: 2, s: 9, y: "はる", m: "さくらの きせつ" },
+    { k: "昼", g: 2, s: 9, y: "ひる", m: "ひるごはんの ひる" },
+    { k: "風", g: 2, s: 9, y: "かぜ", m: "かぜが ふく" },
+    { k: "食", g: 2, s: 9, y: "たべる", m: "ごはんを たべる" },
+    { k: "首", g: 2, s: 9, y: "くび", m: "あたまの した" },
+    { k: "点", g: 2, s: 9, y: "てん", m: "てんを うつ" },
+    { k: "茶", g: 2, s: 9, y: "ちゃ", m: "おちゃ" },
+    { k: "計", g: 2, s: 9, y: "けい", m: "とけいの けい" },
+    { k: "室", g: 2, s: 9, y: "しつ", m: "きょうしつの しつ" },
+    { k: "思", g: 2, s: 9, y: "おもう", m: "こころで おもう" },
+    { k: "科", g: 2, s: 9, y: "か", m: "りかの か" },
+    { k: "秋", g: 2, s: 9, y: "あき", m: "すずしい きせつ" },
+    { k: "原", g: 2, s: 10, y: "はら", m: "ひろい のはら" },
+    { k: "夏", g: 2, s: 10, y: "なつ", m: "あつい きせつ" },
+    { k: "時", g: 2, s: 10, y: "とき", m: "じかんの とき" },
+    { k: "書", g: 2, s: 10, y: "かく", m: "じを かく" },
+    { k: "馬", g: 2, s: 10, y: "うま", m: "はしる うま" },
+    { k: "高", g: 2, s: 10, y: "たかい", m: "せが たかい" },
+    { k: "紙", g: 2, s: 10, y: "かみ", m: "かく かみ" },
+    { k: "記", g: 2, s: 10, y: "き", m: "にっきの き" },
+    { k: "通", g: 2, s: 10, y: "とおる", m: "みちを とおる" },
+    { k: "家", g: 2, s: 10, y: "いえ", m: "すんで いる いえ" },
+    { k: "帰", g: 2, s: 10, y: "かえる", m: "いえに かえる" },
+    { k: "弱", g: 2, s: 10, y: "よわい", m: "ちからが よわい" },
+    { k: "強", g: 2, s: 11, y: "つよい", m: "ちからが つよい" },
+    { k: "魚", g: 2, s: 11, y: "さかな", m: "うみの さかな" },
+    { k: "鳥", g: 2, s: 11, y: "とり", m: "そらを とぶ" },
+    { k: "野", g: 2, s: 11, y: "の", m: "のはらの の" },
+    { k: "雪", g: 2, s: 11, y: "ゆき", m: "しろく ふる" },
+    { k: "黄", g: 2, s: 11, y: "き", m: "きいろ" },
+    { k: "黒", g: 2, s: 11, y: "くろ", m: "くろい いろ" },
+    { k: "細", g: 2, s: 11, y: "ほそい", m: "ほそい せん" },
+    { k: "組", g: 2, s: 11, y: "くみ", m: "1ねん1くみ" },
+    { k: "週", g: 2, s: 11, y: "しゅう", m: "1しゅうかん" },
+    { k: "教", g: 2, s: 11, y: "おしえる", m: "やりかたを おしえる" },
+    { k: "船", g: 2, s: 11, y: "ふね", m: "うみを すすむ" },
+    { k: "場", g: 2, s: 12, y: "ば", m: "ばしょの ば" },
+    { k: "晴", g: 2, s: 12, y: "はれる", m: "そらが はれる" },
+    { k: "朝", g: 2, s: 12, y: "あさ", m: "あさごはんの あさ" },
+    { k: "雲", g: 2, s: 12, y: "くも", m: "そらの くも" },
+    { k: "絵", g: 2, s: 12, y: "え", m: "えを かく" },
+    { k: "道", g: 2, s: 12, y: "みち", m: "あるく みち" },
+    { k: "答", g: 2, s: 12, y: "こたえる", m: "しつもんに こたえる" },
+    { k: "園", g: 2, s: 13, y: "えん", m: "こうえんの えん" },
+    { k: "電", g: 2, s: 13, y: "でん", m: "でんきの でん" },
+    { k: "遠", g: 2, s: 13, y: "とおい", m: "きょりが とおい" },
+    { k: "話", g: 2, s: 13, y: "はなす", m: "ことばを はなす" },
+    { k: "数", g: 2, s: 13, y: "かず", m: "かずを かぞえる" },
+    { k: "新", g: 2, s: 13, y: "あたらしい", m: "ふるく ない" },
+    { k: "歌", g: 2, s: 14, y: "うた", m: "うたを うたう" },
+    { k: "聞", g: 2, s: 14, y: "きく", m: "みみで きく" },
+    { k: "読", g: 2, s: 14, y: "よむ", m: "ほんを よむ" },
+    { k: "語", g: 2, s: 14, y: "ご", m: "こくごの ご" },
+    { k: "線", g: 2, s: 15, y: "せん", m: "まっすぐな せん" },
+    { k: "曜", g: 2, s: 18, y: "よう", m: "げつようびの よう" },
+    { k: "顔", g: 2, s: 18, y: "かお", m: "かおを あらう" },
+  ];
+
+  // かたちが にて いる かんじ（むずかしい レベルの えらびかたに つかう）
+  const KJ_LOOKALIKE = [
+    ["日", "目", "白", "月"], ["土", "上", "工"], ["人", "入", "八"], ["大", "犬", "太"],
+    ["石", "右", "左"], ["王", "玉", "主"], ["千", "午", "牛"], ["木", "本", "米"],
+    ["田", "町", "里"], ["先", "生"], ["百", "白"], ["車", "東"], ["青", "晴"],
+    ["休", "体"], ["名", "多"], ["自", "白", "目"], ["刀", "力", "万"], ["古", "台"],
+    ["読", "語", "話"], ["時", "寺"], ["林", "森", "木"], ["雲", "雪", "電"],
+    ["草", "早"], ["知", "矢"], ["分", "公"], ["同", "回"], ["天", "夫", "大"],
+    ["中", "申"], ["近", "通", "道"], ["音", "青"], ["歩", "少"], ["強", "弱"],
+  ];
+  const KJ_BY_CHAR = new Map(KANJI.map((x) => [x.k, x]));
+  const KJ_NEAR = new Map();     // かんじ -> にて いる かんじの はいれつ（この アプリに ある ものだけ）
+  for (const g of KJ_LOOKALIKE) {
+    for (const k of g) {
+      if (!KJ_BY_CHAR.has(k)) continue;
+      const near = g.filter((x) => x !== k && KJ_BY_CHAR.has(x));
+      if (near.length) KJ_NEAR.set(k, [...new Set([...(KJ_NEAR.get(k) || []), ...near])]);
+    }
+  }
+
+  const KJ_KINDS = ["trace", "yomi", "kaki"];
+  const KJ_MODE = { trace: "kj-trace", yomi: "kj-yomi", kaki: "kj-kaki" };
+  const isKanjiMode = (m) => m === "kanji" || Object.values(KJ_MODE).includes(m);
+  const kanjiPool = (lv) => (lv === 1 ? KANJI.filter((x) => x.g === 1)
+    : lv === 2 ? KANJI.filter((x) => x.g === 2) : KANJI);
+
+  /** まちがいの せんたくしを えらぶ。むずかしいレベルは かたちの にた かんじから。
+   *  見た目が かさなる ものは 出さない（おなじ よみ・おなじ かんじを 2つ ださない）。 */
+  function kjDistract(ans, pool, lv, n, show) {
+    const seen = new Set([show(ans)]);
+    const out = [];
+    const take = (list) => {
+      for (const w of list) {
+        if (out.length >= n) return;
+        if (!w || w.k === ans.k || seen.has(show(w))) continue;
+        seen.add(show(w));
+        out.push(w);
+      }
+    };
+    if (lv >= 3) take(shuffle((KJ_NEAR.get(ans.k) || []).map((c) => KJ_BY_CHAR.get(c))));
+    // かくすうが ちかい ものは まよいやすい
+    take(shuffle(pool.filter((w) => Math.abs(w.s - ans.s) <= 1)));
+    take(shuffle(pool));
+    return out;
+  }
+
+  // 1) なぞる：マスに うすく 出た かんじを ゆびで なぞる
+  function makeKjTrace(lv) {
+    const ans = pick(kanjiPool(lv));
+    return {
+      ask: "マスの かんじを なぞって かこう",
+      kanji: ans.k, yomi: ans.y, strokes: ans.s, meaning: ans.m,
+      input: "trace",
+      bodyHTML: "",
+      text: `なぞり：${ans.k}（${ans.y}）`,
+      answerText: ans.k,
+      sayNg: `${ans.y}の 「${ans.k}」だよー`,
+      hint: "マスの せんを めやすに、ゆっくり なぞると いいコロ",
+    };
+  }
+
+  // 2) よみ：かんじを 見て よみかたを えらぶ
+  function makeKjYomi(lv) {
+    const pool = kanjiPool(lv);
+    const ans = pick(pool);
+    const cs = shuffle([ans, ...kjDistract(ans, pool, lv, 3, (w) => w.y)]);
+    return {
+      ask: "この かんじの よみかたは？",
+      bodyHTML: `<div class="kjbig">${esc(ans.k)}</div><p class="kjhint">${esc(ans.m)}</p>`,
+      input: "choice",
+      one: true,
+      choices: cs.map((w) => ({ html: `<span class="pjp big">${esc(w.y)}</span>`, correct: w === ans, label: w.y })),
+      text: `よみ：${ans.k}`,
+      answerText: ans.y,
+      sayNg: `「${ans.k}」は ${ans.y} だよー`,
+      hint: `${ans.m}の ときに つかう かんじだコロ`,
+    };
+  }
+
+  // 3) かきとり：よみと いみを 見て かんじを えらぶ
+  function makeKjKaki(lv) {
+    const pool = kanjiPool(lv);
+    const ans = pick(pool);
+    const cs = shuffle([ans, ...kjDistract(ans, pool, lv, 3, (w) => w.k)]);
+    return {
+      ask: `「${ans.y}」は どの かんじ？`,
+      askSmall: true,
+      bodyHTML: `<p class="kjhint big">${esc(ans.m)}</p>`,
+      input: "choice",
+      choices: cs.map((w) => ({ html: `<span class="pkanji">${esc(w.k)}</span>`, correct: w === ans, label: w.k })),
+      text: `かきとり：${ans.y}`,
+      answerText: ans.k,
+      sayNg: `${ans.y}は 「${ans.k}」と かくよー`,
+      hint: `${ans.s}かくの かんじだコロ`,
+    };
+  }
+
+  function makeKanji(kind, lv) {
+    if (!KJ_KINDS.includes(kind)) kind = pick(KJ_KINDS);
+    const q = kind === "trace" ? makeKjTrace(lv) : kind === "yomi" ? makeKjYomi(lv) : makeKjKaki(lv);
+    q.kind = KJ_MODE[kind];
+    q.kanji_app = true;
+    return q;
+  }
+
+  /* ---- マスに なぞる ----
+     かんじの かたちは たんまつの 書体から とる（1字ずつの せんの データは もたない）。
+     どれだけ なぞれたかは、かんじの ドットと なぞった ドットを かさねて かぞえる。
+       なぞれた ＝ かんじの ドットのうち、なぞった せんが かかって いる わりあい
+       はみ出し ＝ なぞった ドットのうち、かんじから はなれて いる わりあい
+     はんていは この 2つ。けっかは マスの うえに 朱で かえす（先生の 赤ペンと おなじ）。 */
+  const TR_PX = 300;                 // 中で けいさんする ときの 1へんの ドットすう
+  const TR_PEN = 17;                 // なぞる せんの ふとさ
+  const TR_ROOM = 15;                // かんじから これだけ はなれても「はみ出し」に しない
+  const TR_PASS_COVER = 0.6;         // これだけ なぞれたら せいかい
+  const TR_PASS_OVER = 0.45;         // はみ出しが これを こえたら まちがい
+  const TR = { pts: [], drawing: false, glyph: null, zone: null, ready: false };
+
+  const trCanvas = () => $("kj-canvas");
+  function trMake(w, h) {
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    return c;
+  }
+  const trFont = (px) => `700 ${px}px "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif`;
+
+  // かんじの かたちを 2まい つくる：ぴったりの かたちと、すこし ふとらせた「ゆるし」の かたち
+  function trBuildShapes(ch) {
+    const px = Math.round(TR_PX * 0.72);
+    const g = trMake(TR_PX, TR_PX), gc = g.getContext("2d", { willReadFrequently: true });
+    gc.font = trFont(px);
+    gc.textAlign = "center"; gc.textBaseline = "middle";
+    gc.fillStyle = "#000";
+    gc.fillText(ch, TR_PX / 2, TR_PX / 2 + px * 0.03);
+
+    const z = trMake(TR_PX, TR_PX), zc = z.getContext("2d", { willReadFrequently: true });
+    zc.font = trFont(px);
+    zc.textAlign = "center"; zc.textBaseline = "middle";
+    zc.fillStyle = "#000"; zc.strokeStyle = "#000";
+    zc.lineWidth = TR_ROOM * 2; zc.lineJoin = "round";
+    zc.strokeText(ch, TR_PX / 2, TR_PX / 2 + px * 0.03);
+    zc.fillText(ch, TR_PX / 2, TR_PX / 2 + px * 0.03);
+
+    TR.glyph = gc.getImageData(0, 0, TR_PX, TR_PX).data;
+    TR.zone = zc.getImageData(0, 0, TR_PX, TR_PX).data;
+    TR.ready = true;
+  }
+
+  // なぞった せんだけを かいた 1まいを つくる（かぞえる ため）
+  function trInkCanvas() {
+    const c = trMake(TR_PX, TR_PX), cc = c.getContext("2d", { willReadFrequently: true });
+    cc.strokeStyle = "#000";
+    cc.lineWidth = TR_PEN; cc.lineCap = "round"; cc.lineJoin = "round";
+    for (const line of TR.pts) {
+      if (line.length === 1) {
+        cc.beginPath(); cc.arc(line[0].x, line[0].y, TR_PEN / 2, 0, Math.PI * 2); cc.fill();
+        continue;
+      }
+      cc.beginPath();
+      cc.moveTo(line[0].x, line[0].y);
+      for (let i = 1; i < line.length; i++) cc.lineTo(line[i].x, line[i].y);
+      cc.stroke();
+    }
+    return cc.getImageData(0, 0, TR_PX, TR_PX).data;
+  }
+
+  // どれだけ なぞれたか
+  function trScore() {
+    if (!TR.ready) return { cover: 0, over: 0, ink: 0 };
+    const u = trInkCanvas();
+    let gN = 0, gHit = 0, uN = 0, uOut = 0;
+    for (let i = 3; i < u.length; i += 4) {
+      const on = TR.glyph[i] > 40, inked = u[i] > 40;
+      if (on) { gN++; if (inked) gHit++; }
+      if (inked) { uN++; if (TR.zone[i] <= 40) uOut++; }
+    }
+    return { cover: gN ? gHit / gN : 0, over: uN ? uOut / uN : 0, ink: uN };
+  }
+
+  // マスと おてほんを かく。done を わたすと、なぞれて いない ところを 朱で かえす。
+  function trPaint(done) {
+    const cv = trCanvas();
+    if (!cv) return;
+    const q = S.qs[S.i];
+    const ctx = cv.getContext("2d");
+    const css = getComputedStyle(document.documentElement);
+    const col = (name, fb) => (css.getPropertyValue(name) || fb).trim() || fb;
+    ctx.clearRect(0, 0, TR_PX, TR_PX);
+
+    // マス（十字リーダー）
+    ctx.strokeStyle = col("--line", "#c9d8e6");
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, TR_PX - 2, TR_PX - 2);
+    ctx.save();
+    ctx.setLineDash([7, 9]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(TR_PX / 2, 0); ctx.lineTo(TR_PX / 2, TR_PX);
+    ctx.moveTo(0, TR_PX / 2); ctx.lineTo(TR_PX, TR_PX / 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // おてほんの かんじ（うすく）
+    const px = Math.round(TR_PX * 0.72);
+    ctx.font = trFont(px);
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = done ? col("--line", "#c9d8e6") : col("--grid", "#d3e1ef");
+    ctx.fillText(q.kanji, TR_PX / 2, TR_PX / 2 + px * 0.03);
+
+    // じぶんが なぞった せん（えんぴつの 色）
+    ctx.strokeStyle = col("--ink", "#1f2f45");
+    ctx.lineWidth = TR_PEN; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    for (const line of TR.pts) {
+      if (line.length === 1) {
+        ctx.beginPath(); ctx.arc(line[0].x, line[0].y, TR_PEN / 2, 0, Math.PI * 2);
+        ctx.fillStyle = col("--ink", "#1f2f45"); ctx.fill();
+        continue;
+      }
+      ctx.beginPath();
+      ctx.moveTo(line[0].x, line[0].y);
+      for (let i = 1; i < line.length; i++) ctx.lineTo(line[i].x, line[i].y);
+      ctx.stroke();
+    }
+
+    // こたえあわせ：なぞれて いない ところだけ 朱で かさねる（先生の 赤ペン）
+    if (done) {
+      const u = trInkCanvas();
+      const miss = trMake(TR_PX, TR_PX), mc = miss.getContext("2d");
+      const img = mc.createImageData(TR_PX, TR_PX);
+      const shu = col("--shu", "#e4523f");
+      const rgb = [parseInt(shu.slice(1, 3), 16) || 228, parseInt(shu.slice(3, 5), 16) || 82,
+        parseInt(shu.slice(5, 7), 16) || 63];
+      for (let i = 3; i < u.length; i += 4) {
+        if (TR.glyph[i] > 40 && u[i] <= 40) {
+          img.data[i - 3] = rgb[0]; img.data[i - 2] = rgb[1]; img.data[i - 1] = rgb[2];
+          img.data[i] = 235;
+        }
+      }
+      mc.putImageData(img, 0, 0);
+      ctx.drawImage(miss, 0, 0);
+    }
+  }
+
+  function trClear() {
+    TR.pts = [];
+    trPaint(false);
+    updateGo();
+  }
+
+  // ゆび・マウスの ばしょを キャンバスの ドットに なおす
+  function trPos(ev, cv) {
+    const r = cv.getBoundingClientRect();
+    return { x: (ev.clientX - r.left) * (TR_PX / r.width), y: (ev.clientY - r.top) * (TR_PX / r.height) };
+  }
+
+  function setupTrace(q) {
+    trBuildShapes(q.kanji);
+    TR.pts = [];
+    TR.drawing = false;
+    const cv = trCanvas();
+    if (!cv) return;
+    cv.width = TR_PX; cv.height = TR_PX;
+    trPaint(false);
+    const start = (ev) => {
+      if (S.locked) return;
+      TR.drawing = true;
+      TR.pts.push([trPos(ev, cv)]);
+      // ゆびが マスの そとに 出ても つづけて かける ように する。
+      // つかえない ときも かくのは つづけられるので、ここで とめない。
+      try { cv.setPointerCapture?.(ev.pointerId); } catch { /* この ブラウザでは つかまえられない */ }
+      trPaint(false);
+      updateGo();
+      ev.preventDefault();
+    };
+    const move = (ev) => {
+      if (!TR.drawing || S.locked) return;
+      TR.pts[TR.pts.length - 1].push(trPos(ev, cv));
+      trPaint(false);
+      ev.preventDefault();
+    };
+    const end = () => { TR.drawing = false; };
+    cv.addEventListener("pointerdown", start);
+    cv.addEventListener("pointermove", move);
+    cv.addEventListener("pointerup", end);
+    cv.addEventListener("pointercancel", end);
+    cv.addEventListener("pointerleave", end);
+  }
+
   /* ========== だれが やって いるか ========== */
   // ログインは つかわない。なまえを えらぶ だけ。
   // player_id は なまえから きめるので、べつの たんまつで おなじ なまえを えらべば
@@ -3200,10 +3864,15 @@
     sansu: ["calc", "word", "clock", "mix"],
     eigo: ["eigo", "listen", "eword", "talk", "abc"],
     typing: ["ty-moji", "ty-word", "ty-roma", "ty-num"],
+    kanji: ["kanji", "kj-trace", "kj-yomi", "kj-kaki"],
   };
-  const APP_NAME = { all: "ぜんぶ", sansu: "さんすう", eigo: "えいご", typing: "タイピング" };
+  const APP_NAME = { all: "ぜんぶ", sansu: "さんすう", eigo: "えいご", kanji: "かんじ", typing: "タイピング" };
+  // トップの カードの ならびと おなじ じゅん。アプリを ふやしたら ここにも たす。
+  const APP_ORDER = ["sansu", "eigo", "kanji", "typing"];
   const appOfMode = (m) => Object.keys(APP_MODES).find((a) => APP_MODES[a].includes(m)) || "sansu";
   const inApp = (set, app) => app === "all" || appOfMode(set.m) === app;
+  // その もんだいを えらんだ がめん（やめる・ホームへ の もどり先）
+  const appScreen = (m) => ({ sansu: "home", eigo: "eigo", kanji: "kanji", typing: "typing" })[appOfMode(m)];
 
   const LOG_KEY = "sn-log-v1";
   const LOG_MAX = 300;              // ふるい セットから きえていく
@@ -3385,7 +4054,7 @@
     // アプリごとに 見る。その 人が やった ことの ある アプリだけ ならべる。
     const mine = loadLog(who);
     const hasApp = (a) => a === "all" || mine.some((set) => appOfMode(set.m) === a);
-    const apps = ["all", "sansu", "eigo", "typing"].filter(hasApp);
+    const apps = ["all", "sansu", "eigo", "kanji", "typing"].filter(hasApp);
     if (!apps.includes(S.histApp)) S.histApp = "all";
     $("hist-app").hidden = apps.length < 3;     // 1つの アプリしか やって いない うちは ださない
     $("hist-app").innerHTML = apps.map((a) =>
@@ -3447,7 +4116,7 @@
 
   // しゅるいべつの せいかいりつ
   function genreHTML(sets) {
-    const rows = [...APP_MODES.sansu, ...APP_MODES.eigo, ...APP_MODES.typing].map((m) => {
+    const rows = APP_ORDER.flatMap((a) => APP_MODES[a]).map((m) => {
       const mine = sets.filter((x) => x.m === m);
       const total = mine.reduce((a, x) => a + totalOf(x), 0);
       const ok = mine.reduce((a, x) => a + x.n, 0);
@@ -3924,10 +4593,11 @@
     saved: false,  // この セットを きろくに のこしたか
     histPlayer: "", // きろく がめんで みて いる 人
     histApp: "all", // きろく がめんで みて いる アプリ
+    trace: null,    // なぞりがきの けっか（なぞれた わりあい・はみ出し）
   };
 
   /* ========== がめんの きりかえ ========== */
-  const SCREENS = ["top", "home", "eigo", "typing", "quiz", "tyquiz", "result", "tyresult",
+  const SCREENS = ["top", "home", "eigo", "kanji", "typing", "quiz", "tyquiz", "result", "tyresult",
     "history", "team", "child"];
   function show(name) {
     clearTimeout(S.timer);
@@ -3948,6 +4618,8 @@
   function startSet(mode) {
     stopVoice();
     S.mode = mode;
+    $("quiz").dataset.app = appOfMode(mode);
+    $("result").dataset.app = appOfMode(mode);
     S.qs = Array.from({ length: TOTAL }, () => makeQuestion(mode, S.lv));
     S.i = 0;
     S.results = [];
@@ -3968,6 +4640,7 @@
 
   function renderQuestion() {
     const q = S.qs[S.i];
+    S.trace = null;
     document.querySelectorAll(".maru").forEach((el) => el.remove());
     S.buf = "";
     S.tbuf = { h: "", m: "" };
@@ -3980,6 +4653,8 @@
     renderMarks();
 
     $("sheet").classList.toggle("eigo", Boolean(q.eigo));
+    $("sheet").classList.toggle("kanji", Boolean(q.kanji_app));
+    $("sheet").classList.toggle("trace", q.input === "trace");
     $("sheet").style.setProperty("--ansshift", q.kind === "calc" ? "1.7ch" : "0");
     $("ask").className = "ask" + (q.askSmall ? " small" : "");
     if (q.eigo) {
@@ -3987,9 +4662,20 @@
     } else {
       $("askfrog").hidden = true;
       $("ask").textContent = q.ask;
-      $("body").innerHTML = q.bodyHTML;
+      $("body").innerHTML = q.input === "trace" ? traceBodyHTML(q) : q.bodyHTML;
     }
     renderAnswerArea();
+    if (q.input === "trace") setupTrace(q);
+  }
+
+  // なぞりがきの マス。よみと かくすうは「なにを かくか」を つたえる ための もの。
+  function traceBodyHTML(q) {
+    return `<div class="kjtrace">
+        <p class="kjyomi">${esc(q.yomi)}</p>
+        <canvas id="kj-canvas" width="${TR_PX}" height="${TR_PX}"
+          aria-label="${esc(q.kanji)}を なぞる マス"></canvas>
+        <p class="kjstrokes">${q.strokes}かく<span>${esc(q.meaning)}</span></p>
+      </div>`;
   }
 
   // えいごの もんだい：カエルが はなしかけて、きく ボタンと よみかたを だす。
@@ -4052,6 +4738,15 @@
   function renderAnswerArea() {
     const q = S.qs[S.i];
     $("input").hidden = false;
+    if (q.input === "trace") {
+      $("answer").innerHTML = "";
+      $("input").innerHTML = `<div class="btnrow">
+          <button type="button" class="btn" id="kj-clear">けす</button>
+          <button type="button" class="btn primary" id="go">できた</button>
+        </div>`;
+      updateGo();
+      return;
+    }
     if (q.input === "choice") {
       $("answer").innerHTML = "";
       $("input").innerHTML = `<div class="picks${q.eigo ? " en" : ""}${q.one ? " one" : ""}">${q.choices.map((c, i) =>
@@ -4078,7 +4773,9 @@
   function updateGo() {
     const q = S.qs[S.i], go = $("go");
     if (!go) return;
-    go.disabled = q.input === "time" ? !(S.tbuf.h && S.tbuf.m !== "") : S.buf === "";
+    go.disabled = q.input === "trace" ? TR.pts.length === 0
+      : q.input === "time" ? !(S.tbuf.h && S.tbuf.m !== "")
+      : S.buf === "";
   }
 
   function typeDigit(d) {
@@ -4124,6 +4821,16 @@
     if (S.locked) return;
     const q = S.qs[S.i];
     let ok, given;
+    if (q.input === "trace") {
+      if (TR.pts.length === 0) return;
+      const r = trScore();
+      ok = r.cover >= TR_PASS_COVER && r.over <= TR_PASS_OVER;
+      given = `なぞれた ${Math.round(r.cover * 100)}％`;
+      S.trace = r;
+      trPaint(true);          // なぞれて いない ところを 朱で かえす
+      judge(ok, given);
+      return;
+    }
     if (q.input === "time") {
       if (!S.tbuf.h || S.tbuf.m === "") return;
       const h = Number(S.tbuf.h) % 12 || 12, m = Number(S.tbuf.m);
@@ -4153,7 +4860,10 @@
     const q = S.qs[S.i];
     const praise = S.streak >= 3 ? `${S.streak}もん れんぞく せいかい！` : pick(PRAISE);
     // ケロが しらせて ほめる、コロが フォローする（1もんごとに ふたりで）
-    const keroText = ok ? praise : `こたえは <b${q.eigo ? ' class="en"' : ""}>${esc(q.answerText)}</b>`;
+    const pct = q.input === "trace" && S.trace ? Math.round(S.trace.cover * 100) : null;
+    const keroText = pct !== null
+      ? `なぞれた <b>${pct}％</b>。${ok ? praise : "あかい ところが のこって いるよ"}`
+      : ok ? praise : `こたえは <b${q.eigo ? ' class="en"' : ""}>${esc(q.answerText)}</b>`;
     const koroText = ok
       ? (S.streak >= 3 ? `${S.streak}もん れんぞくコロー！ すごいコロ！` : pick(KORO_OK))
       : hintFor(q, given);
@@ -4318,7 +5028,7 @@
     });
   }
 
-  for (const id of ["levels", "en-levels"]) {
+  for (const id of ["levels", "en-levels", "kj-levels"]) {
     $(id).addEventListener("click", (e) => {
       const b = e.target.closest(".lv");
       if (b) setLevel(Number(b.dataset.lv));
@@ -4336,6 +5046,7 @@
   });
   $("home-back").addEventListener("click", openTop);
   $("eigo-back").addEventListener("click", openTop);
+  $("kanji-back").addEventListener("click", openTop);
   $("input").addEventListener("click", (e) => {
     const key = e.target.closest(".key");
     if (key) {
@@ -4345,6 +5056,7 @@
       else typeDigit(k);
       return;
     }
+    if (e.target.closest("#kj-clear")) { trClear(); return; }
     if (e.target.closest("#go")) { submit(); return; }
     const p = e.target.closest(".pick");
     if (p) pickChoice(Number(p.dataset.c));
@@ -4367,7 +5079,7 @@
   });
   $("quit").addEventListener("click", () => {
     if (!$("tyquiz").hidden) { show("typing"); renderTyping(); return; }
-    show(isEigoMode(S.mode) ? "eigo" : "home");
+    show(appScreen(S.mode));
   });
   function openHistory() {
     S.histPlayer = currentPlayer();      // ひらいた ときは いま やって いる 人

@@ -1,5 +1,6 @@
 // どの たんまつから やっても きろくが 1つに まとまるかを たしかめる。
-//   たんまつA で さんすう → たんまつB で えいご → たんまつC（まっさら）で きろくを ひらく。
+//   たんまつA で さんすう → たんまつB で えいご・かんじ・タイピング →
+//   たんまつC（まっさら）で きろくを ひらく。
 //   C に A と B の ぶんが ぜんぶ 出れば OK。
 // アプリごとに 分けて 見られるかも ここで みる。
 // つかいかた: node tests/verify-sync.mjs （リポジトリの ルートで）
@@ -87,6 +88,48 @@ async function playEigo(pg) {
   await pg.waitForTimeout(400);
 }
 
+// かんじを 1セット（なぞりがき。かんじの かたちを たどって なぞる）
+async function playKanji(pg) {
+  await pg.click('#tohome');
+  await pg.click('.mode[data-app="kanji"]');
+  await pg.click('.mode[data-mode="kj-trace"]');
+  await pg.waitForTimeout(250);
+  for (let i = 0; i < 10; i++) {
+    await pg.evaluate(() => {
+      const cv = document.getElementById('kj-canvas');
+      const N = cv.width, r = cv.getBoundingClientRect();
+      const send = (type, px, py) => cv.dispatchEvent(new PointerEvent(type, {
+        clientX: r.left + px * (r.width / N), clientY: r.top + py * (r.height / N),
+        bubbles: true, pointerId: 1 }));
+      const off = document.createElement('canvas');
+      off.width = off.height = N;
+      const oc = off.getContext('2d', { willReadFrequently: true });
+      const px = Math.round(N * 0.72);
+      oc.font = `700 ${px}px "Zen Kaku Gothic New", sans-serif`;
+      oc.textAlign = 'center'; oc.textBaseline = 'middle'; oc.fillStyle = '#000';
+      oc.fillText(cv.getAttribute('aria-label').slice(0, 1), N / 2, N / 2 + px * 0.03);
+      const d = oc.getImageData(0, 0, N, N).data;
+      for (let y = 2; y < N; y += 4) {
+        let run = null;
+        for (let x = 0; x < N; x++) {
+          const on = d[(y * N + x) * 4 + 3] > 40;
+          if (on && !run) run = [x, x];
+          else if (on) run[1] = x;
+          else if (run) {
+            if (run[1] - run[0] >= 2) { send('pointerdown', run[0], y); send('pointermove', run[1], y); send('pointerup', run[1], y); }
+            run = null;
+          }
+        }
+      }
+    });
+    await pg.click('#go');
+    await pg.waitForTimeout(150);
+    await pg.evaluate(() => document.querySelector('#next')?.click());
+    await pg.waitForTimeout(100);
+  }
+  await pg.waitForTimeout(400);
+}
+
 // タイピングを 1かい（れんしゅう 10もん）
 async function playTyping(pg) {
   await pg.click('#tohome');
@@ -120,15 +163,18 @@ try {
   const B = await device('B');
   await playCalc(B.pg);          // B でも さんすう
   await playEigo(B.pg);
+  await playKanji(B.pg);
   await playTyping(B.pg);
   await B.pg.waitForTimeout(1200);
   rows = await setsOnServer();
   const modes = rows.map(r => r.mode).sort();
   check('たんまつB: えいごも サーバーに とどく（まえは 400で はじかれて いた）',
     modes.includes('listen'), modes.join(','));
+  check('たんまつB: かんじも サーバーに とどく',
+    modes.some(m => m.startsWith('kj-')), modes.join(','));
   check('たんまつB: タイピングも サーバーに とどく',
     modes.some(m => m.startsWith('ty-')), modes.join(','));
-  check('サーバーに 4セット たまった', rows.length === 4, `${rows.length}セット: ${modes.join(',')}`);
+  check('サーバーに 5セット たまった', rows.length === 5, `${rows.length}セット: ${modes.join(',')}`);
 
   // ===== たんまつC: まっさら。きろくを ひらくだけで ぜんぶ 出るか =====
   const C = await device('C');
@@ -145,15 +191,15 @@ try {
       ? '(ひょうじ なし)'
       : [...document.querySelectorAll('#hist-app .pchip')].map(x => x.textContent).join('/'),
   }));
-  check('たんまつC: ほかの たんまつの きろくが ぜんぶ 出る', got.sets === 4, `${got.sets}セット / ${got.modes.join(',')}`);
+  check('たんまつC: ほかの たんまつの きろくが ぜんぶ 出る', got.sets === 5, `${got.sets}セット / ${got.modes.join(',')}`);
   check('たんまつC: とりこんだ ことを 画面にも 出す', /とりこみました|そろって/.test(got.msg), got.msg);
-  check('たんまつC: 3つの アプリで 分けて 見られる',
-    got.appFilter.includes('さんすう') && got.appFilter.includes('えいご') && got.appFilter.includes('タイピング'),
+  check('たんまつC: 4つの アプリで 分けて 見られる',
+    ['さんすう', 'えいご', 'かんじ', 'タイピング'].every(a => got.appFilter.includes(a)),
     got.appFilter);
 
   // アプリごとに しぼると その アプリだけに なる
   const per = {};
-  for (const [label, app] of [['さんすう', 'sansu'], ['えいご', 'eigo'], ['タイピング', 'typing']]) {
+  for (const [label, app] of [['さんすう', 'sansu'], ['えいご', 'eigo'], ['かんじ', 'kanji'], ['タイピング', 'typing']]) {
     await C.pg.click(`#hist-app [data-app-filter="${app}"]`);
     await C.pg.waitForTimeout(250);
     per[label] = await C.pg.evaluate(() => {
@@ -165,6 +211,8 @@ try {
     JSON.stringify(per['さんすう']));
   check('しぼると えいごだけ', per['えいご'].length === 1 && /ききとり/.test(per['えいご'][0] || ''),
     JSON.stringify(per['えいご']));
+  check('しぼると かんじだけ', per['かんじ'].length === 1 && /なぞりがき/.test(per['かんじ'][0] || ''),
+    JSON.stringify(per['かんじ']));
   check('しぼると タイピングだけ', per['タイピング'].length === 1 && /タイピング/.test(per['タイピング'][0] || ''),
     JSON.stringify(per['タイピング']));
 
@@ -173,7 +221,7 @@ try {
   await C.pg.click('#to-history');
   await C.pg.waitForTimeout(2200);
   const again = await C.pg.evaluate(() => JSON.parse(localStorage.getItem('sn-log-v1') || '[]').length);
-  check('2かい ひらいても おなじ セットが ふえない', again === 4, `${again}セット`);
+  check('2かい ひらいても おなじ セットが ふえない', again === 5, `${again}セット`);
 
   console.log('\n' + results.join('\n'));
   const ng = results.filter(r => r.startsWith('NG')).length;

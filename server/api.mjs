@@ -15,6 +15,8 @@ export const MODES = [
   "calc", "word", "clock", "mix",
   // えいご
   "eigo", "listen", "eword", "talk", "abc",
+  // かんじ
+  "kanji", "kj-trace", "kj-yomi", "kj-kaki",
   // タイピング
   "ty-moji", "ty-word", "ty-roma", "ty-num",
 ];

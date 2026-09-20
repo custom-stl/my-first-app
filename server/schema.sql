@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS runs (
   player_name TEXT NOT NULL,      -- よびな
   day         TEXT NOT NULL,      -- YYYY-MM-DD（といた 人の ローカル日付）
   ts          INTEGER NOT NULL,   -- といた ときの epoch ms
-  mode        TEXT NOT NULL,      -- さんすう calc/word/clock/mix ・ えいご eigo/listen/eword/talk/abc ・ タイピング ty-*
+  mode        TEXT NOT NULL,      -- さんすう calc/word/clock/mix ・ えいご eigo/listen/eword/talk/abc ・ かんじ kanji/kj-* ・ タイピング ty-*
   level       INTEGER NOT NULL,   -- 1..3
   total       INTEGER NOT NULL,   -- もんだいすう
   correct     INTEGER NOT NULL,   -- せいかいすう
