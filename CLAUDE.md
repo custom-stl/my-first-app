@@ -71,15 +71,18 @@
 
 そのため **`index.html` などを変更したら、毎回この手順まで必ず終わらせる**。
 
+配布用ZIPの名前は **`Study-note-site.zip`**（ユーザーの希望。かってに 変えない）。
+
 ```bash
 # 配布用ZIPを作る（サイトに必要なファイルだけ。README/CLAUDE.md/tests/server は入れない）
-SD="${SCRATCHPAD:-/tmp}"; rm -rf "$SD/sansu-note-site" "$SD/sansu-note-site.zip"
-mkdir -p "$SD/sansu-note-site"
-cp index.html config.js manifest.webmanifest icon.svg icon-180.png icon-192.png icon-512.png "$SD/sansu-note-site/"
-(cd "$SD" && zip -qr sansu-note-site.zip sansu-note-site)
+SD="${SCRATCHPAD:-/tmp}"; rm -rf "$SD/Study-note-site" "$SD/Study-note-site.zip"
+mkdir -p "$SD/Study-note-site"
+cp index.html config.js manifest.webmanifest icon.svg icon-180.png icon-192.png icon-512.png "$SD/Study-note-site/"
+(cd "$SD" && zip -qr Study-note-site.zip Study-note-site)
 ```
 
-作った ZIP は **SendUserFile でユーザーに渡し、「解凍して Netlify のサイトの Deploys にフォルダをドラッグ」** と伝える（URLは変わらない）。
+作った ZIP は **SendUserFile でユーザーに渡し、「解凍して Netlify のサイトの Deploys に フォルダを ドラッグ」** と伝える（URLは変わらない）。
+ドラッグするのは 解凍して できる `Study-note-site` フォルダ。
 
 `index.html` を変えたら、中の `const BUILD = "YYYY-MM-DDx"` も必ず上げる。ホーム画面の一番下に「バージョン …」として出るので、**ユーザーが公開先を開けば最新が載っているか自分で確認できる**。渡すときは「ホーム画面の下のバージョンが ○○ になっていれば更新できています」と伝える。
 
