@@ -21,6 +21,8 @@ const spy = (voices) => `
   window.__ev = [];
   const T0 = performance.now();
   const at = () => Math.round(performance.now() - T0);
+  // いま なんもん目か。はんていの こえと、つぎの もんだいの よみあげを 見わける
+  const qn = () => (document.getElementById('qnum') || {}).textContent || '';
   class U {
     constructor(t){ this.text=t; this.pitch=1; this.rate=1; this.voice=null; this.onend=null; this.onerror=null; }
   }
@@ -28,9 +30,9 @@ const spy = (voices) => `
   Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: {
     getVoices: () => ${JSON.stringify(voices)},
     speak: (u) => {
-      window.__ev.push({ kind: 'tts', t: at(), text: u.text, pitch: u.pitch });
+      window.__ev.push({ kind: 'tts', t: at(), text: u.text, pitch: u.pitch, q: qn() });
       // 600ms しゃべって おわる、と する
-      setTimeout(() => { window.__ev.push({ kind: 'tts-end', t: at(), text: u.text }); u.onend && u.onend(); }, 600);
+      setTimeout(() => { window.__ev.push({ kind: 'tts-end', t: at(), text: u.text, q: qn() }); u.onend && u.onend(); }, 600);
     },
     cancel: () => { window.__ev.push({ kind: 'cancel', t: at() }); },
     onvoiceschanged: null }});
@@ -52,7 +54,7 @@ const spy = (voices) => `
     createBufferSource() {
       const n = super.createBufferSource();
       const os = n.start.bind(n);
-      n.start = (...a) => { window.__ev.push({ kind: 'rec', t: at(), dur: n.buffer ? +(n.buffer.duration / n.playbackRate.value).toFixed(2) : 0 }); return os(...a); };
+      n.start = (...a) => { window.__ev.push({ kind: 'rec', t: at(), dur: n.buffer ? +(n.buffer.duration / n.playbackRate.value).toFixed(2) : 0, q: qn() }); return os(...a); };
       return n;
     }
   }
@@ -188,7 +190,8 @@ try {
   await pg.waitForTimeout(1200);
   await answerEigo(pg);
   await pg.waitForTimeout(6000);
-  ev = await pg.evaluate(() => window.__ev);
+  // こたえた 1もん目の ぶんだけを 見る（つぎの もんだいの よみあげは 入れない）
+  ev = (await pg.evaluate(() => window.__ev)).filter(e => e.q === '1');
   const recs = ev.filter(e => e.kind === 'rec');
   // にほんごが まざって いない ものを「えいごの よみあげ」と する
   const en = ev.filter(e => e.kind === 'tts' && !/[ぁ-んァ-ヶ一-龥]/.test(e.text));

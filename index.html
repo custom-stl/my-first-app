@@ -19,7 +19,8 @@
 <style>
   :root {
     --paper: #f4f7fb;
-    --grid: #dbe6f1;
+    --grid: #d3e1ef;
+    --grid-fine: #e6eef7;
     --card: #ffffff;
     --card-2: #eef4fa;
     --ink: #1f2f45;
@@ -35,9 +36,25 @@
     --chart-ok: #e4523f;
     --chart-ng: #2b6ca3;
     --shadow: 0 1px 0 rgba(31,47,69,.06), 0 6px 18px -10px rgba(31,47,69,.35);
-    --r-s: 8px;
-    --r-m: 14px;
-    --r-l: 22px;
+    /* かみは つくえの 上に ある。うかぶのは 「いま かいて いる ページ」だけ。 */
+    --lift: 0 1px 0 rgba(31,47,69,.05), 0 10px 24px -14px rgba(31,47,69,.45);
+
+    /* かどの まるみ ＝ やくわり。ぜんぶ おなじ まるみには しない。 */
+    --r-s: 7px;      /* 中の こまかい ぶひん */
+    --r-m: 13px;     /* ボタン・にゅうりょく */
+    --r-l: 20px;     /* ノートの ページ */
+
+    /* もじの おおきさの ものさし（およそ 1.2ばいずつ） */
+    --t-xs: .72rem;
+    --t-s: .82rem;
+    --t-m: .94rem;
+    --t-l: 1.12rem;
+    --t-xl: 1.4rem;
+    --t-2xl: 1.78rem;
+
+    /* 方眼の 1マス。よはくも これに そろえる */
+    --ms: 30px;
+
     --f-disp: "Kiwi Maru", "Hiragino Mincho ProN", serif;
     --f-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
     --f-num: "M PLUS Rounded 1c", "Zen Kaku Gothic New", system-ui, sans-serif;
@@ -45,7 +62,8 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --paper: #141a24;
-      --grid: #1f2a38;
+      --grid: #22303f;
+      --grid-fine: #1a2430;
       --card: #1b2331;
       --card-2: #222c3d;
       --ink: #e7eef7;
@@ -61,11 +79,13 @@
       --chart-ok: #e8603f;
       --chart-ng: #3f8fd0;
       --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 22px -12px rgba(0,0,0,.8);
+      --lift: 0 1px 0 rgba(0,0,0,.35), 0 12px 26px -14px rgba(0,0,0,.9);
     }
   }
   :root[data-theme="dark"] {
     --paper: #141a24;
-    --grid: #1f2a38;
+    --grid: #22303f;
+    --grid-fine: #1a2430;
     --card: #1b2331;
     --card-2: #222c3d;
     --ink: #e7eef7;
@@ -81,6 +101,7 @@
     --chart-ok: #e8603f;
     --chart-ng: #3f8fd0;
     --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 22px -12px rgba(0,0,0,.8);
+    --lift: 0 1px 0 rgba(0,0,0,.35), 0 12px 26px -14px rgba(0,0,0,.9);
   }
 
   * { box-sizing: border-box; }
@@ -93,10 +114,15 @@
     font-family: var(--f-body);
     color: var(--ink);
     background-color: var(--paper);
+    /* 方眼ノートの 罫。こまかい マスと、その 2マスごとの すこし こい 線。 */
     background-image:
       linear-gradient(var(--grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-    background-size: 30px 30px;
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+      linear-gradient(var(--grid-fine) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-fine) 1px, transparent 1px);
+    background-size:
+      var(--ms) var(--ms), var(--ms) var(--ms),
+      calc(var(--ms) / 2) calc(var(--ms) / 2), calc(var(--ms) / 2) calc(var(--ms) / 2);
     background-position: center top;
     -webkit-text-size-adjust: 100%;
   }
@@ -112,23 +138,30 @@
     outline-offset: 2px;
   }
 
-  /* ---------- ヘッダー ---------- */
+  /* ---------- ヘッダー：ノートの 表紙に はった だいめいラベル ---------- */
   .bar { display: flex; align-items: center; gap: 8px; min-height: 40px; flex-wrap: wrap; }
   .brand {
     font-family: var(--f-disp);
-    font-size: 1.15rem;
-    letter-spacing: .04em;
+    font-size: var(--t-m);
+    font-weight: 500;
     margin: 0;
+    padding: 5px 12px 6px;
+    background: var(--card);
+    border: 1.5px solid var(--ink);
+    border-radius: 3px 3px 12px 12px;      /* だいめいラベルの した2かどが まるい かたち */
+    box-shadow: 2px 2px 0 var(--grid);
   }
   .brand b { color: var(--shu); font-weight: 500; }
-  /* せまい がめんでは 3つ まとめて つぎの ぎょうに おりかえす */
-  .bar-btns { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+  /* せまい がめんでは まとめて つぎの ぎょうに おりかえす */
+  .bar-btns { display: flex; gap: 7px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
   .chip-btn {
+    display: inline-flex; align-items: center;
+    min-height: 38px;
     border: 1.5px solid var(--line);
     background: var(--card);
     border-radius: 999px;
-    padding: 6px 12px;
-    font-size: .78rem;
+    padding: 4px 14px;
+    font-size: var(--t-xs);
     font-weight: 700;
     color: var(--ink-soft);
     white-space: nowrap;
@@ -145,70 +178,125 @@
     margin: 18px 0 22px;
     text-wrap: balance;
   }
-  .lead em { color: var(--ink); font-style: normal; }
-  .sec-label {
-    display: flex; align-items: center; gap: 8px;
-    font-size: .74rem; font-weight: 900; letter-spacing: .16em;
-    color: var(--ink-soft);
-    margin: 0 0 10px;
+  .lead em {
+    color: var(--ink); font-style: normal;
+    font-family: var(--f-num); font-weight: 800; font-size: 1.14em;
   }
-  .sec-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .sec-label {
+    font-family: var(--f-disp);
+    font-size: var(--t-m); font-weight: 500;
+    color: var(--ink-soft);
+    margin: 0 0 9px;
+  }
+  /* きろく・けっか の 中の 見出しは、かみの 上の 小見出しとして すこし ひかえめに */
+  .sheet .sec-label { font-size: var(--t-s); color: var(--ink-soft); margin-bottom: 11px; }
 
-  .levels { display: flex; gap: 8px; margin-bottom: 26px; }
+  .levels { display: flex; gap: 7px; margin-bottom: 24px; }
   .lv {
     flex: 1;
     border: 1.5px solid var(--line);
     background: var(--card);
-    border-radius: var(--r-m);
-    padding: 9px 4px 8px;
+    border-radius: var(--r-s) var(--r-s) var(--r-m) var(--r-m);
+    padding: 9px 4px 9px;
     text-align: center;
-    line-height: 1.3;
+    line-height: 1.35;
   }
-  .lv span { display: block; font-weight: 900; font-size: .95rem; }
+  .lv span { display: block; font-weight: 700; font-size: var(--t-m); }
   .lv small { display: block; font-size: .66rem; color: var(--ink-soft); margin-top: 2px; }
   .lv[aria-pressed="true"] {
-    border-color: var(--shu);
-    background: var(--shu-soft);
-    color: var(--shu);
-    box-shadow: inset 0 0 0 1px var(--shu);
+    border-color: var(--accent, var(--shu));
+    background: color-mix(in srgb, var(--accent, var(--shu)) 11%, var(--card));
+    color: var(--accent, var(--shu));
+    box-shadow: inset 0 0 0 1px var(--accent, var(--shu));
   }
-  .lv[aria-pressed="true"] small { color: var(--shu); }
+  .lv[aria-pressed="true"] small { color: inherit; }
 
-  .modes { display: grid; gap: 12px; }
+  .modes { display: grid; gap: 10px; }
+
+  /* --- アプリの 中の もんだい選び：ノートの もくじの 行 --- */
   .mode {
     display: grid;
-    grid-template-columns: 1fr 104px;
+    grid-template-columns: 1fr 88px;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     text-align: left;
     border: 0;
-    border-radius: var(--r-l);
-    background: var(--card);
-    box-shadow: var(--shadow);
-    padding: 16px 16px 16px 18px;
+    border-bottom: 1.5px solid var(--grid);
+    background: none;
+    padding: 13px 4px 13px 14px;
     position: relative;
-    overflow: hidden;
-    transition: transform .12s ease;
+    border-radius: 0;
   }
+  .modes .mode:last-of-type { border-bottom: 0; }
+  /* えんぴつで つけた しるし。えらぶ ものが どれか ひと目で わかる */
   .mode::before {
     content: "";
-    position: absolute; inset: 0 auto 0 0; width: 6px;
+    position: absolute; left: 0; top: 50%;
+    width: 5px; height: 26px; margin-top: -13px;
+    border-radius: 3px;
     background: var(--accent, var(--ai));
   }
-  .mode:hover { transform: translateY(-2px); }
-  .mode:active { transform: translateY(0); }
   .mode h3 {
     font-family: var(--f-disp);
-    font-size: 1.28rem; margin: 0 0 4px; letter-spacing: .02em;
+    font-size: var(--t-l); font-weight: 500; margin: 0 0 2px;
   }
-  .mode p { margin: 0; font-size: .8rem; color: var(--ink-soft); line-height: 1.6; }
+  .mode p { margin: 0; font-size: var(--t-xs); color: var(--ink-soft); line-height: 1.65; }
   .mode .peek {
-    background: var(--card-2);
+    background: var(--card);
+    border: 1.5px solid var(--grid);
     border-radius: var(--r-s);
-    padding: 8px 6px;
+    padding: 6px 5px;
     display: grid; place-items: center;
-    min-height: 74px;
+    height: 60px; overflow: hidden;
   }
+  .mode .peek > * { max-height: 100%; }
+  .mode .peek .peek-en { font-size: .76rem; line-height: 1.45; }
+  .mode .peek .peek-en em { font-size: 1.05rem; }
+  .mode .peek-emoji { font-size: 1.12rem; line-height: 1.35; }
+  .mode .peek-calc { font-size: .76rem; }
+  .mode:active .peek { transform: translateY(1px); }
+
+  /* --- トップの 2つ：色も かたちも ちがう おおきな ブロック --- */
+  .apps { display: grid; gap: 12px; margin-bottom: 18px; }
+  .app-card, .modes .app-card:last-of-type { border-bottom: 0; }
+  .app-card::before { content: none; }
+  .app-card {
+    --accent: var(--ai);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    border: 2px solid var(--accent);
+    border-radius: var(--r-l);
+    background: var(--card);
+    padding: 18px 18px 18px 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 3px 3px 0 var(--accent);
+    transition: transform .1s ease, box-shadow .1s ease;
+  }
+  .app-card:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--accent); }
+  .app-card h2 {
+    font-family: var(--f-disp); font-weight: 500;
+    font-size: var(--t-2xl); margin: 0 0 3px; color: var(--accent);
+    line-height: 1.25;
+  }
+  .app-card p { margin: 0; font-size: var(--t-s); color: var(--ink-soft); line-height: 1.7; }
+  .app-card .appmark { flex: 0 0 auto; color: var(--accent); }
+  /* さんすう：筆算。えいご：おおきな もじ。中身そのものを しるしに する */
+  .appmark-calc {
+    font-family: var(--f-num); font-weight: 800;
+    font-size: 1.24rem; line-height: 1.1; text-align: right;
+    font-variant-numeric: tabular-nums;
+    display: grid; gap: 2px;
+  }
+  .appmark-calc u { text-decoration: none; border-bottom: 2.5px solid var(--accent); padding-bottom: 3px; }
+  .appmark-abc {
+    font-family: var(--f-en, var(--f-num)); font-weight: 800;
+    font-size: 2.1rem; line-height: 1; letter-spacing: -.02em;
+  }
+  .appmark-abc small { display: block; font-size: .95rem; letter-spacing: .06em; opacity: .75; }
   .peek-calc {
     font-family: var(--f-num); font-weight: 800; font-size: .84rem;
     line-height: 1.45; text-align: right; font-variant-numeric: tabular-nums;
@@ -216,7 +304,7 @@
   }
   .peek-calc u { text-decoration: none; display: block; border-bottom: 2px solid var(--ink-soft); padding-bottom: 2px; }
   .peek-word {
-    font-size: .62rem; line-height: 1.7; color: var(--ink-soft);
+    font-size: .56rem; line-height: 1.55; color: var(--ink-soft);
   }
   .peek-word b { color: var(--shu); font-weight: 700; }
   .mode .peek-mix { display: flex; gap: 7px; align-items: center; color: var(--ink-soft); }
@@ -232,18 +320,23 @@
   .mark.now { background: var(--kin); box-shadow: 0 0 0 3px var(--kin-soft); }
   .qmeta {
     display: flex; justify-content: space-between; align-items: baseline;
-    font-size: .74rem; font-weight: 700; color: var(--ink-soft);
-    letter-spacing: .08em;
+    font-size: var(--t-xs); font-weight: 700; color: var(--ink-soft);
   }
-  .qmeta .n { font-family: var(--f-num); font-size: .95rem; color: var(--ink); }
+  .qmeta .n { font-family: var(--f-num); font-size: var(--t-m); color: var(--ink); }
 
+  /* いま かいて いる ページ。うかぶのは この 1まいだけ */
   .sheet {
     background: var(--card);
     border-radius: var(--r-l);
-    box-shadow: var(--shadow);
+    box-shadow: var(--lift);
     padding: 20px 18px;
     margin: 10px 0 14px;
     position: relative;
+  }
+  /* せっていなどの かみは うかばない。ふちで 見わける */
+  #history .sheet, #child .sheet, #result .sheet, .person {
+    box-shadow: none;
+    border: 1.5px solid var(--grid);
   }
   .ask {
     font-family: var(--f-disp);
@@ -341,7 +434,7 @@
     margin-top: 10px; width: 100%;
     border: 0; border-radius: var(--r-m);
     background: var(--shu); color: #fff;
-    font-family: var(--f-disp); font-size: 1.22rem; letter-spacing: .1em;
+    font-family: var(--f-disp); font-weight: 500; font-size: var(--t-xl);
     padding: 15px 0;
     box-shadow: 0 3px 0 color-mix(in srgb, var(--shu) 70%, #000);
   }
@@ -380,13 +473,15 @@
 
   /* 花まる */
   .maru {
-    position: absolute; left: 50%; bottom: 4px;
-    transform: translateX(-50%);
-    width: min(216px, 62%); height: 100px;
+    /* こたえの ますを ゆったり かこむ。はみ出すのは ペンで かいた かんじ */
+    position: absolute; left: 50%; bottom: -10px;
+    transform: translateX(-50%) rotate(-1.5deg);   /* 手で かいた ような かたむき */
+    width: min(252px, 72%); height: 118px;
     pointer-events: none; z-index: 2;
   }
-  .maru path { fill: none; stroke: var(--shu); stroke-width: 3.6; stroke-linecap: round; }
-  .maru .flower { stroke-dasharray: 340; stroke-dashoffset: 340; animation: draw .5s ease-out forwards; }
+  .maru path { fill: none; stroke: var(--shu); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+  /* ペンで ひと筆に かく。この 1しゅんだけに うごきを つかう */
+  .maru .flower { stroke-dasharray: 520; stroke-dashoffset: 520; animation: draw .62s cubic-bezier(.3,.7,.35,1) forwards; }
   @keyframes draw { to { stroke-dashoffset: 0; } }
   .shake { animation: shake .32s ease-in-out; }
   @keyframes shake {
@@ -396,21 +491,22 @@
     .maru .flower { animation: none; stroke-dashoffset: 0; }
     .shake { animation: none; }
     .field .cursor { animation: none; }
-    .mode { transition: none; }
+    .app-card, .mode .peek { transition: none; }
   }
 
   /* ---------- けっか ---------- */
   .stamp {
-    width: 188px; height: 188px; margin: 6px auto 14px;
-    border: 4px double var(--shu);
+    width: 188px; height: 188px; margin: 8px auto 16px;
+    border: 6px double var(--shu);
     border-radius: 50%;
     display: grid; place-content: center; text-align: center;
     color: var(--shu);
+    background: color-mix(in srgb, var(--shu) 5%, transparent);
     transform: rotate(-7deg);
     font-family: var(--f-disp);
     line-height: 1.45;
   }
-  .stamp .big { font-size: 1.02rem; letter-spacing: .04em; white-space: nowrap; }
+  .stamp .big { font-size: var(--t-m); white-space: nowrap; }
   .stamp .sub { font-family: var(--f-num); font-weight: 800; font-size: 2.5rem; letter-spacing: -.02em; }
   .stamp .sub small { font-size: .95rem; letter-spacing: 0; }
   .stars { text-align: center; font-size: 1.7rem; color: var(--kin); letter-spacing: .18em; margin-bottom: 4px; }
@@ -485,12 +581,21 @@
   .btnrow { display: flex; gap: 10px; margin-top: 18px; }
   .btn {
     flex: 1; border-radius: var(--r-m); padding: 14px 4px;
-    font-family: var(--f-disp); font-size: .96rem; letter-spacing: .04em;
+    font-family: var(--f-disp); font-weight: 500; font-size: var(--t-m);
     white-space: nowrap;
     border: 1.5px solid var(--line); background: var(--card); box-shadow: 0 2px 0 var(--line);
   }
   .btn.primary { background: var(--shu); color: #fff; border-color: var(--shu); box-shadow: 0 3px 0 color-mix(in srgb, var(--shu) 70%, #000); }
   .btn:active { transform: translateY(2px); box-shadow: none; }
+  /* アプリの がめんの「ホームへ」。すすむ ボタンと 見わけが つくように ひかえめに */
+  .btnrow.back { margin-top: 22px; }
+  .btn.quiet {
+    border: 0; background: none; box-shadow: none;
+    color: var(--ink-soft); font-size: var(--t-m); padding: 10px 4px;
+    text-decoration: underline; text-underline-offset: 4px;
+    text-decoration-color: var(--line);
+  }
+  .btn.quiet:active { transform: none; }
   /* ---------- だれが やる？ ---------- */
   .players { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
   .pchip {
@@ -521,7 +626,11 @@
 
   /* ---------- サーバー（みんなの きろく） ---------- */
   .field-row { display: grid; gap: 5px; margin-bottom: 10px; }
-  .field-row label { font-size: .72rem; font-weight: 700; color: var(--ink-soft); letter-spacing: .04em; }
+  .field-row > * { min-width: 0; max-width: 100%; }
+  .field-row label {
+    font-size: var(--t-xs); font-weight: 700; color: var(--ink-soft);
+    word-break: keep-all; overflow-wrap: break-word;
+  }
   .seg { display: flex; gap: 7px; }
   .seg button {
     flex: 1; border: 1.5px solid var(--line); background: var(--card);
@@ -533,14 +642,16 @@
     box-shadow: inset 0 0 0 1px var(--shu);
   }
   .field-row select {
+    width: 100%;
     border: 1.5px solid var(--line); border-radius: var(--r-m);
     background: var(--card-2); color: var(--ink);
-    font: inherit; font-size: .88rem; padding: 10px 12px;
+    font: inherit; font-size: var(--t-s); padding: 11px 12px;
   }
   .field-row input {
+    width: 100%;
     border: 1.5px solid var(--line); border-radius: var(--r-m);
     background: var(--card-2); color: var(--ink);
-    font: inherit; font-size: .88rem; padding: 10px 12px;
+    font: inherit; font-size: var(--t-s); padding: 11px 12px;
   }
   .field-row input:focus { outline: 2px solid var(--ai); outline-offset: 1px; }
   .srv-msg { font-size: .78rem; font-weight: 700; line-height: 1.7; margin: 0 0 10px; }
@@ -612,13 +723,32 @@
   .plist li span { flex: 1; }
   .plist li button {
     border: 1.5px solid var(--line); background: var(--card);
-    border-radius: 999px; padding: 5px 12px; font-size: .74rem; font-weight: 700; color: var(--ink-soft);
+    border-radius: 999px; padding: 9px 13px; font-size: var(--t-xs); font-weight: 700; color: var(--ink-soft);
   }
 
   /* ---------- きろく ---------- */
+  /* ノートの インデックス。ここから 下は おとなが いじる ところ、と しめす */
+  .divider {
+    display: flex; align-items: baseline; gap: 9px;
+    font-family: var(--f-disp); font-weight: 500; font-size: var(--t-m);
+    color: var(--ink-soft);
+    margin: 26px 0 0;
+    padding: 8px 15px 9px;
+    background: var(--card-2);
+    border: 1.5px solid var(--grid);
+    border-bottom: 0;
+    border-radius: var(--r-m) var(--r-m) 0 0;
+    width: fit-content;
+  }
+  .divider small { font-size: var(--t-xs); font-weight: 700; font-family: var(--f-body); }
+  .divider + .sheet { border-top-left-radius: 0; margin-top: 0; }
+
+  #home { --accent: var(--shu); }
+  #eigo { --accent: var(--midori); }
   .page-title {
-    font-family: var(--f-disp); font-size: 1.3rem; margin: 16px 0 12px;
-    letter-spacing: .04em;
+    font-family: var(--f-disp); font-weight: 500;
+    font-size: var(--t-xl); margin: 14px 0 16px;
+    color: var(--accent, var(--ink));
   }
   .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-bottom: 14px; }
   .tile {
@@ -679,20 +809,24 @@
   .qs li.ng .a { color: var(--chart-ok); }
   .qs .mine { display: block; font-size: .68rem; color: var(--ink-soft); font-weight: 700; }
   .hist-link {
-    width: 100%; display: flex; align-items: center; gap: 10px;
-    border: 1.5px solid var(--line); background: var(--card);
-    border-radius: var(--r-m); box-shadow: var(--shadow);
-    padding: 13px 15px; margin-top: 12px; text-align: left;
+    width: 100%; display: flex; align-items: baseline; gap: 10px;
+    border: 0; border-top: 1.5px solid var(--grid); background: none;
+    border-radius: 0; box-shadow: none;
+    padding: 14px 4px 0; margin-top: 4px; text-align: left;
   }
-  .hist-link strong { font-family: var(--f-disp); font-size: 1.02rem; font-weight: 400; }
-  .hist-link span { margin-left: auto; font-size: .76rem; font-weight: 700; color: var(--ink-soft); }
-  .hist-link span b { font-family: var(--f-num); font-size: .92rem; color: var(--ink); }
-  .empty { font-size: .86rem; line-height: 1.9; color: var(--ink-soft); font-weight: 700; margin: 0; }
+  .hist-link strong { font-family: var(--f-disp); font-size: var(--t-m); font-weight: 500; }
+  .hist-link span { margin-left: auto; font-size: var(--t-xs); font-weight: 700; color: var(--ink-soft); }
+  .hist-link span b { font-family: var(--f-num); font-size: var(--t-s); color: var(--ink); }
+  .empty { font-size: var(--t-s); line-height: 1.9; color: var(--ink-soft); font-weight: 700; margin: 0; }
+  .note {
+    font-size: var(--t-s); line-height: 1.9; color: var(--ink-soft);
+    margin: 0; word-break: keep-all; overflow-wrap: break-word;
+  }
   .wipe { margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
   .wipe button {
     border: 0; background: none; color: var(--ink-soft);
-    font-size: .74rem; font-weight: 700; text-decoration: underline;
-    text-underline-offset: 3px; padding: 6px;
+    font-size: var(--t-xs); font-weight: 700; text-decoration: underline;
+    text-underline-offset: 3px; padding: 9px 8px;
   }
   .wipe .ask2 { font-size: .78rem; font-weight: 700; }
   .wipe .yes { color: var(--shu); text-decoration: none; border: 1.5px solid var(--shu); border-radius: 999px; padding: 6px 14px; }
@@ -834,9 +968,11 @@
 
   <!-- ======== トップ（さんすう・えいご・きろく） ======== -->
   <main id="top">
+    <!-- ひらいて さいしょに 見える ところ。あいさつは その子の なまえと
+         きょうまでの じっさいの きろくで つくる（きまり文句には しない）。 -->
     <div class="hello">
       <div class="frogs" id="hello-frogs" aria-hidden="true"></div>
-      <p class="lead">ケロちゃんと コロちゃんと いっしょに、<em>10もん</em>ずつ ちょうせん しよう。</p>
+      <p class="lead" id="hello-line"></p>
     </div>
 
     <h2 class="sec-label">だれが やる？</h2>
@@ -847,26 +983,23 @@
       <button type="button" class="ghost" id="pcancel">やめる</button>
     </form>
 
-    <h2 class="sec-label">なにを やる？</h2>
-    <div class="modes">
-      <button type="button" class="mode" data-app="home" style="--accent: var(--shu)">
+    <div class="apps">
+      <button type="button" class="app-card mode" data-app="home" style="--accent: var(--shu)">
         <div>
-          <h3>さんすう</h3>
+          <h2>さんすう</h2>
           <p>ひっさん・ぶんしょうだい・とけい</p>
         </div>
-        <div class="peek" aria-hidden="true">
-          <div class="peek-calc">1 2 3 4<br><u>+&nbsp; 5 6 7</u></div>
+        <div class="appmark appmark-calc" aria-hidden="true">
+          <span>1 2 3 4</span><u>＋&nbsp;5 6 7</u>
         </div>
       </button>
 
-      <button type="button" class="mode" data-app="eigo" style="--accent: var(--midori)">
+      <button type="button" class="app-card mode" data-app="eigo" style="--accent: var(--midori)">
         <div>
-          <h3>えいご</h3>
+          <h2>えいご</h2>
           <p>たんご・あいさつ・アルファベット</p>
         </div>
-        <div class="peek" aria-hidden="true">
-          <div class="peek-en"><em>🔊</em>A a<br><b>apple</b></div>
-        </div>
+        <div class="appmark appmark-abc" aria-hidden="true">Aa<small>bc</small></div>
       </button>
     </div>
 
@@ -875,9 +1008,7 @@
       <span id="hist-teaser"></span>
     </button>
 
-    <p class="foot">さんすうは すうじの ボタン、えいごは 4つから えらんで タップ。
-      <br>パソコンでは キーボードの すうじ・Enter、えいごは 1〜4・スペース（もういちど きく）も つかえます。
-      <br><span id="build"></span></p>
+    <p class="foot"><span id="build"></span></p>
   </main>
 
   <!-- ======== さんすう ======== -->
@@ -893,7 +1024,7 @@
 
     <h2 class="sec-label">もんだいを えらぶ</h2>
     <div class="modes">
-      <button type="button" class="mode" data-mode="calc" style="--accent: var(--shu)">
+      <button type="button" class="mode" data-mode="calc">
         <div>
           <h3>ひっさん</h3>
           <p>たしざん・ひきざん（4けたまで）</p>
@@ -903,7 +1034,7 @@
         </div>
       </button>
 
-      <button type="button" class="mode" data-mode="word" style="--accent: var(--ai)">
+      <button type="button" class="mode" data-mode="word">
         <div>
           <h3>ぶんしょうだい</h3>
           <p>くらしの なかの たしざん・ひきざん</p>
@@ -913,7 +1044,7 @@
         </div>
       </button>
 
-      <button type="button" class="mode" data-mode="clock" style="--accent: var(--kin)">
+      <button type="button" class="mode" data-mode="clock">
         <div>
           <h3>とけい</h3>
           <p>なんじ なんぷん／なんぷんご</p>
@@ -921,7 +1052,7 @@
         <div class="peek" id="peek-clock" aria-hidden="true"></div>
       </button>
 
-      <button type="button" class="mode" data-mode="mix" style="--accent: var(--ink-soft)">
+      <button type="button" class="mode" data-mode="mix">
         <div>
           <h3>ミックス</h3>
           <p>3しゅるいを まとめて 10もん</p>
@@ -932,8 +1063,8 @@
       </button>
     </div>
 
-    <div class="btnrow">
-      <button type="button" class="btn" id="home-back">ホームへ</button>
+    <div class="btnrow back">
+      <button type="button" class="btn quiet" id="home-back">ホームへ もどる</button>
     </div>
   </main>
 
@@ -950,7 +1081,7 @@
 
     <h2 class="sec-label">もんだいを えらぶ</h2>
     <div class="modes">
-      <button type="button" class="mode" data-mode="listen" style="--accent: var(--midori)">
+      <button type="button" class="mode" data-mode="listen">
         <div>
           <h3>ききとり</h3>
           <p>えいごを きいて、えを えらぶ</p>
@@ -958,7 +1089,7 @@
         <div class="peek peek-emoji" aria-hidden="true">🔊 🐱</div>
       </button>
 
-      <button type="button" class="mode" data-mode="eword" style="--accent: var(--ai)">
+      <button type="button" class="mode" data-mode="eword">
         <div>
           <h3>えいたんご</h3>
           <p>えを みて、つづりを えらぶ</p>
@@ -968,7 +1099,7 @@
         </div>
       </button>
 
-      <button type="button" class="mode" data-mode="talk" style="--accent: var(--shu)">
+      <button type="button" class="mode" data-mode="talk">
         <div>
           <h3>あいさつ</h3>
           <p>えいごの いいかたの いみを えらぶ</p>
@@ -978,7 +1109,7 @@
         </div>
       </button>
 
-      <button type="button" class="mode" data-mode="abc" style="--accent: var(--kin)">
+      <button type="button" class="mode" data-mode="abc">
         <div>
           <h3>アルファベット</h3>
           <p>おと・大もじ小もじ・じゅんばん</p>
@@ -988,7 +1119,7 @@
         </div>
       </button>
 
-      <button type="button" class="mode" data-mode="eigo" style="--accent: var(--ink-soft)">
+      <button type="button" class="mode" data-mode="eigo">
         <div>
           <h3>えいご ぜんぶ</h3>
           <p>4しゅるいを まとめて 10もん</p>
@@ -997,8 +1128,8 @@
       </button>
     </div>
 
-    <div class="btnrow">
-      <button type="button" class="btn" id="eigo-back">ホームへ</button>
+    <div class="btnrow back">
+      <button type="button" class="btn quiet" id="eigo-back">ホームへ もどる</button>
     </div>
   </main>
 
@@ -1069,6 +1200,14 @@
       <h3 class="sec-label">日ごとの きろく</h3>
       <div id="days"></div>
     </section>
+    <h2 class="divider">せってい<small>おとなの かたへ</small></h2>
+
+    <section class="sheet">
+      <h3 class="sec-label">つかいかた</h3>
+      <p class="note">さんすうは すうじの ボタン、えいごは 4つから えらんで タップ します。
+        パソコンでは キーボードの すうじ・Enter、えいごは 1〜4 と スペース（もういちど きく）も つかえます。</p>
+    </section>
+
     <section class="sheet">
       <h3 class="sec-label">えいごの こえ</h3>
       <p class="srv-msg idle" id="en-note"></p>
@@ -1212,7 +1351,7 @@
   };
 
   // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
-  const BUILD = "2026-09-20a";
+  const BUILD = "2026-09-20b";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
@@ -1870,13 +2009,15 @@
     <figure>${frogSVG("koro", { size })}<figcaption>コロちゃん</figcaption></figure>`;
 
   /* ========== 花まる ========== */
-  function maruPath(n = 8) {
-    const R = 34, C = 50;
+  function maruPath(n = 8, opt = {}) {
+    const { rx = 34, ry = 34, cx = 50, cy = 50 } = opt;
     const p = (i) => {
       const a = (i * 360 / n - 90) * Math.PI / 180;
-      return [C + R * Math.cos(a), C + R * Math.sin(a)];
+      return [cx + rx * Math.cos(a), cy + ry * Math.sin(a)];
     };
-    const chord = 2 * R * Math.sin(Math.PI / n);
+    // となりの はなびらまでの きょりから、まるみの はんけいを きめる
+    const [x0, y0] = p(0), [x1, y1] = p(1);
+    const chord = Math.hypot(x1 - x0, y1 - y0);
     const rr = (chord * 0.62).toFixed(1);
     let d = "";
     for (let i = 0; i <= n; i++) {
@@ -1885,8 +2026,9 @@
     }
     return d + "Z";
   }
-  const maruSVG = () => `<svg class="maru" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <path class="flower" d="${maruPath()}" vector-effect="non-scaling-stroke"/>
+  // こたえを かこむ 花まる。よこながの だ円で、せんせいが ペンで かいた かたちに
+  const maruSVG = () => `<svg class="maru" viewBox="0 0 150 104" aria-hidden="true">
+      <path class="flower" d="${maruPath(7, { rx: 66, ry: 43, cx: 75, cy: 52 })}" vector-effect="non-scaling-stroke"/>
     </svg>`;
   // ほめる ぶんの あたまに つける ちいさな 花まる
   const maruMark = () => `<svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><path d="${maruPath(5)}" fill="none" stroke="var(--shu)" stroke-width="10" stroke-linecap="round"/></svg>`;
@@ -2457,8 +2599,23 @@
         .slice(0, 7)
         .map((x) => x.w);
     }
-    const out = shuffle(ranked).slice(0, n);
-    if (out.length < n) out.push(...shuffle(cand.filter((w) => !out.includes(w))).slice(0, n - out.length));
+    // おなじ つづり・おなじ にほんごの ものを 2つ ださない。
+    // （orange は「みかん」と「オレンジいろ」の 2つ あるので、
+    //   えいたんごでは おなじ "orange" の ボタンが ならんで しまう）
+    const shown = (w) => w.t || w.j;
+    const seenW = new Set([ans.w]), seenS = new Set([shown(ans)]);
+    const take = (list, k) => {
+      const got = [];
+      for (const w of list) {
+        if (got.length >= k) break;
+        if (seenW.has(w.w) || seenS.has(shown(w))) continue;
+        seenW.add(w.w); seenS.add(shown(w));
+        got.push(w);
+      }
+      return got;
+    };
+    const out = take(shuffle(ranked), n);
+    if (out.length < n) out.push(...take(shuffle(cand), n - out.length));
     return out;
   }
 
@@ -2636,6 +2793,7 @@
     store.set(CURRENT_KEY, name);
     renderPlayers();
     teaseHistory();
+    renderHello();
   }
   function addPlayer(raw) {
     const name = String(raw).trim().slice(0, MAX_NAME);
@@ -2655,6 +2813,7 @@
     renderPlayers();
     renderPlist();
     teaseHistory();
+    renderHello();
   }
   function renderPlayers() {
     const list = loadPlayers(), cur = currentPlayer();
@@ -2970,6 +3129,24 @@
          <button type="button" class="no" id="wipe-no">やめる</button>`
       : `<button type="button" id="wipe-ask">きろくを ぜんぶ けす</button>`;
   }
+  // ひらいた ときの ひとこと。なまえと きょうまでの きろくで かわる。
+  function renderHello() {
+    const name = currentPlayer();
+    const list = loadLog(name);
+    const today = ymd(new Date());
+    const t = byDay(list).find((e) => e.d === today);
+    const st = streakDays(list);
+    const yst = byDay(list).find((e) => e.d === ymd(shiftDay(new Date(), -1)));
+    const yobi = name ? `${esc(name)}、` : "";
+    let line;
+    if (t) line = `${yobi}きょうは もう <em>${t.q}もん</em>。まだ やる？`;
+    else if (st >= 2) line = `${yobi}<em>${st}日</em> つづいて いるよ。きょうも やろう。`;
+    else if (yst) line = `${yobi}きのうは <em>${yst.q}もん</em> できたね。きょうも やろう。`;
+    else if (list.length) line = `${yobi}おかえり。きょうは なにを やる？`;
+    else line = `${yobi}ケロちゃんと コロちゃんと いっしょに、<em>10もん</em> やって みよう。`;
+    $("hello-line").innerHTML = line;
+  }
+
   function teaseHistory() {
     const list = loadLog(currentPlayer());
     if (list.length === 0) { $("hist-teaser").textContent = "まだ ありません"; return; }
@@ -3359,6 +3536,7 @@
     show("top");
     renderPlayers();
     teaseHistory();
+    renderHello();
   }
 
   /* ========== 出題 ========== */
@@ -3468,6 +3646,7 @@
 
   function renderAnswerArea() {
     const q = S.qs[S.i];
+    $("input").hidden = false;
     if (q.input === "choice") {
       $("answer").innerHTML = "";
       $("input").innerHTML = `<div class="picks${q.eigo ? " en" : ""}${q.one ? " one" : ""}">${q.choices.map((c, i) =>
@@ -3628,6 +3807,9 @@
       <button type="button" class="next" id="next">${last ? "けっかを みる" : "つぎの もんだい"}</button>
     </div>`;
     $("input").querySelectorAll("button").forEach((b) => { b.disabled = true; });
+    // すうじの キーパッドは こたえた あと やくめが おわる。しまって、
+    // ケロと コロの はんていを ページの すぐ 下に 見せる（スクロール させない）
+    if (q.input !== "choice") $("input").hidden = true;
     clearTimeout(S.timer);
     if (ok) {
       // ふたりが しゃべり おわってから つぎへ。ながびく ときの ほけんも おく。
@@ -3944,7 +4126,7 @@
       const res = restoreBackup(json);
       if (res.error) { srvMsg(res.error, "ng", "bk-msg"); return; }
       await primeRecs();
-      renderPlayers(); renderHistory(); renderVoiceBox(); renderRecAll(); teaseHistory();
+      renderPlayers(); renderHistory(); renderVoiceBox(); renderRecAll(); teaseHistory(); renderHello();
       srvMsg(`もどしました。こえ <b>${res.voices}</b>こ・きろく <b>${res.sets}</b>セットを よみこみました。`, "ok", "bk-msg");
       if (res.voices) { stopVoice(); playRec("kero", "ok"); }
     } catch { srvMsg("ファイルを よめませんでした。", "ng", "bk-msg"); }
@@ -4035,6 +4217,7 @@
   $("build").textContent = `バージョン ${BUILD}`;
   renderPlayers();
   teaseHistory();
+  renderHello();
   primeRecs();          // ろくおんした こえを すぐ ならせる ように
   flushOutbox();      // まえに おくれなかった きろくを おくる
   $("hello-frogs").innerHTML = `${frogSVG("kero", { size: 52, mood: "open" })}${frogSVG("koro", { size: 52, mood: "open" })}`;
