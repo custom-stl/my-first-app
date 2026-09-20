@@ -29,6 +29,8 @@
     --midori: #2f8a5f;
     --midori-soft: #e3f2ea;
     --on-midori: #ffffff;
+    --momo: #d3468a;           /* コンボ・スコアの いろ */
+    --momo-soft: #fde6f0;
     /* ゆびの いろ（ひだり・みぎで おなじ ゆびは おなじ いろ） */
     --yubi-1: #fde1d9;   /* ひとさしゆび */
     --yubi-2: #fdefd0;   /* なかゆび */
@@ -36,9 +38,9 @@
     --yubi-4: #dde7f7;   /* こゆび */
     --yubi-5: #eadff5;   /* おやゆび */
     --shadow: 0 1px 0 rgba(31,47,69,.06), 0 6px 18px -10px rgba(31,47,69,.35);
-    --r-s: 8px;
-    --r-m: 14px;
-    --r-l: 22px;
+    --r-s: 10px;
+    --r-m: 16px;
+    --r-l: 26px;
     --f-disp: "Kiwi Maru", "Hiragino Mincho ProN", serif;
     --f-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
     --f-num: "M PLUS Rounded 1c", "Zen Kaku Gothic New", system-ui, sans-serif;
@@ -61,6 +63,8 @@
       --midori: #6ed3a4;
       --midori-soft: #17302a;
       --on-midori: #10251c;
+      --momo: #ff8fc0;
+      --momo-soft: #3a1f2e;
       --yubi-1: #4a2b25;
       --yubi-2: #47381a;
       --yubi-3: #1e3a2b;
@@ -79,20 +83,26 @@
     color: var(--ink);
     background-color: var(--paper);
     background-image:
+      radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--midori) 9%, transparent) 0 18%, transparent 18%),
+      radial-gradient(circle at 88% 4%, color-mix(in srgb, var(--kin) 11%, transparent) 0 14%, transparent 14%),
       linear-gradient(var(--grid) 1px, transparent 1px),
       linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-    background-size: 30px 30px;
-    background-position: center top;
+    background-size: 100% 460px, 100% 460px, 30px 30px, 30px 30px;
+    background-repeat: no-repeat, no-repeat, repeat, repeat;
+    background-position: center top, center top, center top, center top;
     -webkit-text-size-adjust: 100%;
   }
-  .app { max-width: 720px; margin: 0 auto; padding-inline: 16px; padding-block: 14px 34px; }
+  .app { max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 14px 34px; position: relative; }
   button { font: inherit; color: inherit; cursor: pointer; }
   :is(button, a, [tabindex]):focus-visible { outline: 3px solid var(--ai); outline-offset: 2px; }
   /* わかち書きの すきまだけで おりかえす */
-  .lead, .bubble, .cheer, .note, .tip { word-break: keep-all; overflow-wrap: break-word; line-break: strict; }
+  .lead, .bubble, .cheer, .tip, .best, .rank-next, .course p, .medal figcaption { word-break: keep-all; overflow-wrap: break-word; line-break: strict; }
 
   .bar { display: flex; align-items: center; gap: 8px; min-height: 40px; flex-wrap: wrap; }
-  .brand { font-family: var(--f-disp); font-size: 1.15rem; letter-spacing: .04em; margin: 0; }
+  .brand {
+    font-family: var(--f-disp); font-size: 1.2rem; letter-spacing: .04em; margin: 0;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
   .brand b { color: var(--midori); font-weight: 500; }
   .bar-btns { margin-left: auto; display: flex; gap: 8px; }
   .chip-btn {
@@ -103,105 +113,191 @@
 
   .sec-label {
     display: flex; align-items: center; gap: 8px;
-    font-size: .74rem; font-weight: 900; letter-spacing: .16em; color: var(--ink-soft);
+    font-size: .76rem; font-weight: 900; letter-spacing: .16em; color: var(--ink-soft);
     margin: 0 0 10px;
   }
   .sec-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
   .sec-label.gap { margin-top: 24px; }
-
-  .hello { display: flex; align-items: center; gap: 13px; margin: 16px 0 22px; }
-  .hello .lead { margin: 0; }
-  .frogs { display: flex; gap: 9px; align-items: flex-end; justify-content: center; }
-  .frogs figure { margin: 0; display: grid; justify-items: center; gap: 1px; }
-  .frogs figcaption { font-size: .66rem; font-weight: 700; color: var(--ink-soft); }
 
   .sheet {
     background: var(--card); border-radius: var(--r-l); box-shadow: var(--shadow);
     padding: 20px 18px; margin: 10px 0 14px;
   }
 
-  /* コースを えらぶ */
+  /* ---------- カエルの せいちょう（ランク） ---------- */
+  .rank {
+    display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center;
+    background: linear-gradient(135deg, var(--midori-soft), var(--card) 70%);
+    border-radius: var(--r-l); box-shadow: var(--shadow); padding: 14px 18px; margin: 14px 0 22px;
+  }
+  .rank-art { display: grid; place-items: center; width: 74px; }
+  .rank-name { margin: 0 0 2px; font-family: var(--f-disp); font-size: 1.24rem; letter-spacing: .03em; }
+  .rank-name small { font-size: .7rem; color: var(--ink-soft); font-family: var(--f-body); margin-left: 7px; letter-spacing: .06em; }
+  .rank-bar { height: 12px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 7px 0 5px; }
+  .rank-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--midori), var(--kin)); }
+  .rank-next { margin: 0; font-size: .74rem; color: var(--ink-soft); font-weight: 700; }
+  .rank-next b { font-family: var(--f-num); color: var(--midori); }
+
+  /* ---------- メダル ---------- */
+  .medals { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; }
+  .medal { margin: 0; display: grid; justify-items: center; gap: 4px; opacity: .38; filter: grayscale(1); }
+  .medal.got { opacity: 1; filter: none; }
+  .medal figcaption { font-size: .62rem; font-weight: 700; color: var(--ink-soft); text-align: center; line-height: 1.5; }
+  .medal.got figcaption { color: var(--ink); }
+  .medal-count { font-family: var(--f-num); color: var(--kin); }
+
+  /* ---------- コースを えらぶ ---------- */
   .courses { display: grid; gap: 12px; grid-template-columns: 1fr; }
   @media (min-width: 560px) { .courses { grid-template-columns: 1fr 1fr; } }
   .course {
-    display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px;
-    text-align: left; border: 0; border-radius: var(--r-l);
+    display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 13px;
+    text-align: left; border: 2.5px solid transparent; border-radius: var(--r-l);
     background: var(--card); box-shadow: var(--shadow);
-    padding: 15px 15px 15px 18px; position: relative; overflow: hidden;
+    padding: 14px 16px; position: relative; overflow: hidden;
     transition: transform .12s ease;
   }
-  .course::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 6px; background: var(--accent, var(--midori)); }
-  .course:hover { transform: translateY(-2px); }
-  .course h3 { font-family: var(--f-disp); font-size: 1.16rem; margin: 0 0 4px; }
-  .course p { margin: 0; font-size: .76rem; color: var(--ink-soft); line-height: 1.6; word-break: keep-all; }
-  .course .peek {
-    background: var(--card-2); border-radius: var(--r-s); padding: 7px 10px; min-width: 78px;
+  .course:hover { transform: translateY(-3px) rotate(-.5deg); }
+  .course h3 { font-family: var(--f-disp); font-size: 1.2rem; margin: 0 0 3px; }
+  .course p { margin: 0; font-size: .74rem; color: var(--ink-soft); line-height: 1.6; }
+  .course .icon {
+    width: 54px; height: 54px; border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 16%, var(--card));
     display: grid; place-items: center;
-    font-family: var(--f-num); font-weight: 800; font-size: 1.05rem; color: var(--accent, var(--midori));
+    font-family: var(--f-num); font-weight: 800; font-size: 1.02rem; color: var(--accent);
   }
-  .course[aria-pressed="true"] { box-shadow: var(--shadow), inset 0 0 0 2px var(--accent, var(--midori)); }
-  .course[aria-pressed="true"] .peek { background: var(--accent, var(--midori)); color: var(--card); }
+  .course[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--card)); }
+  .course[aria-pressed="true"] .icon { background: var(--accent); color: var(--card); }
+  .course .tag {
+    position: absolute; top: 0; right: 0;
+    background: var(--accent); color: var(--card);
+    font-size: .6rem; font-weight: 900; letter-spacing: .1em;
+    padding: 3px 10px 4px; border-bottom-left-radius: var(--r-s);
+  }
 
   .levels { display: flex; gap: 8px; }
   .lv, .md {
-    flex: 1; border: 1.5px solid var(--line); background: var(--card);
-    border-radius: var(--r-m); padding: 9px 4px 8px; text-align: center; line-height: 1.3;
+    flex: 1; border: 2px solid var(--line); background: var(--card);
+    border-radius: var(--r-m); padding: 10px 4px 9px; text-align: center; line-height: 1.3;
   }
-  .lv span, .md span { display: block; font-weight: 900; font-size: .95rem; }
+  .lv span, .md span { display: block; font-weight: 900; font-size: .98rem; }
   .lv small, .md small { display: block; font-size: .66rem; color: var(--ink-soft); margin-top: 2px; }
   .lv[aria-pressed="true"], .md[aria-pressed="true"] {
     border-color: var(--midori); background: var(--midori-soft); color: var(--midori);
-    box-shadow: inset 0 0 0 1px var(--midori);
   }
   .lv[aria-pressed="true"] small, .md[aria-pressed="true"] small { color: var(--midori); }
 
   .go {
-    margin-top: 4px; width: 100%; border: 0; border-radius: var(--r-m);
-    background: var(--midori); color: var(--on-midori);
-    font-family: var(--f-disp); font-size: 1.22rem; letter-spacing: .1em; padding: 15px 0;
-    box-shadow: 0 3px 0 color-mix(in srgb, var(--midori) 70%, #000);
+    margin-top: 4px; width: 100%; border: 0; border-radius: 999px;
+    background: linear-gradient(135deg, var(--midori), color-mix(in srgb, var(--midori) 70%, var(--kin)));
+    color: var(--on-midori);
+    font-family: var(--f-disp); font-size: 1.3rem; letter-spacing: .12em; padding: 16px 0;
+    box-shadow: 0 4px 0 color-mix(in srgb, var(--midori) 65%, #000);
   }
-  .go:active { transform: translateY(3px); box-shadow: none; }
-  .best { margin: 0 0 12px; font-size: .86rem; line-height: 1.8; word-break: keep-all; }
-  .best b { font-family: var(--f-num); font-size: 1.25rem; color: var(--midori); }
+  .go:active { transform: translateY(4px); box-shadow: none; }
+  .best { margin: 0 0 12px; font-size: .86rem; line-height: 1.8; }
+  .best b { font-family: var(--f-num); font-size: 1.28rem; color: var(--midori); }
   .tip { margin: 0; font-size: .76rem; line-height: 1.9; color: var(--ink-soft); }
   .tip b { color: var(--ink); }
 
-  /* あそんで いる がめん */
+  /* ---------- あそんで いる がめん ---------- */
   .hud {
     display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
     font-size: .74rem; font-weight: 700; color: var(--ink-soft); letter-spacing: .08em;
   }
-  .hud .n { font-family: var(--f-num); font-size: 1.05rem; color: var(--ink); }
-  .barwrap { height: 12px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 10px 0 0; }
+  .hud .n { font-family: var(--f-num); font-size: 1.08rem; color: var(--ink); }
+  .barwrap { height: 14px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 10px 0 0; }
   .barwrap i { display: block; height: 100%; background: var(--midori); border-radius: 999px; }
   .barwrap.hot i { background: var(--shu); }
 
-  .card { display: grid; justify-items: center; align-content: center; gap: 12px; min-height: 168px; }
-  .ready { margin: 0; font-family: var(--f-disp); font-size: 3.4rem; color: var(--kin); }
-  .ready.go2 { font-size: 2.1rem; color: var(--midori); }
-  .prompt { margin: 0; font-family: var(--f-disp); font-size: 2.1rem; letter-spacing: .04em; text-align: center; }
+  /* はすの は を とんで いく（れんしゅうの しんちょく） */
+  .hasu { display: flex; gap: 5px; align-items: flex-end; margin: 10px 0 0; height: 40px; }
+  .hasu div {
+    flex: 1; height: 15px; border-radius: 999px; background: var(--line);
+    position: relative; transition: background .2s ease;
+  }
+  .hasu div.done { background: var(--midori); }
+  .hasu div.now { background: var(--kin); }
+  .hasu div.now::after {
+    content: ""; position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+    width: 26px; height: 26px;
+    background: no-repeat center/contain var(--frog-img);
+  }
+
+  .playbox { position: relative; }
+  .card {
+    display: grid; justify-items: center; align-content: center; gap: 12px; min-height: 178px;
+    position: relative;
+  }
+  .ready { margin: 0; font-family: var(--f-disp); font-size: 3.8rem; color: var(--kin); animation: bounce .7s ease-out; }
+  .ready.go2 { font-size: 2.3rem; color: var(--midori); }
+  @keyframes bounce { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
+  .prompt { margin: 0; font-family: var(--f-disp); font-size: 2.2rem; letter-spacing: .04em; text-align: center; }
   .prompt.small { font-size: 1.3rem; color: var(--ink-soft); }
   .chips { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
   .chips span {
     font-family: var(--f-num); font-weight: 800;
-    font-size: clamp(2.1rem, 9vw, 3.1rem); line-height: 1;
+    font-size: clamp(2.1rem, 9vw, 3.2rem); line-height: 1;
     min-width: .8em; text-align: center; color: var(--ink-soft);
     border-bottom: 7px solid var(--line); padding-bottom: 8px;
   }
   .chips span.done { color: var(--midori); border-bottom-color: var(--midori); }
   .chips span.now { color: var(--ink); border-bottom-color: var(--kin); animation: nowblink 1s ease-in-out infinite; }
   @keyframes nowblink { 50% { border-bottom-color: var(--line); } }
-  .card.pop .chips { animation: pop .18s ease-out; }
-  @keyframes pop { 50% { transform: scale(1.1); } }
+  .card.pop .chips { animation: pop .2s ease-out; }
+  @keyframes pop { 50% { transform: scale(1.12); } }
   .shake { animation: shake .32s ease-in-out; }
   @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 
-  .stats { display: flex; gap: 16px; justify-content: center; font-size: .74rem; font-weight: 700; color: var(--ink-soft); letter-spacing: .08em; margin-bottom: 12px; }
-  .stats b { font-family: var(--f-num); font-size: 1.05rem; color: var(--ink); margin-left: 4px; }
+  /* ケロちゃんの あいづち */
+  .buddy { position: absolute; left: 6px; bottom: 2px; display: flex; align-items: flex-end; gap: 6px; }
+  .buddy .say {
+    background: var(--kin-soft); border: 1.5px solid var(--kin); border-radius: 14px;
+    padding: 5px 10px; font-family: var(--f-disp); font-size: .78rem; white-space: nowrap;
+    margin-bottom: 12px;
+  }
+  .buddy .say:empty { display: none; }
+  @media (max-width: 520px) { .buddy .say { display: none; } }
 
-  /* キーボードの え */
-  .yubi-say { text-align: center; font-size: .84rem; font-weight: 700; margin: 0 0 8px; min-height: 1.5em; }
+  /* コンボ と とんでいく スコア */
+  .combo {
+    position: absolute; right: 8px; top: 4px; text-align: center;
+    font-family: var(--f-num); font-weight: 800; color: var(--momo);
+    line-height: 1.1;
+  }
+  .combo b { display: block; font-size: 2rem; }
+  .combo small { font-size: .64rem; letter-spacing: .1em; }
+  .combo.hit { animation: pop .3s ease-out; }
+  .fx { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+  .fx .gain {
+    position: absolute; right: 10px; top: 66px;
+    font-family: var(--f-num); font-weight: 800; font-size: 1.5rem; color: var(--momo);
+    animation: floatup .75s ease-out forwards;
+  }
+  @keyframes floatup {
+    0% { transform: translateY(6px) scale(.7); opacity: 0; }
+    25% { transform: translateY(-6px) scale(1.1); opacity: 1; }
+    100% { transform: translateY(-40px) scale(1); opacity: 0; }
+  }
+  .fx .kira {
+    position: absolute; width: 11px; height: 11px; border-radius: 3px;
+    animation: kira .62s ease-out forwards;
+  }
+  @keyframes kira {
+    0% { transform: translate(0, 0) scale(.3) rotate(0deg); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(1) rotate(210deg); opacity: 0; }
+  }
+
+  .stats { display: flex; gap: 8px; margin-bottom: 12px; }
+  .stats span {
+    flex: 1; background: var(--card); border-radius: var(--r-m); box-shadow: var(--shadow);
+    padding: 8px 4px 7px; text-align: center;
+    font-size: .66rem; font-weight: 700; color: var(--ink-soft); letter-spacing: .06em;
+  }
+  .stats b { display: block; font-family: var(--f-num); font-size: 1.25rem; color: var(--ink); }
+  .stats span.score b { color: var(--momo); }
+
+  /* ---------- キーボードの え ---------- */
+  .yubi-say { text-align: center; font-size: .86rem; font-weight: 700; margin: 0 0 8px; min-height: 1.5em; }
   .yubi-say b { color: var(--midori); }
   .kbd { display: grid; gap: 5px; margin-bottom: 10px; }
   .kbd-row { display: flex; gap: 5px; }
@@ -236,23 +332,28 @@
   .kbd-legend b { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; }
   .kbd-legend i { width: 14px; height: 10px; border-radius: 3px; border: 1px solid var(--line); display: inline-block; }
 
-  /* けっか */
+  /* ---------- けっか ---------- */
   .stamp {
-    margin: 4px auto 10px; width: min(300px, 86%); aspect-ratio: 1 / .62;
-    border: 2.5px solid var(--shu); border-radius: 50%;
-    color: var(--shu); display: grid; place-items: center; text-align: center;
-    font-family: var(--f-disp);
+    margin: 4px auto 8px; width: min(320px, 88%); aspect-ratio: 1 / .6;
+    border: 3px solid var(--momo); border-radius: 50%;
+    color: var(--momo); display: grid; place-items: center; text-align: center;
+    font-family: var(--f-disp); animation: stamp .45s cubic-bezier(.2,1.5,.5,1);
   }
-  .stamp .big { font-size: 1.02rem; letter-spacing: .04em; white-space: nowrap; }
-  .stamp .sub { font-family: var(--f-num); font-weight: 800; font-size: 2.5rem; }
-  .stamp .sub small { font-size: .95rem; }
-  .stars { text-align: center; font-size: 1.7rem; color: var(--kin); letter-spacing: .18em; margin-bottom: 4px; }
+  @keyframes stamp { 0% { transform: scale(2.2) rotate(-12deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+  .stamp .big { font-size: 1rem; letter-spacing: .1em; }
+  .stamp .sub { font-family: var(--f-num); font-weight: 800; font-size: 2.9rem; line-height: 1.05; }
+  .stamp .sub small { font-size: .9rem; }
+  .result-sub { text-align: center; margin: 0 0 6px; font-size: .82rem; font-weight: 700; color: var(--ink-soft); }
+  .stars { text-align: center; font-size: 2rem; color: var(--kin); letter-spacing: .18em; margin-bottom: 4px; }
   .stars span { color: var(--line); }
   .cheer-lead { display: grid; justify-items: center; margin-top: 16px; }
+  .frogs { display: flex; gap: 9px; align-items: flex-end; justify-content: center; }
+  .frogs figure { margin: 0; display: grid; justify-items: center; gap: 1px; }
+  .frogs figcaption { font-size: .66rem; font-weight: 700; color: var(--ink-soft); }
   .bubble {
     position: relative; background: var(--kin-soft); border: 1.5px solid var(--kin);
-    border-radius: 18px; padding: 12px 18px; max-width: 320px; text-align: center;
-    font-family: var(--f-disp); font-size: 1.02rem; line-height: 1.75; margin-bottom: 13px;
+    border-radius: 18px; padding: 12px 18px; max-width: 330px; text-align: center;
+    font-family: var(--f-disp); font-size: 1.04rem; line-height: 1.75; margin-bottom: 13px;
   }
   .bubble::after {
     content: ""; position: absolute; left: 50%; bottom: -8px; width: 13px; height: 13px;
@@ -266,6 +367,20 @@
     font-size: .86rem; line-height: 1.7;
   }
   .cheer .mk { flex: 0 0 18px; width: 18px; height: 18px; }
+  .newmedals { display: grid; gap: 8px; margin-top: 14px; }
+  .newmedal {
+    display: flex; align-items: center; gap: 11px;
+    background: var(--kin-soft); border: 2px solid var(--kin); border-radius: var(--r-m);
+    padding: 9px 13px; animation: stamp .5s cubic-bezier(.2,1.5,.5,1);
+  }
+  .newmedal b { font-family: var(--f-disp); font-size: .98rem; }
+  .newmedal small { display: block; font-size: .7rem; color: var(--ink-soft); }
+  .rankup {
+    display: flex; align-items: center; gap: 12px; margin-top: 14px;
+    background: var(--midori-soft); border: 2px solid var(--midori); border-radius: var(--r-m);
+    padding: 11px 14px; animation: stamp .5s cubic-bezier(.2,1.5,.5,1);
+  }
+  .rankup b { font-family: var(--f-disp); font-size: 1.04rem; color: var(--midori); }
   .weak { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
   .weak span {
     font-family: var(--f-num); font-weight: 800; font-size: 1.1rem;
@@ -276,18 +391,20 @@
 
   .btnrow { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
   .btn {
-    flex: 1; min-width: 120px; border-radius: var(--r-m); padding: 14px 4px;
-    font-family: var(--f-disp); font-size: .96rem; white-space: nowrap; text-align: center;
-    border: 1.5px solid var(--line); background: var(--card); box-shadow: 0 2px 0 var(--line);
+    flex: 1; min-width: 120px; border-radius: 999px; padding: 14px 4px;
+    font-family: var(--f-disp); font-size: .98rem; white-space: nowrap; text-align: center;
+    border: 2px solid var(--line); background: var(--card); box-shadow: 0 3px 0 var(--line);
     text-decoration: none; color: inherit; display: block;
   }
-  .btn.primary { background: var(--midori); color: var(--on-midori); border-color: var(--midori); box-shadow: 0 3px 0 color-mix(in srgb, var(--midori) 70%, #000); }
-  .btn:active { transform: translateY(2px); box-shadow: none; }
+  .btn.primary { background: var(--midori); color: var(--on-midori); border-color: var(--midori); box-shadow: 0 3px 0 color-mix(in srgb, var(--midori) 65%, #000); }
+  .btn:active { transform: translateY(3px); box-shadow: none; }
   .foot { margin-top: 22px; text-align: center; font-size: .72rem; color: var(--ink-soft); line-height: 1.9; }
 
   @media (prefers-reduced-motion: reduce) {
-    .shake, .card.pop .chips, .chips span.now { animation: none; }
-    .course { transition: none; }
+    .shake, .card.pop .chips, .chips span.now, .ready, .stamp, .newmedal, .rankup, .combo.hit,
+    .fx .gain, .fx .kira { animation: none; }
+    .course, .hasu div { transition: none; }
+    .fx .gain, .fx .kira { display: none; }
   }
 </style>
 </head>
@@ -295,7 +412,7 @@
 <div class="app">
 
   <div class="bar">
-    <h1 class="brand">タイピング<b>ゲーム</b></h1>
+    <h1 class="brand"><span id="brand-frog" aria-hidden="true"></span>タイピング<b>ゲーム</b></h1>
     <div class="bar-btns">
       <button type="button" class="chip-btn" id="kbd-toggle" aria-pressed="true">キーボード オン</button>
       <button type="button" class="chip-btn" id="sound" aria-pressed="true">おと オン</button>
@@ -305,10 +422,14 @@
 
   <!-- ======== コースをえらぶ ======== -->
   <main id="home">
-    <div class="hello">
-      <div class="frogs" id="home-frogs" aria-hidden="true"></div>
-      <p class="lead">ケロちゃんと コロちゃんと いっしょに、<em>キーボード</em>の れんしゅう を しよう。</p>
-    </div>
+    <section class="rank" id="rank-box">
+      <div class="rank-art" id="rank-art" aria-hidden="true"></div>
+      <div>
+        <p class="rank-name" id="rank-name"></p>
+        <div class="rank-bar"><i id="rank-bar"></i></div>
+        <p class="rank-next" id="rank-next"></p>
+      </div>
+    </section>
 
     <h2 class="sec-label">なにを うつ？</h2>
     <div class="courses" id="courses" role="group" aria-label="コースを えらぶ"></div>
@@ -328,6 +449,9 @@
       <button type="button" class="go" id="start">スタート</button>
     </section>
 
+    <h2 class="sec-label gap">メダル <span class="medal-count" id="medal-count"></span></h2>
+    <div class="medals" id="medals"></div>
+
     <p class="foot">
       キーボードの <b>F</b> と <b>J</b> に ある ちいさな でっぱりに、ひだり・みぎの <b>ひとさしゆび</b> を おきます。<br>
       これが「ホームポジション」。ここから 手を うごかさずに うてると、はやく なります。<br>
@@ -343,19 +467,24 @@
       <span id="hud-left"></span>
     </div>
     <div class="barwrap" id="barwrap"><i id="bar"></i></div>
+    <div class="hasu" id="hasu" aria-hidden="true" hidden></div>
 
-    <section class="sheet">
+    <section class="sheet playbox">
       <div class="card" id="card">
         <p class="ready" id="ready" hidden></p>
         <p class="prompt" id="prompt" hidden></p>
         <div class="chips" id="chips" role="status" aria-live="assertive"></div>
+        <div class="buddy" id="buddy" aria-hidden="true"></div>
+        <p class="combo" id="combo" hidden></p>
+        <div class="fx" id="fx" aria-hidden="true"></div>
       </div>
     </section>
 
     <p class="stats">
       <span>うてた<b id="st-hit">0</b></span>
       <span>ミス<b id="st-miss">0</b></span>
-      <span>せいかい<b id="st-acc">100</b>%</span>
+      <span>せいかい<b id="st-acc">100</b></span>
+      <span class="score">スコア<b id="st-score">0</b></span>
     </p>
 
     <div id="kbd-box">
@@ -369,11 +498,14 @@
   <main id="over" hidden>
     <section class="sheet">
       <div class="stamp" id="stamp"></div>
+      <p class="result-sub" id="result-sub"></p>
       <div class="stars" id="stars"></div>
       <div class="cheer-lead">
         <div class="bubble" id="bubble"></div>
         <div class="frogs" id="over-frogs" aria-hidden="true"></div>
       </div>
+      <div class="rankup" id="rankup" hidden></div>
+      <div class="newmedals" id="new-medals"></div>
       <div class="cheers" id="cheers"></div>
       <div id="weakbox" hidden>
         <h2 class="sec-label gap">にがてな キー</h2>
@@ -405,35 +537,40 @@
   };
 
   // この ファイルを かえたら ここも あげる
-  const BUILD = "2026-09-20a";
+  const BUILD = "2026-09-20c";
   const GAME_SEC = 60;
   const PRACTICE_N = 10;
 
   /* ========== おと ========== */
   let soundOn = store.get("sn-sound", "1") === "1";
   let actx = null;
+  // kind: ok(1もじ) / clear(1もん) / combo / ng / tick / fanfare
+  const NOTES = {
+    ok: [880], clear: [784, 1046], combo: [784, 1046, 1318], ng: [262, 208],
+    tick: [523], fanfare: [523, 659, 784, 1046],
+  };
   function beep(kind) {
     if (!soundOn) return;
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      const notes = kind === "ok" ? [784, 1046] : kind === "tick" ? [523] : [262, 208];
-      notes.forEach((f, i) => {
+      (NOTES[kind] || NOTES.ok).forEach((f, i) => {
         const o = actx.createOscillator(), g = actx.createGain();
         o.type = "triangle";
         o.frequency.value = f;
-        const t = actx.currentTime + i * 0.09;
+        const t = actx.currentTime + i * 0.08;
+        const vol = kind === "ok" ? 0.07 : 0.14;
         g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.14, t + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+        g.gain.exponentialRampToValueAtTime(vol, t + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + (kind === "ok" ? 0.1 : 0.2));
         o.connect(g); g.connect(actx.destination);
-        o.start(t); o.stop(t + 0.2);
+        o.start(t); o.stop(t + 0.22);
       });
     } catch { /* おとが でなくても れんしゅうは できる */ }
   }
 
   /* ========== ケロと コロの え（index.html と おなじ かたち） ========== */
   function frogSVG(who, opt = {}) {
-    const { size = 52, mood = "happy", cls = "frog" } = opt;
+    const { size = 52, mood = "happy", cls = "frog", crown = false } = opt;
     const kero = who === "kero";
     const skin = kero ? "#5fae55" : "#a3c53f";
     const edge = kero ? "#3f8038" : "#7d9c2b";
@@ -444,24 +581,48 @@
          <path d="M61 30 Q68 21 75 30" fill="none" stroke="${dark}" stroke-width="3.4" stroke-linecap="round"/>`
       : `<circle cx="32" cy="30" r="6.4" fill="${dark}"/><circle cx="68" cy="30" r="6.4" fill="${dark}"/>
          <circle cx="34.4" cy="27.4" r="2.1" fill="#fff"/><circle cx="70.4" cy="27.4" r="2.1" fill="#fff"/>`;
-    return `<svg class="${cls}" viewBox="0 0 100 96" width="${size}" height="${size * 0.96}" role="img" aria-label="${kero ? "ケロちゃん" : "コロちゃん"}">
+    const mouth = mood === "sad"
+      ? `<path d="M36 58 Q50 48 64 58" fill="none" stroke="${dark}" stroke-width="3.4" stroke-linecap="round"/>`
+      : `<path d="M31 51 Q50 72 69 51" fill="none" stroke="${dark}" stroke-width="3.4" stroke-linecap="round"/>`;
+    return `<svg class="${cls}" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="${kero ? "ケロちゃん" : "コロちゃん"}">
       <ellipse cx="50" cy="57" rx="33" ry="28" fill="${skin}"/>
       <circle cx="32" cy="29" r="14" fill="#fff" stroke="${edge}" stroke-width="2.6"/>
       <circle cx="68" cy="29" r="14" fill="#fff" stroke="${edge}" stroke-width="2.6"/>
       ${eyes}
       <circle cx="44.5" cy="45" r="1.9" fill="${edge}"/>
       <circle cx="55.5" cy="45" r="1.9" fill="${edge}"/>
-      <path d="M31 51 Q50 72 69 51" fill="none" stroke="${dark}" stroke-width="3.4" stroke-linecap="round"/>
+      ${mouth}
       <ellipse cx="24" cy="57" rx="6.2" ry="4.2" fill="#ff8f7e" opacity=".6"/>
       <ellipse cx="76" cy="57" rx="6.2" ry="4.2" fill="#ff8f7e" opacity=".6"/>
       <path d="M50 84 L36 78 L36 90 Z" fill="${ribbon}"/>
       <path d="M50 84 L64 78 L64 90 Z" fill="${ribbon}"/>
       <circle cx="50" cy="84" r="4.2" fill="${ribbon}"/>
+      ${crown ? `<path d="M33 14 L39 22 L50 10 L61 22 L67 14 L65 26 L35 26 Z" fill="#e8a51c" stroke="#b6800f" stroke-width="2" stroke-linejoin="round"/>` : ""}
     </svg>`;
   }
   const frogPair = (size = 52) => `
     <figure>${frogSVG("kero", { size })}<figcaption>ケロちゃん</figcaption></figure>
     <figure>${frogSVG("koro", { size })}<figcaption>コロちゃん</figcaption></figure>`;
+
+  // たまご から カエルに そだつ え（ランク）
+  function growSVG(stage, size = 64) {
+    const s = { width: size, height: size };
+    if (stage >= 3) return frogSVG("kero", { size, crown: stage >= 4 });
+    const body = stage === 0
+      ? `<ellipse cx="50" cy="56" rx="26" ry="32" fill="#fdf1d8" stroke="#e8a51c" stroke-width="3"/>
+         <circle cx="42" cy="48" r="4" fill="#e8a51c" opacity=".5"/>
+         <circle cx="58" cy="62" r="5" fill="#e8a51c" opacity=".4"/>
+         <circle cx="53" cy="40" r="3" fill="#e8a51c" opacity=".5"/>`
+      : `<path d="M62 52 Q86 34 88 52 Q86 70 62 56 Z" fill="#5fae55" opacity=".8"/>
+         <ellipse cx="42" cy="54" rx="26" ry="22" fill="#5fae55"/>
+         <circle cx="33" cy="47" r="4.6" fill="#233b22"/><circle cx="34.6" cy="45.4" r="1.6" fill="#fff"/>
+         <circle cx="50" cy="47" r="4.6" fill="#233b22"/><circle cx="51.6" cy="45.4" r="1.6" fill="#fff"/>
+         <path d="M33 62 Q42 70 51 62" fill="none" stroke="#233b22" stroke-width="3" stroke-linecap="round"/>
+         ${stage >= 2 ? `<path d="M34 72 L26 84" stroke="#5fae55" stroke-width="7" stroke-linecap="round"/>
+                          <path d="M50 73 L58 85" stroke="#5fae55" stroke-width="7" stroke-linecap="round"/>` : ""}`;
+    return `<svg viewBox="0 0 100 100" width="${s.width}" height="${s.height}" role="img" aria-label="そだちぐあい">${body}</svg>`;
+  }
+
   function maruPath(n = 5) {
     const R = 34, C = 50;
     const p = (i) => {
@@ -477,19 +638,20 @@
     return d + "Z";
   }
   const maruMark = () => `<svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><path d="${maruPath(5)}" fill="none" stroke="var(--shu)" stroke-width="10" stroke-linecap="round"/></svg>`;
+  const medalSVG = (color, mark, size = 42) => `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true">
+      <circle cx="50" cy="50" r="44" fill="${color}"/>
+      <circle cx="50" cy="50" r="44" fill="none" stroke="#ffffff55" stroke-width="3"/>
+      <circle cx="50" cy="50" r="35" fill="none" stroke="#ffffff66" stroke-width="2.5" stroke-dasharray="4 5"/>
+      <text x="50" y="63" text-anchor="middle" font-size="34" font-weight="800"
+            font-family="M PLUS Rounded 1c, sans-serif" fill="#fff">${mark}</text>
+    </svg>`;
 
   // さんすうノートで えらんで いる 人（おなじ ところに おいた ときだけ ある）
   const playerName = () => (store.get("sn-current", "") || "").trim();
   const callName = () => (playerName() ? `${playerName()}、` : "");
 
   /* ========== キーボードの かたち と ゆび ========== */
-  const KBD_ROWS = [
-    "1234567890",
-    "qwertyuiop",
-    "asdfghjkl;",
-    "zxcvbnm,./",
-  ];
-  // キー -> [ゆびの いろ番号, ひだり(0)/みぎ(1), ゆびの なまえ]
+  const KBD_ROWS = ["1234567890", "qwertyuiop", "asdfghjkl;", "zxcvbnm,./"];
   const YUBI = { 1: "ひとさしゆび", 2: "なかゆび", 3: "くすりゆび", 4: "こゆび", 5: "おやゆび" };
   const FINGER = {};
   const setF = (keys, y, hand) => { for (const k of keys) FINGER[k] = { y, hand }; };
@@ -516,7 +678,6 @@
   }
 
   /* ========== うつ ものを つくる ========== */
-  // もじ（アルファベット）：ホームポジションから だんだん ひろげる
   const LETTERS = {
     1: [..."asdfjkl;"],
     2: [..."asdfjkl;qwertyuiop"],
@@ -528,7 +689,6 @@
     q: "キュー", r: "アール", s: "エス", t: "ティー", u: "ユー", v: "ブイ", w: "ダブリュー",
     x: "エックス", y: "ワイ", z: "ゼット", ";": "セミコロン",
   };
-  // たんご（英単語）：ながさで 3だんかい
   const WORDS = {
     1: [["cat", "ねこ"], ["dog", "いぬ"], ["sun", "たいよう"], ["red", "あか"], ["egg", "たまご"],
         ["bus", "バス"], ["car", "くるま"], ["cup", "コップ"], ["box", "はこ"], ["pen", "ペン"],
@@ -543,7 +703,6 @@
         ["river", "かわ"], ["cloud", "くも"], ["music", "おんがく"], ["pencil", "えんぴつ"], ["flower", "はな"],
         ["school", "がっこう"], ["orange", "オレンジ"], ["banana", "バナナ"], ["rabbit", "うさぎ"], ["yellow", "きいろ"]],
   };
-  // ローマじ：かな -> うつ もじ
   const KANA1 = [["あ", "a"], ["い", "i"], ["う", "u"], ["え", "e"], ["お", "o"],
     ["か", "ka"], ["き", "ki"], ["く", "ku"], ["け", "ke"], ["こ", "ko"],
     ["さ", "sa"], ["し", "shi"], ["す", "su"], ["せ", "se"], ["そ", "so"]];
@@ -560,7 +719,7 @@
 
   const COURSES = {
     moji: {
-      name: "もじ", accent: "var(--shu)", peek: "A",
+      name: "もじ", accent: "var(--shu)", icon: "A",
       about: "アルファベットを 1つずつ。ホームポジションから",
       lv: { 1: "ホームポジション（8キー）", 2: "＋ うえの だん", 3: "ぜんぶの もじ" },
       make(lv) {
@@ -569,7 +728,7 @@
       },
     },
     word: {
-      name: "たんご", accent: "var(--ai)", peek: "cat",
+      name: "たんご", accent: "var(--ai)", icon: "cat",
       about: "英単語を 1つずつ。いみも いっしょに おぼえよう",
       lv: { 1: "3もじの たんご", 2: "4もじの たんご", 3: "5〜6もじの たんご" },
       make(lv) {
@@ -578,7 +737,7 @@
       },
     },
     roma: {
-      name: "ローマじ", accent: "var(--kin)", peek: "か→KA",
+      name: "ローマじ", accent: "var(--kin)", icon: "か",
       about: "ひらがなを ローマじで うつ。日本語入力の れんしゅう",
       lv: { 1: "あ行・か行・さ行", 2: "た行〜わ行も", 3: "ひらがなの ことば" },
       make(lv) {
@@ -587,7 +746,7 @@
       },
     },
     num: {
-      name: "すうじ", accent: "var(--midori)", peek: "472",
+      name: "すうじ", accent: "var(--midori)", icon: "472",
       about: "すうじの キーに なれる。うえの だんを 見ないで",
       lv: { 1: "1けた", 2: "2けた", 3: "3けた" },
       make(lv) {
@@ -597,6 +756,41 @@
       },
     },
   };
+  const LV_NAME = { 1: "やさしい", 2: "ふつう", 3: "むずかしい" };
+
+  /* ========== てんすう・ランク・メダル ========== */
+  const SC_CLEAR = 100;          // 1もん うてたら
+  const SC_PERFECT = 50;         // その 1もんを ミスなしで
+  const SC_COMBO = 10;           // れんぞく 1つに つき（10れんぞくまで）
+  const RANKS = [
+    { at: 0, name: "たまご", stage: 0 },
+    { at: 1500, name: "おたまじゃくし", stage: 1 },
+    { at: 5000, name: "あしが でた", stage: 2 },
+    { at: 12000, name: "こガエル", stage: 3 },
+    { at: 25000, name: "カエルはかせ", stage: 4 },
+  ];
+  const MEDALS = [
+    { id: "first", name: "はじめの いっぽ", how: "はじめて あそんだ", color: "#9db2ca", mark: "1" },
+    { id: "nomiss", name: "ノーミス", how: "ミス 0で おわった", color: "#2f8a5f", mark: "0" },
+    { id: "combo10", name: "10れんぞく", how: "10かい つづけて せいかい", color: "#d3468a", mark: "10" },
+    { id: "score1000", name: "1000てん", how: "1かいで 1000てん", color: "#e8a51c", mark: "K" },
+    { id: "game20", name: "ゲーム20もん", how: "ゲームで 20もん うてた", color: "#e4523f", mark: "20" },
+    { id: "fast", name: "はやうち", how: "れんしゅう10もんを 40びょう いない", color: "#2b6ca3", mark: "⚡" },
+    { id: "allcourse", name: "ぜんコース", how: "4つの コース ぜんぶで あそんだ", color: "#7d5bbd", mark: "4" },
+    { id: "lv3", name: "むずかしい", how: "むずかしいで さいごまで", color: "#1f2f45", mark: "3" },
+  ];
+  const expKey = () => `sn-typing-exp-${playerName()}`;
+  const medalKey = () => `sn-typing-medals-${playerName()}`;
+  const playedKey = () => `sn-typing-played-${playerName()}`;
+  const getExp = () => Number(store.get(expKey(), "0")) || 0;
+  const getMedals = () => { try { return new Set(JSON.parse(store.get(medalKey(), "[]"))); } catch { return new Set(); } };
+  const getPlayed = () => { try { return new Set(JSON.parse(store.get(playedKey(), "[]"))); } catch { return new Set(); } };
+  const rankOf = (exp) => {
+    let r = RANKS[0];
+    for (const x of RANKS) if (exp >= x.at) r = x;
+    return r;
+  };
+  const nextRank = (exp) => RANKS.find((x) => x.at > exp) || null;
 
   /* ========== いまの じょうたい ========== */
   const S = {
@@ -604,13 +798,12 @@
     lv: Number(store.get("sn-typing-lv", "1")) || 1,
     mode: store.get("sn-typing-mode", "practice"),
     kbdOn: store.get("sn-typing-kbd", "1") === "1",
-    // あそんで いる あいだ
-    on: false, waitNext: false,
-    tick: 0, cd: 0, popT: 0,
+    on: false,
+    tick: 0, cd: 0, goT: 0, fxT: 0, sayT: 0,
     startAt: 0, endAt: 0,
-    item: null, pos: 0, last: "",
-    hit: 0, miss: 0, keys: 0,
-    missKeys: {},        // まちがえた「ほんとうは うつはずだった キー」の かず
+    item: null, pos: 0, last: "", itemMiss: 0,
+    hit: 0, miss: 0, keys: 0, score: 0, combo: 0, bestCombo: 0,
+    missKeys: {},
   };
   if (!COURSES[S.course]) S.course = "moji";
   if (![1, 2, 3].includes(S.lv)) S.lv = 1;
@@ -619,11 +812,13 @@
   const bestKey = () => `sn-typing-best-${playerName()}-${S.course}-${S.lv}-${S.mode}`;
   const bestOf = () => Number(store.get(bestKey(), "0")) || 0;
 
-  /* ========== タイマーを ぜんぶ とめる ========== */
   function stopAll() {
-    clearInterval(S.tick); clearInterval(S.cd); clearTimeout(S.popT);
-    S.tick = S.cd = S.popT = 0;
-    S.on = false; S.waitNext = false;
+    clearInterval(S.tick); clearInterval(S.cd);
+    clearTimeout(S.goT); clearTimeout(S.fxT); clearTimeout(S.sayT);
+    S.tick = S.cd = S.goT = S.fxT = S.sayT = 0;
+    S.on = false;
+    $("fx").innerHTML = "";
+    $("card").classList.remove("pop", "shake");
   }
 
   function show(name) {
@@ -634,20 +829,42 @@
   }
 
   /* ========== コースを えらぶ がめん ========== */
+  function renderRank() {
+    const exp = getExp(), r = rankOf(exp), nx = nextRank(exp);
+    $("rank-art").innerHTML = growSVG(r.stage, 66);
+    $("rank-name").innerHTML = `${esc(r.name)}<small>${playerName() ? esc(playerName()) + "の そだちぐあい" : "そだちぐあい"}</small>`;
+    const from = r.at, to = nx ? nx.at : r.at + 1;
+    $("rank-bar").style.width = `${nx ? Math.min(100, ((exp - from) / (to - from)) * 100) : 100}%`;
+    $("rank-next").innerHTML = nx
+      ? `あと <b>${nx.at - exp}</b>てんで「${esc(nx.name)}」に なるよ（いままで <b>${exp}</b>てん）`
+      : `いちばん うえまで そだったよ！（いままで <b>${exp}</b>てん）`;
+  }
+  function renderMedals() {
+    const got = getMedals();
+    $("medal-count").textContent = `${got.size} / ${MEDALS.length}`;
+    $("medals").innerHTML = MEDALS.map((m) => {
+      const has = got.has(m.id);
+      return `<figure class="medal${has ? " got" : ""}" data-m="${m.id}">
+        ${medalSVG(has ? m.color : "#9db2ca", has ? m.mark : "?")}
+        <figcaption>${has ? esc(m.name) + "<br>" : ""}${esc(m.how)}</figcaption>
+      </figure>`;
+    }).join("");
+  }
   function renderCourses() {
+    const played = getPlayed();
     $("courses").innerHTML = Object.entries(COURSES).map(([id, c]) =>
       `<button type="button" class="course" data-c="${id}" style="--accent: ${c.accent}"
          aria-pressed="${String(id === S.course)}">
-        <div><h3>${esc(c.name)}</h3><p>${esc(c.about)}</p></div>
-        <div class="peek" aria-hidden="true">${esc(c.peek)}</div>
+        ${played.has(id) ? "" : '<span class="tag">NEW</span>'}
+        <span class="icon" aria-hidden="true">${esc(c.icon)}</span>
+        <span><h3>${esc(c.name)}</h3><p>${esc(c.about)}</p></span>
       </button>`).join("");
   }
   function renderLevels() {
     const c = COURSES[S.course];
-    const nm = { 1: "やさしい", 2: "ふつう", 3: "むずかしい" };
     $("levels").innerHTML = [1, 2, 3].map((lv) =>
       `<button type="button" class="lv" data-lv="${lv}" aria-pressed="${String(lv === S.lv)}">
-        <span>${nm[lv]}</span><small>${esc(c.lv[lv])}</small>
+        <span>${LV_NAME[lv]}</span><small>${esc(c.lv[lv])}</small>
       </button>`).join("");
   }
   function renderModes() {
@@ -660,21 +877,20 @@
     const who = playerName() ? esc(playerName()) + "の" : "いままでの";
     if (S.mode === "game") {
       $("best").innerHTML = b
-        ? `${who} さいこう きろくは <b>${b}</b>もん（${esc(c.name)}・60びょう）。これを こえられるかな？`
-        : `60びょうで なんもん うてるかな。まずは ためしに やって みよう。`;
-      $("tip").innerHTML = "60びょうの あいだ、つぎつぎ でてくる おだいを うちます。"
+        ? `${who} さいこう スコアは <b>${b}</b>てん（${esc(c.name)}・60びょう）。これを こえられるかな？`
+        : `60びょうで なんてん とれるかな。まずは ためしに やって みよう。`;
+      $("tip").innerHTML = "つづけて せいかいすると <b>れんぞく ボーナス</b>。"
         + "<br>ちがう キーは <b>ミス</b>を 1つ かぞえるだけで、先には すすみません。";
     } else {
       $("best").innerHTML = b
-        ? `${who} いちばん はやい きろくは <b>${(b / 1000).toFixed(1)}</b>びょう（${PRACTICE_N}もん・${esc(c.name)}）。`
+        ? `${who} さいこう スコアは <b>${b}</b>てん（${PRACTICE_N}もん・${esc(c.name)}）。`
         : `${PRACTICE_N}もん を じかん むせいげんで。ゆっくり ただしく うつのが さきです。`;
-      $("tip").innerHTML = `${PRACTICE_N}もん うち おわるまでの じかんを はかります。`
-        + "<br>あせらず、<b>キーボードを 見ないで</b> うてるように なると はやく なります。";
+      $("tip").innerHTML = `はすの はを ${PRACTICE_N}こ とんだら ゴール。かかった じかんも はかります。`
+        + "<br>ミスなしで うてると <b>パーフェクト ボーナス</b>が つきます。";
     }
   }
   function renderHome() {
-    renderCourses(); renderLevels(); renderModes(); renderBest();
-    $("home-frogs").innerHTML = `${frogSVG("kero", { size: 52 })}${frogSVG("koro", { size: 52 })}`;
+    renderRank(); renderMedals(); renderCourses(); renderLevels(); renderModes(); renderBest();
   }
 
   /* ========== あそぶ ========== */
@@ -685,7 +901,7 @@
     S.last = it.type;
     S.item = it;
     S.pos = 0;
-    S.waitNext = false;
+    S.itemMiss = 0;
     renderItem();
   }
 
@@ -699,7 +915,6 @@
     renderNextKey();
   }
 
-  // つぎに おす キーを キーボードの えで しらせる
   function renderNextKey() {
     KEY_EL.forEach((el) => el.classList.remove("next", "bad"));
     const want = S.item && S.on ? S.item.type[S.pos] : null;
@@ -716,54 +931,100 @@
     $("st-hit").textContent = String(S.hit);
     $("st-miss").textContent = String(S.miss);
     const total = S.keys + S.miss;
-    $("st-acc").textContent = total ? String(Math.round((S.keys / total) * 100)) : "100";
+    $("st-acc").textContent = (total ? Math.round((S.keys / total) * 100) : 100) + "%";
+    $("st-score").textContent = String(S.score);
+    const box = $("combo");
+    box.hidden = S.combo < 2;
+    if (S.combo >= 2) box.innerHTML = `<b>${S.combo}</b><small>れんぞく</small>`;
   }
 
   function renderHUD() {
     const c = COURSES[S.course];
-    const nm = { 1: "やさしい", 2: "ふつう", 3: "むずかしい" }[S.lv];
-    $("hud-course").textContent = `${c.name}：${nm}`;
+    $("hud-course").textContent = `${c.name}：${LV_NAME[S.lv]}`;
     $("hud-who").innerHTML = playerName() ? `<b>${esc(playerName())}</b>` : "";
     if (S.mode === "game") {
       const left = Math.max(0, S.endAt - Date.now());
-      $("hud-left").innerHTML = `のこり <span class="n" id="left-n">${(left / 1000).toFixed(1)}</span>びょう`;
+      $("hud-left").innerHTML = `のこり <span class="n">${(left / 1000).toFixed(1)}</span>びょう`;
       $("bar").style.width = `${(left / (GAME_SEC * 1000)) * 100}%`;
       $("barwrap").classList.toggle("hot", left <= 10000);
     } else {
       $("hud-left").innerHTML = `<span class="n">${Math.min(S.hit + 1, PRACTICE_N)}</span> / ${PRACTICE_N}もん`;
       $("bar").style.width = `${(S.hit / PRACTICE_N) * 100}%`;
       $("barwrap").classList.remove("hot");
+      $("hasu").innerHTML = Array.from({ length: PRACTICE_N }, (_, i) =>
+        `<div class="${i < S.hit ? "done" : i === S.hit ? "now" : ""}"></div>`).join("");
     }
   }
 
-  // キーを 1つ うけとる（キーボードも がめんの キーも ここへ）
+  // ケロちゃんの あいづち
+  function buddySay(text, mood = "happy") {
+    clearTimeout(S.sayT);
+    $("buddy").innerHTML = `<span class="say">${esc(text)}</span>${frogSVG("kero", { size: 44, mood })}`;
+    if (text) S.sayT = setTimeout(() => {
+      $("buddy").innerHTML = frogSVG("kero", { size: 44 });
+    }, 1400);
+  }
+
+  // ぱちぱち・とんでいく てんすう
+  function burst(gain) {
+    const fx = $("fx");
+    const colors = ["var(--kin)", "var(--momo)", "var(--midori)", "var(--ai)"];
+    let html = `<span class="gain">+${gain}</span>`;
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      html += `<span class="kira" style="left:50%;top:45%;background:${colors[i % 4]};`
+        + `--dx:${Math.round(Math.cos(a) * 88)}px;--dy:${Math.round(Math.sin(a) * 66)}px"></span>`;
+    }
+    fx.innerHTML = html;
+  }
+
+  // 1もん うてた。えんしゅつは うわに かさねる だけで、つぎの もんだいは すぐ 出す。
+  // （「まって いる あいだ」を つくると、はやく うつ子の キーが おちて しまう）
+  function clearItem(card) {
+    S.hit++;
+    S.combo++;
+    S.bestCombo = Math.max(S.bestCombo, S.combo);
+    const perfect = S.itemMiss === 0;
+    const gain = SC_CLEAR + (perfect ? SC_PERFECT : 0) + Math.min(S.combo, 10) * SC_COMBO;
+    S.score += gain;
+    beep(S.combo >= 3 ? "combo" : "clear");
+    burst(gain);
+    if (S.combo >= 10) buddySay(`${S.combo}れんぞく！ すごいケロ！`);
+    else if (S.combo >= 5) buddySay(`${S.combo}れんぞく！`);
+    else if (S.combo >= 3) buddySay("いい ちょうし！");
+    else if (perfect) buddySay("パーフェクト！");
+    card.classList.remove("pop");
+    void card.offsetWidth;                 // アニメを やりなおす
+    card.classList.add("pop");
+    $("combo").classList.remove("hit");
+    void $("combo").offsetWidth;
+    $("combo").classList.add("hit");
+    clearTimeout(S.fxT);
+    S.fxT = setTimeout(() => {
+      $("fx").innerHTML = "";
+      card.classList.remove("pop");
+    }, 700);
+    renderStats();
+    if (S.mode === "practice" && S.hit >= PRACTICE_N) { finish(); return; }
+    nextItem();
+    renderHUD();
+  }
+
   function typeKey(raw) {
-    if (!S.on || S.waitNext || !S.item) return;
+    if (!S.on || !S.item) return;
     const k = String(raw).toLowerCase();
     const want = S.item.type[S.pos];
     const card = $("card");
     if (k === want) {
       S.pos++; S.keys++;
-      if (S.pos >= S.item.type.length) {
-        S.hit++;
-        S.waitNext = true;
-        beep("ok");
-        renderItem();
-        card.classList.remove("pop");
-        void card.offsetWidth;
-        card.classList.add("pop");
-        S.popT = setTimeout(() => {
-          card.classList.remove("pop");
-          if (!S.on) return;
-          if (S.mode === "practice" && S.hit >= PRACTICE_N) { finish(); return; }
-          nextItem();
-          renderHUD();
-        }, 200);
-      } else {
-        renderItem();
-      }
+      if (S.pos >= S.item.type.length) { clearItem(card); return; }
+      beep("ok");
+      renderItem();
     } else {
       S.miss++;
+      S.itemMiss++;
+      if (S.combo >= 3) buddySay("おしい！ もういちど", "sad");
+      S.combo = 0;
       S.missKeys[want] = (S.missKeys[want] || 0) + 1;
       beep("ng");
       const bad = KEY_EL.get(k);
@@ -778,29 +1039,38 @@
 
   function start() {
     stopAll();
-    S.hit = 0; S.miss = 0; S.keys = 0; S.missKeys = {}; S.last = ""; S.item = null; S.pos = 0;
+    S.hit = 0; S.miss = 0; S.keys = 0; S.score = 0; S.combo = 0; S.bestCombo = 0;
+    S.missKeys = {}; S.last = ""; S.item = null; S.pos = 0; S.itemMiss = 0;
+    $("combo").hidden = true;
     S.endAt = Date.now() + GAME_SEC * 1000;
     show("play");
     $("kbd-box").hidden = !S.kbdOn;
+    $("hasu").hidden = S.mode !== "practice";
+    $("barwrap").hidden = S.mode !== "game";
     $("chips").innerHTML = "";
     $("prompt").hidden = true;
+    $("fx").innerHTML = "";
     $("card").classList.remove("pop", "shake");
+    $("buddy").innerHTML = frogSVG("kero", { size: 44 });
     renderStats(); renderHUD();
     let n = 3;
     const ready = $("ready");
-    ready.hidden = false;
-    ready.className = "ready";
-    ready.textContent = "3";
+    const showReady = (t, cls) => {
+      ready.hidden = false;
+      ready.className = "ready" + (cls || "");
+      ready.textContent = t;
+      void ready.offsetWidth;           // アニメを やりなおす
+    };
+    showReady("3");
     beep("tick");
     S.cd = setInterval(() => {
       n--;
-      if (n > 0) { ready.textContent = String(n); beep("tick"); return; }
+      if (n > 0) { showReady(String(n)); beep("tick"); return; }
       clearInterval(S.cd); S.cd = 0;
-      ready.className = "ready go2";
-      ready.textContent = "スタート！";
+      showReady("スタート！", " go2");
       beep("ok");
       // やめられた ときに あとから はじまらない ように、この まちも stopAll() で とまる
-      S.popT = setTimeout(() => {
+      S.goT = setTimeout(() => {
         if ($("play").hidden) return;
         ready.hidden = true;
         run();
@@ -823,53 +1093,82 @@
   /* ========== けっか ========== */
   function finish() {
     const ms = Date.now() - S.startAt;
-    const hit = S.hit, miss = S.miss, keys = S.keys;
+    const { hit, miss, keys, score, bestCombo } = S;
     const c = COURSES[S.course];
     stopAll();
 
     const acc = keys + miss ? Math.round((keys / (keys + miss)) * 100) : 100;
     const prev = bestOf();
-    // ゲームは おおいほど、れんしゅうは はやいほど いい きろく
-    const isBest = S.mode === "game" ? hit > prev : (hit >= PRACTICE_N && (prev === 0 || ms < prev));
+    const isBest = score > prev;
     // ほぞん できたか かならず 見る（できて いないのに「こうしん」と 言わない）
-    const saved = isBest ? store.set(bestKey(), String(S.mode === "game" ? hit : ms)) : true;
+    const saved = isBest ? store.set(bestKey(), String(score)) : true;
 
-    const stars = S.mode === "game"
-      ? (hit >= 20 ? 3 : hit >= 12 ? 2 : hit >= 5 ? 1 : 0)
-      : (acc >= 95 ? 3 : acc >= 85 ? 2 : acc >= 70 ? 1 : 0);
+    // そだちぐあい（ランク）
+    const expBefore = getExp();
+    const expAfter = expBefore + score;
+    store.set(expKey(), String(expAfter));
+    const rBefore = rankOf(expBefore), rAfter = rankOf(expAfter);
 
-    $("stamp").innerHTML = S.mode === "game"
-      ? `<div><div class="big">${esc(c.name)}を うてた かず</div><div class="sub">${hit}<small>もん</small></div></div>`
-      : `<div><div class="big">${PRACTICE_N}もん の じかん</div><div class="sub">${(ms / 1000).toFixed(1)}<small>びょう</small></div></div>`;
+    // あそんだ コース
+    const played = getPlayed();
+    played.add(S.course);
+    store.set(playedKey(), JSON.stringify([...played]));
+
+    // メダル
+    const got = getMedals();
+    const fresh = [];
+    const give = (id) => { if (!got.has(id)) { got.add(id); fresh.push(MEDALS.find((m) => m.id === id)); } };
+    if (hit > 0) give("first");
+    if (miss === 0 && hit > 0) give("nomiss");
+    if (bestCombo >= 10) give("combo10");
+    if (score >= 1000) give("score1000");
+    if (S.mode === "game" && hit >= 20) give("game20");
+    if (S.mode === "practice" && hit >= PRACTICE_N && ms <= 40000) give("fast");
+    if (played.size >= 4) give("allcourse");
+    if (S.lv === 3 && hit > 0) give("lv3");
+    if (fresh.length) store.set(medalKey(), JSON.stringify([...got]));
+
+    const stars = score >= 1800 ? 3 : score >= 900 ? 2 : score >= 300 ? 1 : 0;
+    $("stamp").innerHTML = `<div><div class="big">スコア</div><div class="sub">${score}<small>てん</small></div></div>`;
+    $("result-sub").textContent = S.mode === "game"
+      ? `${c.name}・${LV_NAME[S.lv]} ／ ${hit}もん ／ せいかい ${acc}%`
+      : `${c.name}・${LV_NAME[S.lv]} ／ ${hit}もん ／ ${(ms / 1000).toFixed(1)}びょう ／ せいかい ${acc}%`;
     $("stars").innerHTML = [0, 1, 2].map((i) => i < stars ? "★" : "<span>★</span>").join("");
 
     const cheers = [];
-    if (S.mode === "game") {
-      cheers.push(hit === 0 ? "さいごまで ちょうせん したね！"
-        : hit >= 20 ? `${hit}もん！ すごい はやさだね！`
-        : hit >= 12 ? `${hit}もん うてたよ！ いいぞ！`
-        : `${hit}もん うてたよ！ がんばったね！`);
-      if (hit > 0) cheers.push(`1もん ${(GAME_SEC / hit).toFixed(1)}びょう で うてたよ。`);
-    } else {
-      cheers.push(acc >= 95 ? "ほとんど ミスなし！ すばらしい！"
-        : acc >= 85 ? `せいかい ${acc}％！ いい ちょうしだね！`
-        : `${PRACTICE_N}もん やりきったね！`);
-      if (hit > 0) cheers.push(`1もん ${(ms / 1000 / hit).toFixed(1)}びょう で うてたよ。`);
-    }
-    cheers.push(miss === 0 ? "ミス 0かい！ かんぺき！" : `せいかい ${acc}％（ミス ${miss}かい）。`);
-    if (isBest && !saved) cheers.push("さいこう きろく！（ただし この ブラウザには のこせませんでした）");
-    else if (isBest && prev > 0) cheers.push("さいこう きろく こうしん！");
-    else if (isBest) cheers.push("さいこう きろく！");
-    else if (prev > 0) {
+    cheers.push(score >= 1800 ? `${score}てん！ すごい はやさだね！`
+      : score >= 900 ? `${score}てん！ いい ちょうしだね！`
+      : score >= 300 ? `${score}てん！ がんばったね！`
+      : "さいごまで ちょうせん したね！");
+    if (hit > 0) {
       cheers.push(S.mode === "game"
-        ? `いままでの さいこうは ${prev}もん。あと ${Math.max(1, prev - hit + 1)}もんで こえられるよ。`
-        : `いままでの さいこうは ${(prev / 1000).toFixed(1)}びょう。`);
+        ? `${hit}もん うてたよ（1もん ${(GAME_SEC / hit).toFixed(1)}びょう）。`
+        : `${hit}もん を ${(ms / 1000).toFixed(1)}びょうで うてたよ。`);
     }
+    if (bestCombo >= 3) cheers.push(`さいこう ${bestCombo}れんぞく！`);
+    cheers.push(miss === 0 ? "ミス 0かい！ かんぺき！" : `せいかい ${acc}％（ミス ${miss}かい）。`);
+    if (isBest && !saved) cheers.push("さいこう スコア！（ただし この ブラウザには のこせませんでした）");
+    else if (isBest && prev > 0) cheers.push(`さいこう スコア こうしん！（まえは ${prev}てん）`);
+    else if (isBest) cheers.push("さいこう スコア！");
+    else if (prev > 0) cheers.push(`いままでの さいこうは ${prev}てん。あと ${prev - score + 1}てんで こえられるよ。`);
 
     $("bubble").textContent = `${callName()}${cheers[0]}`;
     $("over-frogs").innerHTML = frogPair(52);
     $("cheers").innerHTML = cheers.slice(1).map((t) =>
       `<div class="cheer">${maruMark()}<span>${esc(t)}</span></div>`).join("");
+
+    // ランクアップ
+    const up = rAfter.name !== rBefore.name;
+    $("rankup").hidden = !up;
+    if (up) {
+      $("rankup").innerHTML = `${growSVG(rAfter.stage, 46)}`
+        + `<span>そだった！ <b>${esc(rAfter.name)}</b> に なったよ<br>`
+        + `<small>${esc(rBefore.name)} → ${esc(rAfter.name)}（つうさん ${expAfter}てん）</small></span>`;
+    }
+    // あたらしい メダル
+    $("new-medals").innerHTML = fresh.map((m) =>
+      `<div class="newmedal">${medalSVG(m.color, m.mark, 40)}`
+      + `<span><b>メダル「${esc(m.name)}」を ゲット！</b><small>${esc(m.how)}</small></span></div>`).join("");
 
     // にがてな キー（まちがえた ときに うつはずだった キー）
     const weak = Object.entries(S.missKeys).sort((a, b) => b[1] - a[1]).slice(0, 4);
@@ -883,6 +1182,7 @@
       ? "この キーを、つぎは ゆっくり ねらって みよう。ゆびの ばしょを たしかめてからで だいじょうぶ。"
       : "";
     show("over");
+    beep(up || fresh.length ? "fanfare" : "clear");
   }
 
   /* ========== そうさ ========== */
@@ -927,7 +1227,7 @@
     store.set("sn-sound", soundOn ? "1" : "0");
     $("sound").setAttribute("aria-pressed", String(soundOn));
     $("sound").textContent = soundOn ? "おと オン" : "おと オフ";
-    if (soundOn) beep("ok");
+    if (soundOn) beep("clear");
   });
 
   document.addEventListener("keydown", (e) => {
@@ -941,6 +1241,12 @@
   /* ========== さいしょの ひょうじ ========== */
   drawKeyboard();
   renderHome();
+  $("brand-frog").innerHTML = frogSVG("kero", { size: 26 });
+  // はすの はの うえの カエル（CSS の background に する）。
+  // がぞうとして よむので xmlns が いる（HTML に じかに かく ときは いらない）
+  const svgURL = (svg) => `url("data:image/svg+xml;charset=utf-8,`
+    + `${encodeURIComponent(svg.replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" '))}")`;
+  document.documentElement.style.setProperty("--frog-img", svgURL(frogSVG("kero", { size: 26 })));
   $("kbd-toggle").setAttribute("aria-pressed", String(S.kbdOn));
   $("kbd-toggle").textContent = S.kbdOn ? "キーボード オン" : "キーボード オフ";
   $("sound").setAttribute("aria-pressed", String(soundOn));

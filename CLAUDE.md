@@ -38,7 +38,7 @@ node tests/verify-questions.mjs   # 3レベル×3種類×10問×4セット=360�
 node tests/verify-api.mjs         # きろくサーバー（server/）のAPIを検証
 node tests/verify-voice-order.mjs # ケロとコロの声が重ならないか（ことば／アニメごえ／録音）を実時間で計測
 node tests/verify-typing.mjs      # かずうち ゲーム（けたすう・うてた／ミスの数え・時間切れ・最高記録）
-node tests/verify-typing-app.mjs  # typing.html（4コース×3レベル・つぎのキー／ゆび・れんしゅう／ゲーム）
+node tests/verify-typing-app.mjs  # typing.html（4コース×3レベル・つぎのキー／ゆび・スコア／コンボ／メダル／ランク）
 ```
 
 `verify-voice-order.mjs` は `127.0.0.1` に http-server を立てて測る（`file://` だと録音のテストができない）。
@@ -71,6 +71,13 @@ node tests/verify-typing-app.mjs  # typing.html（4コース×3レベル・つ�
   統合する ときは `<main id="typing">` として そのまま はこべる。`store` キーは `sn-typing-*`（`sn-sound` だけ 共用）。
   ゆびの いろ（`--yubi-1`〜`5`）は ひだり・みぎで おなじ ゆびが おなじ いろ。いろだけに たよらず、
   つぎの キーは わく＋うきあがりで しめし、「ひだりの なかゆびで E」と ことばでも 出す
+- **うった キーは 1つも おとさない**。1もん うてた あとに「まって いる あいだ」を つくっては いけない。
+  えんしゅつ（＋てんすう・きらきら・ケロの あいづち）は `#fx` と アニメで **うわに かさねる**だけにして、
+  `clearItem()` は すぐ `nextItem()` を よぶ。まつ あいだを 入れると、はやく うつ子の つぎの
+  1キーが きえて「がめんに 出て いる もじと うった もじが ずれる」。
+  `verify-typing-app.mjs` の「つづけうち」テストが これを 見て いる（とけいを すすめずに 5もん つづけて うつ）
+- SVGを CSS の `background` に する ときは `xmlns` を つける（HTML に じかに かく ときは いらない）。
+  はすの はの カエル（`--frog-img`）が これ。`svgURL()` が やって いる
 - **かずうち ゲーム**（ホームの「あそぶ」）は `sn-log-v1` にも サーバーにも 書かない。
   さんすうの きろく・グラフ・「みんなの きろく」を にごらせない ため。
   のこすのは けたごと・人ごとの さいこう きろく（`sn-type-best-<なまえ>-<レベル>`）だけ。
