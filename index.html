@@ -202,6 +202,7 @@
     position: absolute; inset: 0 auto 0 0; width: 6px;
     background: var(--accent, var(--ai));
   }
+  a.mode { text-decoration: none; color: inherit; }
   .mode:hover { transform: translateY(-2px); }
   .mode:active { transform: translateY(0); }
   .mode h3 {
@@ -503,7 +504,7 @@
   /* ---------- かずうち ゲーム ---------- */
   .tg-peek {
     font-family: var(--f-num); font-weight: 800; font-size: 1.1rem;
-    letter-spacing: .06em; color: var(--midori);
+    letter-spacing: .06em; color: var(--accent, var(--midori));
     font-variant-numeric: tabular-nums;
   }
   .tg-peek u { text-decoration: none; color: var(--ink-soft); }
@@ -844,6 +845,16 @@
           <div class="tg-peek">4 7<u>2</u></div>
         </div>
       </button>
+
+      <a class="mode" id="to-typing" href="typing.html" style="--accent: var(--ai)">
+        <div>
+          <h3>タイピングゲーム</h3>
+          <p>もじ・たんご・ローマじ・すうじ。キーボードの れんしゅう</p>
+        </div>
+        <div class="peek" aria-hidden="true">
+          <div class="tg-peek">A<u>SDF</u></div>
+        </div>
+      </a>
     </div>
 
     <button type="button" class="hist-link" id="to-history">
@@ -1130,7 +1141,7 @@
   };
 
   // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
-  const BUILD = "2026-09-20a";
+  const BUILD = "2026-09-20b";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
