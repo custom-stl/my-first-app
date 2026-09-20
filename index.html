@@ -31,6 +31,9 @@
     --ai-soft: #e5eff8;
     --kin: #e8a51c;
     --kin-soft: #fdf1d8;
+    --midori: #2f8a5f;
+    --midori-soft: #e3f2ea;
+    --on-midori: #ffffff;
     --chart-ok: #e4523f;
     --chart-ng: #2b6ca3;
     --shadow: 0 1px 0 rgba(31,47,69,.06), 0 6px 18px -10px rgba(31,47,69,.35);
@@ -56,6 +59,9 @@
       --ai-soft: #1e2c3c;
       --kin: #ffc95c;
       --kin-soft: #33290f;
+      --midori: #6ed3a4;
+      --midori-soft: #17302a;
+      --on-midori: #10251c;
       --chart-ok: #e8603f;
       --chart-ng: #3f8fd0;
       --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 22px -12px rgba(0,0,0,.8);
@@ -75,6 +81,9 @@
     --ai-soft: #1e2c3c;
     --kin: #ffc95c;
     --kin-soft: #33290f;
+    --midori: #6ed3a4;
+    --midori-soft: #17302a;
+    --on-midori: #10251c;
     --chart-ok: #e8603f;
     --chart-ng: #3f8fd0;
     --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 22px -12px rgba(0,0,0,.8);
@@ -150,6 +159,7 @@
     margin: 0 0 10px;
   }
   .sec-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .sec-label.gap { margin-top: 26px; }
 
   .levels { display: flex; gap: 8px; margin-bottom: 26px; }
   .lv {
@@ -249,7 +259,7 @@
   }
   .ask.small { font-size: .95rem; }
   /* わかち書きの すきまだけで ぎょうを おりかえす（「ケロちゃ/んの」の ように きれない） */
-  .ask, .lead, .bubble, .cheer, .done .q, .review .q, .peek-word {
+  .ask, .lead, .bubble, .cheer, .done .q, .review .q, .peek-word, .mode p, .tg-best, .tg-how {
     word-break: keep-all;
     overflow-wrap: break-word;
     line-break: strict;
@@ -393,6 +403,8 @@
     .maru .flower { animation: none; stroke-dashoffset: 0; }
     .shake { animation: none; }
     .field .cursor { animation: none; }
+    .tg-digits span.now { animation: none; }
+    .tg-card.pop .tg-digits { animation: none; }
     .mode { transition: none; }
   }
 
@@ -488,6 +500,63 @@
   }
   .btn.primary { background: var(--shu); color: #fff; border-color: var(--shu); box-shadow: 0 3px 0 color-mix(in srgb, var(--shu) 70%, #000); }
   .btn:active { transform: translateY(2px); box-shadow: none; }
+  /* ---------- かずうち ゲーム ---------- */
+  .tg-peek {
+    font-family: var(--f-num); font-weight: 800; font-size: 1.1rem;
+    letter-spacing: .06em; color: var(--midori);
+    font-variant-numeric: tabular-nums;
+  }
+  .tg-peek u { text-decoration: none; color: var(--ink-soft); }
+  .tg-barwrap {
+    height: 12px; border-radius: 999px;
+    background: var(--line); overflow: hidden;
+    margin: 10px 0 0;
+  }
+  .tg-barwrap i { display: block; height: 100%; background: var(--midori); border-radius: 999px; }
+  .tg-barwrap.hot i { background: var(--shu); }
+  .tg-card {
+    display: grid; justify-items: center; align-content: center;
+    gap: 10px; min-height: 148px;
+  }
+  .tg-ready {
+    margin: 0; font-family: var(--f-disp);
+    font-size: 3.4rem; letter-spacing: .06em; color: var(--kin);
+  }
+  .tg-ready.go { font-size: 2.1rem; color: var(--midori); }
+  .tg-digits {
+    display: flex; gap: 12px;
+    font-family: var(--f-num); font-weight: 800;
+    font-size: clamp(2.8rem, 17vw, 4.4rem); line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .tg-digits span {
+    min-width: .78em; text-align: center;
+    color: var(--ink-soft);
+    border-bottom: 7px solid var(--line);
+    padding-bottom: 8px;
+  }
+  .tg-digits span.done { color: var(--midori); border-bottom-color: var(--midori); }
+  .tg-digits span.now { color: var(--ink); border-bottom-color: var(--kin); animation: tgnow 1s ease-in-out infinite; }
+  @keyframes tgnow { 50% { border-bottom-color: var(--line); } }
+  .tg-card.pop .tg-digits { animation: tgpop .18s ease-out; }
+  @keyframes tgpop { 50% { transform: scale(1.14); } }
+  .tg-stats {
+    display: flex; gap: 16px; justify-content: center;
+    font-size: .74rem; font-weight: 700; letter-spacing: .08em; color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .tg-stats b { font-family: var(--f-num); font-size: 1.05rem; color: var(--ink); margin-left: 4px; }
+  .tg-pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .tg-pad .key { padding: 15px 0 14px; }
+  .tg-best {
+    margin: 0 0 10px; font-size: .86rem; line-height: 1.8;
+  }
+  .tg-best b { font-family: var(--f-num); font-size: 1.3rem; color: var(--midori); }
+  .tg-how { margin: 0 0 14px; font-size: .78rem; line-height: 1.9; color: var(--ink-soft); }
+  .tg-how b { color: var(--ink); }
+  .go.midori { background: var(--midori); color: var(--on-midori); box-shadow: 0 3px 0 color-mix(in srgb, var(--midori) 70%, #000); }
+  .btn.midori { background: var(--midori); color: var(--on-midori); border-color: var(--midori); box-shadow: 0 3px 0 color-mix(in srgb, var(--midori) 70%, #000); }
+
   /* ---------- だれが やる？ ---------- */
   .players { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
   .pchip {
@@ -764,6 +833,19 @@
       </button>
     </div>
 
+    <h2 class="sec-label gap">あそぶ</h2>
+    <div class="modes">
+      <button type="button" class="mode" id="to-type" style="--accent: var(--midori)">
+        <div>
+          <h3>かずうち ゲーム</h3>
+          <p>でてきた かずを 60びょうで なんこ うてるかな</p>
+        </div>
+        <div class="peek" aria-hidden="true">
+          <div class="tg-peek">4 7<u>2</u></div>
+        </div>
+      </button>
+    </div>
+
     <button type="button" class="hist-link" id="to-history">
       <strong>きろくを みる</strong>
       <span id="hist-teaser"></span>
@@ -817,6 +899,87 @@
       <button type="button" class="btn" id="to-history2">きろく</button>
       <button type="button" class="btn" id="tohome">ホームへ</button>
     </div>
+  </main>
+
+  <!-- ======== かずうち ゲーム ======== -->
+  <main id="type" hidden>
+
+    <div id="t-start">
+      <div class="hello">
+        <div class="frogs" id="t-frogs" aria-hidden="true"></div>
+        <p class="lead">でてきた かずを どんどん うとう。<em>60びょう</em>で なんこ うてるかな？</p>
+      </div>
+
+      <h2 class="sec-label">けたの かず</h2>
+      <div class="levels" id="t-levels" role="group" aria-label="けたの かずを えらぶ">
+        <button type="button" class="lv" data-lv="1"><span>やさしい</span><small>1けた</small></button>
+        <button type="button" class="lv" data-lv="2"><span>ふつう</span><small>2けた</small></button>
+        <button type="button" class="lv" data-lv="3"><span>むずかしい</span><small>3けた</small></button>
+      </div>
+
+      <section class="sheet">
+        <p class="tg-best" id="t-best"></p>
+        <p class="tg-how">パソコンは <b>キーボードの すうじ</b>、タブレットは したの <b>すうじの キー</b>で うちます。<br>
+          ちがう キーを おしても やりなおせます（ミスに なるだけ）。</p>
+        <button type="button" class="go midori" id="t-go">スタート</button>
+      </section>
+
+      <div class="btnrow">
+        <button type="button" class="btn" id="t-home">ホームへ</button>
+      </div>
+    </div>
+
+    <div id="t-play" hidden>
+      <div class="qmeta">
+        <span id="t-lv"></span>
+        <span class="whoami" id="t-who"></span>
+        <span>のこり <span class="n" id="t-time">60.0</span>びょう</span>
+      </div>
+      <div class="tg-barwrap" id="t-barwrap"><i id="t-bar"></i></div>
+
+      <section class="sheet">
+        <div class="tg-card" id="t-card">
+          <p class="tg-ready" id="t-ready" hidden></p>
+          <div class="tg-digits" id="t-digits" role="status" aria-live="assertive"></div>
+        </div>
+      </section>
+
+      <p class="tg-stats">
+        <span>うてた<b id="t-hit">0</b></span>
+        <span>ミス<b id="t-miss">0</b></span>
+      </p>
+
+      <div class="tg-pad" id="t-pad">
+        <button type="button" class="key" data-k="1">1</button>
+        <button type="button" class="key" data-k="2">2</button>
+        <button type="button" class="key" data-k="3">3</button>
+        <button type="button" class="key" data-k="4">4</button>
+        <button type="button" class="key" data-k="5">5</button>
+        <button type="button" class="key" data-k="6">6</button>
+        <button type="button" class="key" data-k="7">7</button>
+        <button type="button" class="key" data-k="8">8</button>
+        <button type="button" class="key" data-k="9">9</button>
+        <button type="button" class="key" data-k="0">0</button>
+      </div>
+    </div>
+
+    <div id="t-over" hidden>
+      <section class="sheet">
+        <div class="stamp" id="t-stamp"></div>
+        <div class="stars" id="t-stars"></div>
+        <div class="cheer-lead">
+          <div class="bubble" id="t-bubble"></div>
+          <div class="frogs" id="t-over-frogs" aria-hidden="true"></div>
+        </div>
+        <div class="cheers" id="t-cheers"></div>
+      </section>
+      <div class="btnrow">
+        <button type="button" class="btn midori" id="t-again">もういちど</button>
+        <button type="button" class="btn" id="t-back">けたを かえる</button>
+        <button type="button" class="btn" id="t-home2">ホームへ</button>
+      </div>
+    </div>
+
   </main>
 
   <!-- ======== きろく ======== -->
@@ -967,7 +1130,7 @@
   };
 
   // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
-  const BUILD = "2026-09-19a";
+  const BUILD = "2026-09-20a";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
@@ -2503,8 +2666,9 @@
   /* ========== がめんの きりかえ ========== */
   function show(name) {
     clearTimeout(S.timer);
-    for (const id of ["home", "quiz", "result", "history", "team", "child"]) $(id).hidden = id !== name;
-    $("quit").hidden = name !== "quiz";
+    tgStop();                    // ゲームの タイマーを のこさない
+    for (const id of ["home", "quiz", "result", "history", "team", "child", "type"]) $(id).hidden = id !== name;
+    $("quit").hidden = !(name === "quiz" || name === "type");
     window.scrollTo({ top: 0, behavior: "instant" });
   }
 
@@ -2803,11 +2967,211 @@
     voiceSay(`${callName()}${cheers[0].replace(/[！!]+$/, "")}ケロー！`, "kero", "ok");
   }
 
+  /* ========== かずうち ゲーム ========== */
+  // でてきた かずを キーボード（か がめんの キー）で うつ。60びょうで なんこ うてるか。
+  // さんすうの きろく（sn-log-v1）には のこさない。ここだけの さいこう きろくを もつ。
+  const TG_SEC = 60;
+  const TG_KETA = { 1: 1, 2: 2, 3: 3 };
+  const TG_STAR = { 1: [30, 20, 8], 2: [20, 13, 5], 3: [14, 9, 4] };
+  const tgBestKey = (lv) => `sn-type-best-${currentPlayer()}-${lv}`;
+  const tgBest = (lv) => Number(store.get(tgBestKey(lv), "0")) || 0;
+  const TG = {
+    on: false,      // いま うける じかんか
+    wait: false,    // 1こ うてた あとの ちょっとの ま
+    tick: 0,        // のこり じかんの タイマー
+    cd: 0,          // 3・2・1 の タイマー
+    pop: 0,         // ぱっと ひかる えんしゅつの タイマー
+    endAt: 0,
+    target: "", pos: 0,
+    hit: 0, miss: 0, last: "",
+  };
+
+  // タイマーを ぜんぶ とめる（やめる・がめんを かえる とき）
+  function tgStop() {
+    clearInterval(TG.tick); clearInterval(TG.cd); clearTimeout(TG.pop);
+    TG.tick = TG.cd = TG.pop = 0;
+    TG.on = false;
+    TG.wait = false;
+  }
+
+  function tgView(v) {
+    $("t-start").hidden = v !== "start";
+    $("t-play").hidden = v !== "play";
+    $("t-over").hidden = v !== "over";
+    $("quit").hidden = v !== "play";      // とちゅうで やめられるのは あそんで いる あいだ
+  }
+
+  function openTyping() {
+    show("type");
+    tgView("start");
+    tgRenderStart();
+  }
+
+  function tgRenderStart() {
+    const keta = TG_KETA[S.lv], best = tgBest(S.lv);
+    $("t-best").innerHTML = best
+      ? `${esc(currentPlayer() || "いままで")}の さいこう きろくは <b>${best}</b>こ（${keta}けた）。これを こえられるかな？`
+      : `${keta}けたの かずが でてきます。まずは ためしに やって みよう。`;
+    $("t-frogs").innerHTML = `${frogSVG("kero", { size: 52, mood: "open" })}${frogSVG("koro", { size: 52, mood: "open" })}`;
+  }
+
+  // つぎの かず（おなじ かずが 2かい つづかないように）
+  function tgNumber() {
+    const keta = TG_KETA[S.lv];
+    const lo = keta === 1 ? 0 : Math.pow(10, keta - 1);
+    const hi = Math.pow(10, keta) - 1;
+    let v = String(rnd(lo, hi));
+    if (v === TG.last) v = String(rnd(lo, hi));
+    TG.last = v;
+    return v;
+  }
+
+  function tgRenderNumber() {
+    $("t-digits").innerHTML = TG.target.split("").map((d, i) =>
+      `<span class="${i < TG.pos ? "done" : i === TG.pos ? "now" : ""}">${d}</span>`).join("");
+  }
+
+  function tgRenderHUD() {
+    const left = Math.max(0, TG.endAt - Date.now());
+    $("t-time").textContent = (left / 1000).toFixed(1);
+    $("t-bar").style.width = `${(left / (TG_SEC * 1000)) * 100}%`;
+    $("t-barwrap").classList.toggle("hot", left <= 10000);
+    $("t-hit").textContent = String(TG.hit);
+    $("t-miss").textContent = String(TG.miss);
+  }
+
+  function tgNext() {
+    TG.target = tgNumber();
+    TG.pos = 0;
+    TG.wait = false;
+    tgRenderNumber();
+  }
+
+  // すうじの キーを 1つ うけとる（キーボードも がめんの キーも ここへ）
+  function tgKey(d) {
+    if (!TG.on || TG.wait) return;
+    const card = $("t-card");
+    if (d === TG.target[TG.pos]) {
+      TG.pos++;
+      tgRenderNumber();
+      if (TG.pos >= TG.target.length) {
+        TG.hit++;
+        TG.wait = true;
+        beep("ok");
+        card.classList.remove("pop");
+        void card.offsetWidth;                  // アニメを やりなおす
+        card.classList.add("pop");
+        TG.pop = setTimeout(() => { card.classList.remove("pop"); if (TG.on) tgNext(); }, 200);
+      }
+    } else {
+      TG.miss++;
+      beep("ng");
+      card.classList.remove("shake");
+      void card.offsetWidth;
+      card.classList.add("shake");
+    }
+    tgRenderHUD();
+  }
+
+  // 3・2・1 の あと はじまる
+  function tgStart() {
+    tgStop();
+    stopVoice();
+    TG.hit = 0; TG.miss = 0; TG.last = ""; TG.target = ""; TG.pos = 0;
+    TG.endAt = Date.now() + TG_SEC * 1000;
+    tgView("play");
+    $("t-lv").textContent = `${LV_NAME[S.lv]}：${TG_KETA[S.lv]}けた`;
+    $("t-who").innerHTML = currentPlayer() ? `<b>${esc(currentPlayer())}</b>` : "";
+    $("t-digits").innerHTML = "";
+    $("t-card").classList.remove("pop", "shake");
+    tgRenderHUD();
+    let n = 3;
+    const ready = $("t-ready");
+    ready.hidden = false;
+    ready.className = "tg-ready";
+    ready.textContent = "3";
+    beep("ng");
+    TG.cd = setInterval(() => {
+      n--;
+      if (n > 0) { ready.textContent = String(n); beep("ng"); return; }
+      clearInterval(TG.cd); TG.cd = 0;
+      ready.className = "tg-ready go";
+      ready.textContent = "スタート！";
+      beep("ok");
+      // やめられた ときに はじまって しまわない ように、この まちも tgStop() で とめる
+      TG.pop = setTimeout(() => {
+        if ($("type").hidden || $("t-play").hidden) return;
+        ready.hidden = true;
+        tgRun();
+      }, 450);
+    }, 700);
+  }
+
+  function tgRun() {
+    TG.on = true;
+    TG.endAt = Date.now() + TG_SEC * 1000;
+    tgNext();
+    tgRenderHUD();
+    TG.tick = setInterval(() => {
+      tgRenderHUD();
+      if (Date.now() >= TG.endAt) tgEnd();
+    }, 100);
+  }
+
+  function tgEnd() {
+    const hit = TG.hit, miss = TG.miss, lv = S.lv, keta = TG_KETA[lv];
+    tgStop();
+    stopVoice();
+    const prev = tgBest(lv);
+    const isBest = hit > prev;
+    if (isBest) store.set(tgBestKey(lv), String(hit));
+
+    const [s3, s2, s1] = TG_STAR[lv];
+    const stars = hit >= s3 ? 3 : hit >= s2 ? 2 : hit >= s1 ? 1 : 0;
+    $("t-stamp").innerHTML = `<div><div class="big">${keta}けたを うてた かず</div>`
+      + `<div class="sub">${hit}<small>こ</small></div></div>`;
+    $("t-stars").innerHTML = [0, 1, 2].map((i) => i < stars ? "★" : "<span>★</span>").join("");
+
+    const cheers = [];
+    cheers.push(hit === 0 ? "さいごまで ちょうせん したね！"
+      : hit >= s3 ? `${hit}こ！ すごい はやさだね！`
+      : hit >= s2 ? `${hit}こ うてたよ！ いいぞ！`
+      : `${hit}こ うてたよ！ がんばったね！`);
+    if (hit > 0) cheers.push(`1こ うつのに ${(TG_SEC / hit).toFixed(1)}びょう。`);
+    if (miss === 0 && hit > 0) cheers.push("ミス 0かい！ かんぺき！");
+    else if (miss > 0) cheers.push(`ミスは ${miss}かい。つぎは もっと へらせるかも。`);
+    if (isBest && prev > 0) cheers.push(`さいこう きろく！ まえより ${hit - prev}こ おおく うてたよ！`);
+    else if (isBest) cheers.push("さいこう きろく！");
+    else if (prev > 0) cheers.push(`いままでの さいこうは ${prev}こ。あと ${prev - hit + 1}こで こえられるよ。`);
+
+    $("t-bubble").textContent = `${callName()}${cheers[0]}`;
+    $("t-over-frogs").innerHTML = frogPairHTML(58);
+    $("t-cheers").innerHTML = cheers.slice(1).map((t) =>
+      `<div class="cheer">${maruMark()}<span>${t}</span></div>`).join("");
+    tgView("over");
+    voiceSay(`${callName()}${cheers[0].replace(/[！!]+$/, "")}ケロー！`, "kero", "ok");
+  }
+
+  $("to-type").addEventListener("click", openTyping);
+  $("t-go").addEventListener("click", tgStart);
+  $("t-again").addEventListener("click", tgStart);
+  $("t-back").addEventListener("click", () => { tgStop(); tgView("start"); tgRenderStart(); });
+  $("t-home").addEventListener("click", () => show("home"));
+  $("t-home2").addEventListener("click", () => show("home"));
+  $("t-levels").addEventListener("click", (e) => {
+    const b = e.target.closest(".lv");
+    if (b) { setLevel(Number(b.dataset.lv)); tgRenderStart(); }
+  });
+  $("t-pad").addEventListener("click", (e) => {
+    const k = e.target.closest(".key");
+    if (k) tgKey(k.dataset.k);
+  });
+
   /* ========== そうさ ========== */
   function setLevel(lv) {
     S.lv = lv;
     store.set("sn-lv", String(lv));
-    $("levels").querySelectorAll(".lv").forEach((b) => {
+    document.querySelectorAll(".lv").forEach((b) => {
       b.setAttribute("aria-pressed", String(Number(b.dataset.lv) === lv));
     });
   }
@@ -2816,7 +3180,7 @@
     const b = e.target.closest(".lv");
     if (b) setLevel(Number(b.dataset.lv));
   });
-  document.querySelectorAll(".mode").forEach((b) => {
+  document.querySelectorAll(".mode[data-mode]").forEach((b) => {
     b.addEventListener("click", () => startSet(b.dataset.mode));
   });
   $("input").addEventListener("click", (e) => {
@@ -3064,6 +3428,10 @@
   });
 
   document.addEventListener("keydown", (e) => {
+    if (!$("type").hidden) {                     // かずうち ゲーム
+      if (e.key >= "0" && e.key <= "9") { tgKey(e.key); e.preventDefault(); }
+      return;
+    }
     if ($("quiz").hidden) return;
     if (e.key >= "0" && e.key <= "9") { typeDigit(e.key); e.preventDefault(); }
     else if (e.key === "Backspace") { backspace(); e.preventDefault(); }
