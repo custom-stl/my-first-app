@@ -52,7 +52,9 @@ await ctx.addInitScript(`
     speak:(u)=>{ window.__said.push(String(u.text)); setTimeout(()=>u.onend&&u.onend(),10); },
     cancel:()=>{}, onvoiceschanged:null }});
   try { localStorage.setItem('sn-players', JSON.stringify(['はると']));
-        localStorage.setItem('sn-current','はると'); } catch {}
+        localStorage.setItem('sn-current','はると');
+      // テストの あいだは れんぞく時間の せいげんを 切る（そこは verify-timelimit.mjs が みる）
+      localStorage.setItem('sn-limit', JSON.stringify({ 'n:はると': 0 })); } catch {}
 `);
 const pg = await ctx.newPage();
 const errs = [];

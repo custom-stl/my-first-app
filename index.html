@@ -529,6 +529,36 @@
     .fx { display: none; }
   }
 
+  /* ---------- きゅうけい ----------
+     もんだいの がめんでは ない ので しずかに。数字だけ 大きく して、
+     あと どれくらいかが ひと目で わかる ように する。 */
+  .sheet.rest { text-align: center; padding: 26px 18px 22px; }
+  .sheet.rest .frogs { justify-content: center; margin-bottom: 12px; }
+  .rest-h {
+    font-family: var(--f-disp); font-weight: 500; font-size: var(--t-xl);
+    margin: 0; color: var(--ink);
+  }
+  .rest-lead { margin: 8px 0 0; font-size: var(--t-m); color: var(--ink-soft); word-break: keep-all; }
+  .rest-lead b { color: var(--ink); font-family: var(--f-num); }
+  .rest-clock { margin: 18px 0 0; display: grid; gap: 2px; }
+  .rest-clock b {
+    font-family: var(--f-num); font-weight: 800; font-size: 3.4rem; line-height: 1;
+    color: var(--ink); font-variant-numeric: tabular-nums;
+  }
+  .rest-clock span { font-size: var(--t-s); font-weight: 700; color: var(--ink-soft); }
+  .rest-note { margin: 16px 0 0; font-size: var(--t-s); color: var(--ink-soft); line-height: 1.9; word-break: keep-all; }
+  .rest-grown { margin-top: 20px; font-size: var(--t-xs); }
+  .plist.limits { margin-top: 14px; gap: 11px; }
+  .plist.limits li { gap: 10px; }
+  /* えらびは ほかの せっていの えらびと おなじ かたちに（子どもも おとなも おせる 大きさ） */
+  .plist.limits select {
+    flex: 0 0 auto; width: auto; min-width: 8.5em; min-height: 40px;
+    border: 1.5px solid var(--line); border-radius: var(--r-m);
+    background: var(--card-2); color: var(--ink);
+    font: inherit; font-size: var(--t-s); padding: 9px 10px;
+  }
+  #limit-msg { margin-top: 14px; }
+
   /* ---------- けっか ---------- */
   .stamp {
     width: 188px; height: 188px; margin: 8px auto 16px;
@@ -1824,10 +1854,31 @@
       <h3 class="sec-label" style="margin-top:18px">この たんまつの 人</h3>
       <ul class="plist" id="plist"></ul>
     </section>
+
+    <section class="sheet">
+      <h3 class="sec-label">れんぞくで やる じかん</h3>
+      <p class="note">きめた じかんを こえたら、<b>5ふんの きゅうけい</b>を あんないします。
+        もんだいの とちゅうでは 出ないので、1もん といてから きりかわります。
+        5ふん いじょう あけると、また はじめから かぞえます。</p>
+      <ul class="plist limits" id="limit-list"></ul>
+      <p class="srv-msg idle" id="limit-msg"></p>
+    </section>
     <div class="btnrow">
       <button type="button" class="btn" id="hist-back">ホームへ</button>
     </div>
     <div class="wipe" id="wipe"></div>
+  </main>
+
+  <!-- ======== きゅうけい ======== -->
+  <main id="rest" hidden>
+    <section class="sheet rest">
+      <div class="frogs" id="rest-frogs" aria-hidden="true"></div>
+      <h2 class="rest-h">きゅうけい しよう</h2>
+      <p class="rest-lead" id="rest-lead"></p>
+      <p class="rest-clock"><b id="rest-left">5:00</b><span>で また できるよ</span></p>
+      <p class="rest-note">まどの そとや とおくを 見て、めを やすめよう。<br>のびを するのも いいね。</p>
+      <button type="button" class="btn ghost rest-grown" id="rest-settings">おとなの かたへ（じかんの せってい）</button>
+    </section>
   </main>
 
   <!-- ======== ひとりぶんの くわしい きろく ======== -->
@@ -1892,7 +1943,7 @@
   };
 
   // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
-  const BUILD = "2026-09-21a";
+  const BUILD = "2026-09-21b";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
@@ -4162,6 +4213,26 @@
       + (list.length < MAX_PLAYERS ? `<button type="button" class="pchip add" id="padd">＋ ひとを ふやす</button>` : "");
     $("whoami").innerHTML = cur ? `<b>${esc(cur)}</b>` : "";
   }
+  function renderLimits() {
+    const list = loadPlayers();
+    $("limit-list").innerHTML = list.length === 0
+      ? `<li><span>まだ いません</span></li>`
+      : list.map((n) => {
+        const cur = limitFor(n);
+        const opts = LIMIT_CHOICES.map((m) =>
+          `<option value="${m}"${m === cur ? " selected" : ""}>${m ? `${m}ふん` : "せいげん なし"}</option>`).join("");
+        return `<li><span>${esc(n)}</span><select data-limit-for="${esc(n)}" aria-label="${esc(n)}の じかん">${opts}</select></li>`;
+      }).join("");
+    const who = currentPlayer();
+    const on = who ? minutesOn(who) : 0;
+    const lim = who ? limitFor(who) : 0;
+    const resting = (sessionFor(who)?.restUntil || 0) > Date.now();
+    $("limit-msg").innerHTML = !who ? ""
+      : !lim ? `いま <b>${esc(who)}</b>。せいげんは ありません。`
+      : resting ? `いま <b>${esc(who)}</b>は <b>きゅうけい中</b>です。じかんを のばすと すぐに つづけられます。`
+      : `いま <b>${esc(who)}</b>。つづけて <b>${on}</b>ふん（${lim}ふんで きゅうけい）。`;
+  }
+
   function renderPlist() {
     const list = loadPlayers();
     $("plist").innerHTML = list.length === 0
@@ -4170,6 +4241,138 @@
   }
   // なまえは がめんに そのまま だすので、タグとして よまれないように する
   const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  /* ========== れんぞくで やる じかん（人ごと） ==========
+     おなじ人が つづけて やって いる じかんを かぞえて、きめた じかんを こえたら
+     きゅうけいの がめんを 出す。**人ごとに きめる**（はるとは 15ふん、さくらは 20ぷん…）。
+
+     ・かぞえるのは「つづけて いる じかん」。GAP_MIN ぶん あくと、べつの かいと して
+       はじめから かぞえなおす（ごはんの あとに また やる、など）
+     ・ページを ひらきなおしても つづく（localStorage に のこす）。
+       リロードで リセットできたら「せいげん」に ならない
+     ・もんだいの とちゅうでは 出さない。1もん おわった ところ・1セット おわった ところで 出す
+       （GRACE_MIN を こえたら とちゅうでも 出す。ずっと とまって いる ときの ため）
+     ・きろく画面（おとなの かたへ）では 出さない。せっていを かえられなく なるので */
+  const LIMIT_KEY = "sn-limit", SESS_KEY = "sn-session";
+  const LIMIT_DEFAULT = 15;                       // ふん。なにも きめて いない ときは これ
+  const LIMIT_CHOICES = [10, 15, 20, 30, 45, 0];  // 0 は せいげん なし
+  const REST_MIN = 5;                             // きゅうけいの ながさ（ふん）
+  const GAP_MIN = 5;                              // これだけ あくと かぞえなおし
+  const GRACE_MIN = 3;                            // もんだいの とちゅうでも これを こえたら 出す
+  const MIN = 60000;
+
+  const readMap = (key) => {
+    try { const v = JSON.parse(store.get(key, "{}")); return v && typeof v === "object" ? v : {}; }
+    catch { return {}; }
+  };
+  function limitFor(name) {
+    const v = readMap(LIMIT_KEY)[playerId(name)];
+    return Number.isFinite(v) && v >= 0 ? v : LIMIT_DEFAULT;
+  }
+  function setLimit(name, min) {
+    const m = readMap(LIMIT_KEY);
+    m[playerId(name)] = min;
+    store.set(LIMIT_KEY, JSON.stringify(m));
+    // じかんを のばしたら、いまの きゅうけいは おわりに する
+    // （おとなが「もう すこし やらせよう」と かえた ときに すぐ つづけられる ように）
+    const sess = sessionFor(name);
+    if (!min || (sess && sess.restUntil > Date.now() && Date.now() - sess.start < min * MIN)) endRest(name);
+  }
+  const sessionFor = (name) => readMap(SESS_KEY)[playerId(name)] || null;
+  function saveSession(name, sess) {
+    const all = readMap(SESS_KEY);
+    all[playerId(name)] = sess;
+    store.set(SESS_KEY, JSON.stringify(all));
+  }
+
+  /** いま つかって いる ことを しらせる。あいだが あいて いたら かぞえなおす。 */
+  function touchSession() {
+    const name = currentPlayer();
+    if (!name) return null;
+    const now = Date.now();
+    let sess = sessionFor(name);
+    if (!sess || !Number.isFinite(sess.start) || now - (sess.last || 0) > GAP_MIN * MIN) {
+      sess = { start: now, last: now, restUntil: 0 };
+    } else {
+      sess.last = now;
+    }
+    saveSession(name, sess);
+    return sess;
+  }
+  /** つづけて やって いる ふんすう（画面に 出す ため） */
+  function minutesOn(name) {
+    const sess = sessionFor(name);
+    if (!sess || !Number.isFinite(sess.start)) return 0;
+    if (Date.now() - (sess.last || 0) > GAP_MIN * MIN) return 0;
+    return Math.floor((Date.now() - sess.start) / MIN);
+  }
+
+  function beginRest() {
+    const name = currentPlayer();
+    if (!name) return;
+    const sess = sessionFor(name) || { start: Date.now(), last: Date.now() };
+    sess.restUntil = Date.now() + REST_MIN * MIN;
+    saveSession(name, sess);
+    showRest();
+  }
+  function endRest(name = currentPlayer()) {
+    if (!name) return;
+    const now = Date.now();
+    saveSession(name, { start: now, last: now, restUntil: 0 });
+    clearInterval(restTimer);
+    restTimer = 0;
+    if (!$("rest").hidden) openTop();
+  }
+
+  // もんだいを といて いる さいちゅうか（ここでは 出さない）
+  const inQuestion = () =>
+    (!$("quiz").hidden && !S.locked) || (!$("tyquiz").hidden && T.on);
+  // おとなが せっていを いじれる がめん（ここでも 出さない）
+  const inGrownUp = () => !$("history").hidden || !$("child").hidden || !$("team").hidden;
+
+  /** きゅうけいの じかんなら がめんを 出す。出したら true。 */
+  function maybeRest(force = false) {
+    const name = currentPlayer();
+    if (!name || inGrownUp()) return false;
+    const sess = sessionFor(name);
+    if (!sess) return false;
+    const now = Date.now();
+    if (sess.restUntil > now) { showRest(); return true; }      // まだ きゅうけい中
+    const lim = limitFor(name);
+    if (!lim) return false;
+    const over = now - sess.start - lim * MIN;
+    if (over < 0) return false;
+    if (!force && inQuestion() && over < GRACE_MIN * MIN) return false;
+    beginRest();
+    return true;
+  }
+
+  let restTimer = 0;
+  function showRest() {
+    const name = currentPlayer();
+    const sess = sessionFor(name);
+    if (!sess) return;
+    if ($("rest").hidden) {
+      stopVoice();
+      for (const id of SCREENS) $(id).hidden = true;
+      $("rest").hidden = false;
+      $("quit").hidden = true;
+      window.scrollTo({ top: 0, behavior: "instant" });
+      $("rest-frogs").innerHTML =
+        `${frogSVG("kero", { size: 56, mood: "happy" })}${frogSVG("koro", { size: 56, mood: "happy" })}`;
+      const did = Math.max(1, Math.round((sess.restUntil - REST_MIN * MIN - sess.start) / MIN));
+      $("rest-lead").innerHTML = `${esc(name)}、<b>${did}ふん</b> つづけて がんばったね。`;
+    }
+    const paint = () => {
+      const left = Math.max(0, (sessionFor(name)?.restUntil || 0) - Date.now());
+      if (left <= 0) { endRest(name); return; }
+      const sec = Math.ceil(left / 1000);
+      $("rest-left").textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+    };
+    paint();
+    clearInterval(restTimer);
+    restTimer = setInterval(paint, 1000);
+  }
 
   /* ========== サーバーへの そうしん ========== */
   const SRV_KEY = "sn-server", OUTBOX_KEY = "sn-outbox", OUTBOX_MAX = 200;
@@ -4690,6 +4893,7 @@
     $("srv-url").value = url;
     $("srv-key").value = key;
     renderPlist();
+    renderLimits();
     const left = loadOutbox().length;
     if (!url) srvMsg("サーバーの URL を いれると、<b>スマホでも タブレットでも パソコンでも</b>、"
       + "どの たんまつで やった ぶんも 1つに あつまります。<br>"
@@ -5008,9 +5212,11 @@
 
   /* ========== がめんの きりかえ ========== */
   const SCREENS = ["top", "home", "eigo", "kanji", "typing", "quiz", "tyquiz", "result", "tyresult",
-    "history", "team", "child"];
+    "history", "team", "child", "rest"];
   function show(name) {
     clearTimeout(S.timer);
+    clearInterval(restTimer);
+    restTimer = 0;
     stopVoice();                 // がめんを かえる ときは こえも とめる
     for (const id of SCREENS) $(id).hidden = id !== name;
     $("quit").hidden = name !== "quiz" && name !== "tyquiz";
@@ -5022,10 +5228,14 @@
     renderPlayers();
     teaseHistory();
     renderHello();
+    touchSession();
+    maybeRest();
   }
 
   /* ========== 出題 ========== */
   function startSet(mode) {
+    touchSession();
+    if (maybeRest()) return;     // きゅうけいの じかんなら はじめない
     stopVoice();
     S.mode = mode;
     $("quiz").dataset.app = appOfMode(mode);
@@ -5399,6 +5609,8 @@
     if (!S.locked) return;
     document.querySelectorAll(".maru").forEach((el) => el.remove());
     if (S.i === TOTAL - 1) { showResult(); return; }
+    touchSession();
+    if (maybeRest()) return;     // 1もんの くぎりで きゅうけいに する
     S.i++;
     renderQuestion();
   }
@@ -5406,6 +5618,7 @@
   /* ========== けっか ========== */
   function showResult() {
     if (!S.saved) { S.saved = true; recordSet(S.results.filter((r) => r.ok).length); }
+    touchSession();
     const oks = S.results.filter((r) => r.ok);
     const missed = S.results.filter((r) => !r.ok);
     const n = oks.length;
@@ -5573,13 +5786,25 @@
       return;
     }
     const chip = e.target.closest(".pchip");
-    if (chip && chip.dataset.name) setCurrentPlayer(chip.dataset.name);
+    if (chip && chip.dataset.name) {
+      setCurrentPlayer(chip.dataset.name);
+      touchSession();          // 人が かわったら その人の じかんで かぞえる
+      maybeRest();             // その人が きゅうけい中なら すぐ 出す
+    }
   });
   $("pform").addEventListener("submit", (e) => {
     e.preventDefault();
     if (addPlayer($("pname").value)) $("pform").hidden = true;
   });
   $("pcancel").addEventListener("click", () => { $("pform").hidden = true; });
+  $("limit-list").addEventListener("change", (e) => {
+    const sel = e.target.closest("select[data-limit-for]");
+    if (!sel) return;
+    setLimit(sel.dataset.limitFor, Number(sel.value) || 0);
+    renderLimits();
+  });
+  $("rest-settings").addEventListener("click", () => openHistory());
+
   $("plist").addEventListener("click", (e) => {
     const b = e.target.closest("[data-del]");
     if (!b) return;
@@ -6213,6 +6438,8 @@
   }
 
   function tyStart() {
+    touchSession();
+    if (maybeRest()) return;     // きゅうけいの じかんなら はじめない
     tyStopAll();
     T.hit = 0; T.perfect = 0; T.miss = 0; T.keys = 0; T.score = 0; T.combo = 0; T.bestCombo = 0;
     T.missKeys = {}; T.last = ""; T.item = null; T.pos = 0; T.itemMiss = 0;
@@ -6321,6 +6548,7 @@
       ? `${c.name}・${LV_NAME[T.lv]} ／ ${hit}もん ／ せいかい ${acc}%`
       : `${c.name}・${LV_NAME[T.lv]} ／ ${hit}もん ／ ${(ms / 1000).toFixed(1)}びょう ／ せいかい ${acc}%`;
     $("ty-stars").innerHTML = [0, 1, 2].map((i) => (i < stars ? "★" : "<span>★</span>")).join("");
+    touchSession();
 
     const cheers = [];
     cheers.push(score >= 1800 ? `${score}てん！ すごい はやさだね！`
@@ -6433,6 +6661,23 @@
     flushOutbox();    // まえに おくれなかった きろくを おくる
   });
   $("hello-frogs").innerHTML = `${frogSVG("kero", { size: 52, mood: "open" })}${frogSVG("koro", { size: 52, mood: "open" })}`;
+
+  /* れんぞくで やって いる じかんを かぞえる。
+     見て いる ときだけ すすめる（べつの タブに いって いる あいだは かぞえない）。
+     ページを ひらきなおしても つづく（じかんは localStorage に ある）。 */
+  touchSession();
+  maybeRest();
+  setInterval(() => {
+    if (document.visibilityState !== "visible") return;
+    touchSession();
+    maybeRest();
+    if (!$("history").hidden) renderLimits();    // おとなが 見て いる あいだは ふんすうを あたらしく
+  }, 10000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    touchSession();
+    maybeRest();
+  });
 })();
 </script>
 </body>

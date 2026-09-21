@@ -50,6 +50,8 @@ async function device(origin) {
     try {
       localStorage.setItem('sn-players', JSON.stringify(['はると']));
       localStorage.setItem('sn-current', 'はると');
+      // テストの あいだは れんぞく時間の せいげんを 切る（そこは verify-timelimit.mjs が みる）
+      localStorage.setItem('sn-limit', JSON.stringify({ 'n:はると': 0 }));
     } catch {}
   `);
   const pg = await ctx.newPage();
