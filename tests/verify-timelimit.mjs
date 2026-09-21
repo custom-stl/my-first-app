@@ -222,6 +222,102 @@ try {
     await A.ctx.close();
   }
 
+  // ===== 11) きゅうけいの ながさを かえられる（みんな 共通） =====
+  {
+    const A = await device({ players: ['はると', 'さくら'] });
+    await A.pg.click('#to-history');
+    await A.pg.waitForTimeout(900);
+    const one = await A.pg.evaluate(() => document.querySelectorAll('#rest-min').length);
+    check('きゅうけいの ながさは 1つだけ（人ごとでは ない）', one === 1, `${one}こ`);
+    const opts = await A.pg.evaluate(() =>
+      [...document.querySelectorAll('#rest-min option')].map((o) => `${o.textContent}${o.selected ? '*' : ''}`));
+    check('きほんは 5ふん', opts.includes('5ふん*'), opts.join('/'));
+    await A.pg.selectOption('#rest-min', '10');
+    await A.pg.waitForTimeout(250);
+    check('えらんだ ながさが のこる',
+      await A.pg.evaluate(() => localStorage.getItem('sn-rest')) === '10',
+      await A.pg.evaluate(() => localStorage.getItem('sn-rest')));
+
+    // その ながさで きゅうけいに なるか
+    await A.pg.click('#hist-back');
+    await A.pg.waitForTimeout(400);
+    // まだ こえて いない ところから はじめて、といて いる あいだに こえさせる
+    await A.pg.evaluate((t) => {
+      localStorage.setItem('sn-session', JSON.stringify({ 'n:はると': { start: t, last: Date.now(), restUntil: 0 } }));
+    }, ago(14));
+    await A.pg.click('.mode[data-app="home"]');
+    await A.pg.click('.mode[data-mode="calc"]');
+    await A.pg.waitForTimeout(500);
+    await A.pg.evaluate((t) => {
+      const all = JSON.parse(localStorage.getItem('sn-session') || '{}');
+      all['n:はると'].start = t;
+      localStorage.setItem('sn-session', JSON.stringify(all));
+    }, ago(16));
+    await answerOne(A.pg);
+    await A.pg.evaluate(() => document.querySelector('#next')?.click());
+    await A.pg.waitForTimeout(400);
+    const left = await A.pg.evaluate(() => document.getElementById('rest-left').textContent.trim());
+    check('きめた ながさで きゅうけいに なる', /^(10:00|9:5\d)$/.test(left), left);
+    await A.ctx.close();
+  }
+
+  // ===== 12) きゅうけい中でも ほかの 人が できる（左上の だいめいから トップへ） =====
+  {
+    const A = await device({
+      players: ['はると', 'さくら'],
+      session: { 'n:はると': { start: ago(20), last: Date.now(), restUntil: Date.now() + 4 * MIN } },
+    });
+    check('はるとは きゅうけい画面', await screenOf(A.pg) === 'rest', await screenOf(A.pg));
+
+    // 左上の「べんきょうノート」で トップへ
+    await A.pg.click('#to-top');
+    await A.pg.waitForTimeout(500);
+    check('**だいめいラベルを おすと トップに もどれる**', await screenOf(A.pg) === 'top', await screenOf(A.pg));
+    const note = await A.pg.evaluate(() => {
+      const el = document.getElementById('rest-note-top');
+      return el.hidden ? '(出て いない)' : el.textContent.replace(/\s+/g, ' ').trim();
+    });
+    check('トップに「きゅうけい中」と のこり じかんが 出る', /はると/.test(note) && /あと \d+:\d\d/.test(note), note);
+
+    // トップに いる あいだは きゅうけい画面に もどされない
+    await A.pg.waitForTimeout(1500);
+    check('トップでは きゅうけい画面に もどされない', await screenOf(A.pg) === 'top', await screenOf(A.pg));
+
+    // さくらを えらぶと できる
+    await A.pg.evaluate(() => {
+      const b = [...document.querySelectorAll('#players .pchip')].find((x) => x.textContent.includes('さくら'));
+      b?.click();
+    });
+    await A.pg.waitForTimeout(400);
+    const noteAfter = await A.pg.evaluate(() => document.getElementById('rest-note-top').hidden);
+    check('さくらに かえると「きゅうけい中」は 消える', noteAfter === true, `hidden=${noteAfter}`);
+    await A.pg.click('.mode[data-app="home"]');
+    await A.pg.click('.mode[data-mode="calc"]');
+    await A.pg.waitForTimeout(600);
+    check('**さくらは きゅうけい中でも もんだいが できる**', await screenOf(A.pg) === 'quiz', await screenOf(A.pg));
+
+    // はるとに もどすと また とめられる
+    await A.pg.click('#to-top');
+    await A.pg.waitForTimeout(400);
+    await A.pg.evaluate(() => {
+      const b = [...document.querySelectorAll('#players .pchip')].find((x) => x.textContent.includes('はると'));
+      b?.click();
+    });
+    await A.pg.waitForTimeout(300);
+    check('はるとに もどすと また「きゅうけい中」が 出る',
+      await A.pg.evaluate(() => !document.getElementById('rest-note-top').hidden));
+    await A.pg.click('.mode[data-app="home"]');
+    await A.pg.click('.mode[data-mode="calc"]');
+    await A.pg.waitForTimeout(600);
+    check('**はるとは はじめようと すると きゅうけいに もどる**', await screenOf(A.pg) === 'rest', await screenOf(A.pg));
+
+    // きゅうけい画面の「ほかの 人が やる」でも おなじ
+    await A.pg.click('#rest-other');
+    await A.pg.waitForTimeout(400);
+    check('「ほかの 人が やる」でも トップに もどれる', await screenOf(A.pg) === 'top', await screenOf(A.pg));
+    await A.ctx.close();
+  }
+
   console.log('\n' + results.join('\n'));
   const ng = results.filter((r) => r.startsWith('NG')).length;
   console.log(`\nしっぱい ${ng}件 / JSエラー ${errs.length ? errs.slice(0, 3).join(' | ') : 'なし'}`);
