@@ -939,10 +939,11 @@
   /* きく ボタン */
   .playbtn {
     display: flex; align-items: center; justify-content: center; gap: 9px;
-    width: 100%; margin: 10px 0 0;
-    border: 2px solid var(--ai); background: var(--ai-soft); color: var(--ai);
+    width: 100%; margin: 14px 0 0;
+    border: 2px solid var(--accent); color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 9%, transparent);
     border-radius: var(--r-m); padding: 13px 10px;
-    font-family: var(--f-disp); font-size: var(--t-m); letter-spacing: .04em;
+    font-family: var(--f-disp); font-size: var(--t-m);
   }
   .playbtn:active { transform: translateY(2px); }
   .playbtn .spk { font-size: 1.25rem; line-height: 1; }
@@ -1245,6 +1246,20 @@
   .btnrow.kjbtns { flex-wrap: wrap; justify-content: center; gap: 8px; }
   .btnrow.kjbtns .btn { flex: 1 1 auto; min-width: 0; }
 
+  /* たんごの もんだい：ことばが しゅやく。◯だけ その画面の 色で 目立たせる。
+     （大きさは「絵としての 字」なので ものさしの そと。`.kjbig` と おなじ あつかい） */
+  .kjword { text-align: center; margin-top: 10px; }
+  .kjw-word {
+    font-family: var(--f-disp); font-weight: 500; color: var(--ink);
+    font-size: clamp(1.8rem, 8.4vw, 2.5rem); line-height: 1.55;
+    margin: 0; word-break: keep-all; overflow-wrap: break-word;
+  }
+  .kjw-word .hole { color: var(--accent); font-weight: 500; }
+  .kjw-yomi {
+    font-family: var(--f-body); font-weight: 700; font-size: var(--t-m);
+    color: var(--ink-soft); margin: 8px 0 0; word-break: keep-all;
+  }
+
   /* よみの もんだい：かんじ そのものが いちばん おおきい */
   .kjbig {
     text-align: center; font-weight: 700;
@@ -1537,10 +1552,18 @@
         <div class="peek" aria-hidden="true"><div class="peek-kj sm"><small>かわ</small>川</div></div>
       </button>
 
+      <button type="button" class="mode" data-mode="kj-word">
+        <div>
+          <h3>たんご</h3>
+          <p>ことばの ◯に 入る かんじを えらぶ</p>
+        </div>
+        <div class="peek" aria-hidden="true"><div class="peek-kj sm">一<small>ねんせい</small></div></div>
+      </button>
+
       <button type="button" class="mode" data-mode="kanji">
         <div>
           <h3>かんじ ぜんぶ</h3>
-          <p>3しゅるいを まとめて 10もん</p>
+          <p>4しゅるいを まとめて 10もん</p>
         </div>
         <div class="peek peek-emoji" aria-hidden="true">山花川</div>
       </button>
@@ -1869,7 +1892,7 @@
   };
 
   // このファイルを かえたら ここも あげる（こうかい先が さいしんか みて わかる ように）
-  const BUILD = "2026-09-20g";
+  const BUILD = "2026-09-21a";
   const TOTAL = 10;
   const PRAISE = ["その ちょうし！", "すごい！", "よく できたね！", "かんぺき！", "いいぞ！", "やったね！", "ばっちり！",
     "ケロちゃんも びっくり！", "コロちゃんも にっこり！", "ふたりと ハイタッチ！"];
@@ -1878,7 +1901,8 @@
     eigo: "えいご ぜんぶ", listen: "ききとり", eword: "えいたんご", talk: "あいさつ", abc: "アルファベット",
     "ty-moji": "タイピング：もじ", "ty-word": "タイピング：たんご",
     "ty-roma": "タイピング：ローマじ", "ty-num": "タイピング：すうじ",
-    kanji: "かんじ ぜんぶ", "kj-trace": "なぞりがき", "kj-yomi": "かんじの よみ", "kj-kaki": "かきとり",
+    kanji: "かんじ ぜんぶ", "kj-trace": "なぞりがき", "kj-yomi": "かんじの よみ",
+    "kj-kaki": "かきとり", "kj-word": "たんご",
   };
 
   /* ========== おと ========== */
@@ -2618,6 +2642,8 @@
       answer,
       text: `${a} ${op === "+" ? "＋" : "－"} ${b}`,
       answerText: String(answer),
+      // よみあげ。ひっさんの 数は 絵（マス）に なって いて ask には ないので、ここで ことばに する
+      sayJa: `${a} ${op === "+" ? "たす" : "ひく"} ${b} は いくつ？`,
     };
   }
 
@@ -2710,6 +2736,8 @@
       answer: q.answer,
       text: q.text,
       answerText: `${q.answer}${q.unit}`,
+      sayJa: sayable(q.text),
+      sayAuto: true,        // ぶんしょうだいは よむ ことじたいが かべに なるので、出たら 1かい よむ
     };
   }
 
@@ -2738,6 +2766,7 @@
       answer: { h, m },
       text: "とけいの よみとり",
       answerText: jTime(h, m),
+      sayJa: "いま なんじ なんぷん ですか。",
     };
   }
   function makeClockShift(lv) {
@@ -2753,6 +2782,7 @@
       answer: { h: ah, m: am },
       text: `${jTime(h, m)}の ${d}ふん${back ? "まえ" : "あと"}`,
       answerText: jTime(ah, am),
+      sayJa: `この とけいの ${d}ふん${back ? "まえ" : "あと"}は なんじ なんぷん ですか。`,
     };
   }
   function makeClockChoice(lv) {
@@ -2790,6 +2820,7 @@
       answer: right,
       text: `「${jTime(h, m)}」の とけいえらび`,
       answerText: jTime(h, m),
+      sayJa: `${sayable(jTime(h, m))}の とけいは どれですか。`,
     };
   }
   function makeClock(lv) {
@@ -3650,6 +3681,61 @@
     "目": "目を開ける", "立": "立ち上がる", "力": "力もち", "林": "林の中", "六": "六月",
   };
 
+  /* かんじの たんご。**1年生の その字だけを かんじで かいた ことば**（◯が その字）。
+     ならって いない 字は ひらがな ―― 小1の 教科書と おなじ かきかた。
+     よみは ぜんぶ ひらがなで もつ。◯の ところの よみは そこから けいさんする。 */
+  const KJ_WORD_SRC = [
+    ["一", "◯ねんせい", "いちねんせい"], ["右", "◯て", "みぎて"],
+    ["雨", "◯がふる", "あめがふる"], ["円", "ひゃく◯", "ひゃくえん"],
+    ["王", "◯さま", "おうさま"], ["音", "◯がする", "おとがする"],
+    ["下", "◯をみる", "したをみる"], ["火", "◯ようび", "かようび"],
+    ["花", "◯がさく", "はながさく"], ["貝", "◯がら", "かいがら"],
+    ["学", "◯こう", "がっこう"], ["気", "げん◯", "げんき"],
+    ["九", "◯がつ", "くがつ"], ["休", "◯みじかん", "やすみじかん"],
+    ["玉", "◯いれ", "たまいれ"], ["金", "お◯", "おかね"],
+    ["空", "◯をみる", "そらをみる"], ["月", "◯ようび", "げつようび"],
+    ["犬", "こ◯", "こいぬ"], ["見", "◯つける", "みつける"],
+    ["五", "◯がつ", "ごがつ"], ["口", "◯をあける", "くちをあける"],
+    ["校", "がっ◯", "がっこう"], ["左", "◯て", "ひだりて"],
+    ["三", "◯がつ", "さんがつ"], ["山", "◯のぼり", "やまのぼり"],
+    ["子", "◯ども", "こども"], ["四", "◯がつ", "しがつ"],
+    ["糸", "け◯", "けいと"], ["字", "も◯", "もじ"],
+    ["耳", "◯をすます", "みみをすます"], ["七", "◯がつ", "しちがつ"],
+    ["車", "でん◯", "でんしゃ"], ["手", "◯をあらう", "てをあらう"],
+    ["十", "◯にん", "じゅうにん"], ["出", "そとに◯る", "そとにでる"],
+    ["女", "◯のこ", "おんなのこ"], ["小", "◯さい", "ちいさい"],
+    ["上", "◯をみる", "うえをみる"], ["森", "◯のなか", "もりのなか"],
+    ["人", "さん◯", "さんにん"], ["水", "◯をのむ", "みずをのむ"],
+    ["正", "◯しい", "ただしい"], ["生", "せん◯", "せんせい"],
+    ["青", "◯いそら", "あおいそら"], ["夕", "◯がた", "ゆうがた"],
+    ["石", "こ◯", "こいし"], ["赤", "◯いはな", "あかいはな"],
+    ["千", "◯えん", "せんえん"], ["川", "◯あそび", "かわあそび"],
+    ["先", "◯せい", "せんせい"], ["早", "◯おき", "はやおき"],
+    ["草", "◯ばな", "くさばな"], ["足", "◯がはやい", "あしがはやい"],
+    ["村", "◯びと", "むらびと"], ["大", "◯きい", "おおきい"],
+    ["男", "◯のこ", "おとこのこ"], ["竹", "◯やぶ", "たけやぶ"],
+    ["中", "◯にはいる", "なかにはいる"], ["虫", "◯とり", "むしとり"],
+    ["町", "◯をあるく", "まちをあるく"], ["天", "◯き", "てんき"],
+    ["田", "◯んぼ", "たんぼ"], ["土", "◯ようび", "どようび"],
+    ["二", "◯ねんせい", "にねんせい"], ["日", "◯ようび", "にちようび"],
+    ["入", "◯りぐち", "いりぐち"], ["年", "いち◯せい", "いちねんせい"],
+    ["白", "◯いくも", "しろいくも"], ["八", "◯がつ", "はちがつ"],
+    ["百", "◯えん", "ひゃくえん"], ["文", "◯じ", "もじ"],
+    ["木", "◯のぼり", "きのぼり"], ["本", "え◯", "えほん"],
+    ["名", "◯まえ", "なまえ"], ["目", "◯をあける", "めをあける"],
+    ["立", "◯ちあがる", "たちあがる"], ["力", "◯もち", "ちからもち"],
+    ["林", "◯のなか", "はやしのなか"], ["六", "◯がつ", "ろくがつ"],
+  ];
+
+  /* ◯の ところの よみを 出す（「◯ねんせい」＋「いちねんせい」→「いち」）。
+     おなじ よみの 字は まちがいの えらびしに 出さない（先 と 千 は どちらも「せん」なので、
+     「◯せい／せんせい」に 千 を まぜると こたえが 2つに なって しまう）。 */
+  const KJ_WORDS = KJ_WORD_SRC.map(([k, d, y]) => {
+    const [pre, post] = d.split("◯");
+    return { k, d, y, r: y.slice(pre.length, y.length - post.length) };
+  });
+  const KJ_WORD_BY = new Map(KJ_WORDS.map((w) => [w.k, w]));
+
 
   // かたちが にて いる かんじ（むずかしい レベルの えらびかたに つかう）
   const KJ_LOOKALIKE = [
@@ -3671,8 +3757,8 @@
     }
   }
 
-  const KJ_KINDS = ["trace", "yomi", "kaki"];
-  const KJ_MODE = { trace: "kj-trace", yomi: "kj-yomi", kaki: "kj-kaki" };
+  const KJ_KINDS = ["trace", "yomi", "kaki", "word"];
+  const KJ_MODE = { trace: "kj-trace", yomi: "kj-yomi", kaki: "kj-kaki", word: "kj-word" };
   const isKanjiMode = (m) => m === "kanji" || Object.values(KJ_MODE).includes(m);
   const kanjiPool = (lv) => (lv === 1 ? KANJI.filter((x) => x.g === 1)
     : lv === 2 ? KANJI.filter((x) => x.g === 2) : KANJI);
@@ -3760,9 +3846,50 @@
     };
   }
 
+  /** たんごの まちがいの えらびし。◯の よみが おなじ 字は 出さない。 */
+  function kjWordDistract(ans, lv, n) {
+    const out = [], seen = new Set([ans.k]);
+    const take = (chars) => {
+      for (const c of chars) {
+        if (out.length >= n) return;
+        if (!c || seen.has(c) || !KJ_BY_CHAR.has(c)) continue;
+        if ((KJ_WORD_BY.get(c)?.r ?? "") === ans.r) continue;   // おなじ よみは こたえが 2つに なる
+        seen.add(c);
+        out.push(KJ_BY_CHAR.get(c));
+      }
+    };
+    if (lv >= 3) take(shuffle(KJ_NEAR.get(ans.k) || []));       // かたちの にた かんじから
+    take(shuffle(kanjiPool(lv).map((x) => x.k)));
+    take(shuffle(KANJI.map((x) => x.k)));                       // たりなければ ぜんぶから
+    return out;
+  }
+
+  // 4) たんご：ことばの ◯に 入る かんじを えらぶ（「◯ねんせい（いちねんせい）」→ 一）
+  function makeKjWord(lv) {
+    const ans = pick(KJ_WORDS);
+    const cs = shuffle([KJ_BY_CHAR.get(ans.k), ...kjWordDistract(ans, lv, 3)]);
+    return {
+      ask: "◯に 入る かんじは どれ？",
+      bodyHTML: `<div class="kjword">
+          <p class="kjw-word">${esc(ans.d).replace("◯", '<b class="hole">◯</b>')}</p>
+          <p class="kjw-yomi">${esc(ans.y)}</p>
+        </div>`,
+      input: "choice",
+      choices: cs.map((w) => ({ html: `<span class="pkanji">${esc(w.k)}</span>`, correct: w.k === ans.k, label: w.k })),
+      text: `たんご：${ans.y}`,
+      answerText: ans.k,
+      sayJa: ans.y,
+      sayNg: `${ans.y}の ◯は 「${ans.k}」だよー`,
+      hint: `${ans.r}と よむ かんじだコロ`,
+    };
+  }
+
   function makeKanji(kind, lv) {
     if (!KJ_KINDS.includes(kind)) kind = pick(KJ_KINDS);
-    const q = kind === "trace" ? makeKjTrace(lv) : kind === "yomi" ? makeKjYomi(lv) : makeKjKaki(lv);
+    const q = kind === "trace" ? makeKjTrace(lv)
+      : kind === "yomi" ? makeKjYomi(lv)
+      : kind === "word" ? makeKjWord(lv)
+      : makeKjKaki(lv);
     q.kind = KJ_MODE[kind];
     q.kanji_app = true;
     return q;
@@ -4141,7 +4268,7 @@
     sansu: ["calc", "word", "clock", "mix"],
     eigo: ["eigo", "listen", "eword", "talk", "abc"],
     typing: ["ty-moji", "ty-word", "ty-roma", "ty-num"],
-    kanji: ["kanji", "kj-trace", "kj-yomi", "kj-kaki"],
+    kanji: ["kanji", "kj-trace", "kj-yomi", "kj-kaki", "kj-word"],
   };
   const APP_NAME = { all: "ぜんぶ", sansu: "さんすう", eigo: "えいご", kanji: "かんじ", typing: "タイピング" };
   // トップの カードの ならびと おなじ じゅん。アプリを ふやしたら ここにも たす。
@@ -4945,7 +5072,13 @@
     } else {
       $("askfrog").hidden = true;
       $("ask").textContent = q.ask;
-      $("body").innerHTML = q.input === "trace" ? traceBodyHTML(q) : q.bodyHTML;
+      $("body").innerHTML = (q.input === "trace" ? traceBodyHTML(q) : q.bodyHTML) + jaPlayHTML(q);
+      // ぶんしょうだいは 出たら 1かい よむ（よむ ことじたいが かべに なるので）。
+      // stopVoice() で とまる ように voiceSeq を みる。
+      if (q.sayJa && q.sayAuto && jaCanHear()) {
+        const my = ++voiceSeq;
+        voiceTimer = setTimeout(() => { if (my === voiceSeq) speak(q.sayJa, "kero"); }, 350);
+      }
     }
     renderAnswerArea();
     if (q.input === "trace") setupTrace(q);
@@ -5007,9 +5140,22 @@
     }
   }
 
+  /* もんだいの よみあげ（にほんご）。さんすうと かんじの もんだいに つける。
+     えいごは speakEn、それ いがいは ケロの こえ。ボタンは どちらも #replay。 */
+  const jaCanHear = () => Boolean(synth) && voiceOn && voiceReady();
+  function jaPlayHTML(q) {
+    if (!q.sayJa) return "";
+    const can = jaCanHear();
+    const label = can ? "もんだいを きく" : !voiceOn ? "こえが オフです" : "こえが ありません";
+    return `<button type="button" class="playbtn" id="replay"${can ? "" : " disabled"}>
+        <span class="spk" aria-hidden="true">🔊</span>${label}
+      </button>`;
+  }
+
   function replay() {
     const q = S.qs[S.i];
-    if (q?.say) speakEn(q.say, { rate: q.rate });
+    if (q?.say) { speakEn(q.say, { rate: q.rate }); return; }
+    if (q?.sayJa) speak(q.sayJa, "kero");
   }
 
   function renderFields() {
@@ -5641,6 +5787,8 @@
       return;
     }
     if (e.key >= "0" && e.key <= "9") { typeDigit(e.key); e.preventDefault(); }
+    // スペースで もんだいを もういちど よむ（4たくの ときと おなじ）
+    else if ((e.key === " " || e.key === "Spacebar") && (cq?.say || cq?.sayJa)) { replay(); e.preventDefault(); }
     else if (e.key === "Backspace") { backspace(); e.preventDefault(); }
     else if (e.key === "Escape") { clearAll(); }
     else if (e.key === "Enter") { S.locked ? nextQuestion() : submit(); e.preventDefault(); }

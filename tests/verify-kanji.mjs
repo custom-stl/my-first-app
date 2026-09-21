@@ -44,10 +44,13 @@ const STROKES = {
 const b = await chromium.launch();
 const ctx = await b.newContext({ viewport: { width: 430, height: 950 }, hasTouch: true });
 await ctx.addInitScript(`
-  class U { constructor(t){ this.text=t;this.onend=null;this.onerror=null; } }
+  window.__said = [];
+  class U { constructor(t){ this.text=t;this.onend=null;this.onerror=null;this.lang=''; } }
   window.SpeechSynthesisUtterance = U;
   Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{
-    getVoices:()=>[], speak:()=>{}, cancel:()=>{}, onvoiceschanged:null }});
+    getVoices:()=>[{ name:'Kyoko', lang:'ja-JP', localService:true }],
+    speak:(u)=>{ window.__said.push(String(u.text)); setTimeout(()=>u.onend&&u.onend(),10); },
+    cancel:()=>{}, onvoiceschanged:null }});
   try { localStorage.setItem('sn-players', JSON.stringify(['はると']));
         localStorage.setItem('sn-current','はると'); } catch {}
 `);
@@ -265,7 +268,7 @@ try {
   await pg.waitForTimeout(400);
 
   // ===== 3) よみ・かきとりの せんたくし =====
-  for (const [mode, label] of [['kj-yomi', 'よみ'], ['kj-kaki', 'かきとり']]) {
+  for (const [mode, label] of [['kj-yomi', 'よみ'], ['kj-kaki', 'かきとり'], ['kj-word', 'たんご']]) {
     await startKanji(mode, 3);
     let bad = 0, marked = 0;
     for (let i = 0; i < 10; i++) {
@@ -298,6 +301,69 @@ try {
     check(`${label}: ○が かならず 1つ`, marked === 10, `${marked}/10`);
   }
   check('○の ボタンと こたえあわせが あう', !fails.some(f => f.includes('○の ボタン')));
+
+  // ===== 4) たんご（ことばの ◯に 入る かんじ） =====
+  // ◯の よみが おなじ かんじは、こたえが 2つに なって しまうので えらびしに 出して はいけない。
+  // テスト側で その くみを もって おいて てらす（アプリの ひょうは 見ない）。
+  const SAME_YOMI = [['気', '木'], ['千', '先'], ['田', '立']];
+  const partnerOf = (k) => { for (const [a, b] of SAME_YOMI) { if (a === k) return b; if (b === k) return a; } return null; };
+
+  const words = [];
+  for (let set = 0; set < 6; set++) {
+    await startKanji('kj-word', (set % 3) + 1);    // レベル1・2・3 を 2セットずつ（60もん）
+    for (let i = 0; i < 10; i++) {
+      const q = await pg.evaluate(() => ({
+        word: document.querySelector('.kjw-word')?.textContent.trim() ?? '',
+        yomi: document.querySelector('.kjw-yomi')?.textContent.trim() ?? '',
+        picks: [...document.querySelectorAll('.pick')].map((e) => e.textContent.trim()),
+        btn: document.getElementById('replay')?.textContent.trim() ?? '',
+      }));
+      await pg.evaluate(() => { window.__said = []; document.getElementById('replay')?.click(); });
+      await pg.waitForTimeout(80);
+      const said = await pg.evaluate(() => (window.__said || []).slice());
+      await pg.click('.pick[data-c="0"]');
+      await pg.waitForTimeout(150);
+      const ans = await pg.evaluate(() => ({
+        marked: [...document.querySelectorAll('.pick.ans')].map((e) => e.textContent.trim()),
+        say: document.querySelector('.judge .say p b')?.textContent ?? '',
+      }));
+      words.push({ ...q, said, ...ans });
+      await pg.evaluate(() => document.querySelector('#next')?.click());
+      await pg.waitForTimeout(100);
+    }
+  }
+
+  for (const w of words) {
+    if ((w.word.match(/◯/g) || []).length !== 1) fails.push(`たんご: ◯が 1つで ない（${w.word}）`);
+    if (!/^[ぁ-んー◯]+$/.test(w.word)) fails.push(`たんご: ひらがなと ◯ いがいが ある（${w.word}）`);
+    if (!/^[ぁ-んー]+$/.test(w.yomi)) fails.push(`たんご: よみが ひらがなで ない（${w.yomi}）`);
+    const [pre, post] = w.word.split('◯');
+    if (!w.yomi.startsWith(pre) || !w.yomi.endsWith(post)) {
+      fails.push(`たんご: ことばと よみが あわない（${w.word} / ${w.yomi}）`);
+      continue;
+    }
+    const blank = w.yomi.slice(pre.length, w.yomi.length - post.length);
+    if (!blank) fails.push(`たんご: ◯の よみが からっぽ（${w.word} / ${w.yomi}）`);
+    const k = w.marked[0] || '';
+    const bad = partnerOf(k);
+    if (bad && w.picks.includes(bad)) {
+      fails.push(`たんご: ◯の よみが おなじ かんじが えらびしに ある（こたえ ${k} なのに ${bad} が ある: ${w.picks.join(',')}）`);
+    }
+  }
+  check('たんご: ことばは ひらがな＋◯ 1つ', !fails.some((f) => f.includes('◯が 1つ') || f.includes('いがいが ある')),
+    `${words.length}もん しらべた`);
+  check('たんご: ことばと よみが かみあう', !fails.some((f) => f.includes('あわない') || f.includes('からっぽ')),
+    words[0] ? `れい: ${words[0].word} / ${words[0].yomi}` : '');
+  const conflicts = words.filter((w) => partnerOf(w.marked[0] || '')).length;
+  check('たんご: ◯の よみが おなじ かんじは えらびしに 出さない',
+    !fails.some((f) => f.includes('よみが おなじ')) && conflicts > 0,
+    conflicts > 0 ? `${conflicts}もんが 気／木・千／先・田／立 だった`
+      : 'その かんじが 1もんも 出なかった（ためせて いない）');
+  check('たんご: 「もんだいを きく」で ことばの よみを よむ',
+    words.every((w) => w.said.length === 1 && w.said[0] === w.yomi),
+    words[0] ? `れい: ${JSON.stringify(words[0].said)} / ${words[0].yomi}` : '');
+  check('たんご: ことばが たくさん 出る', new Set(words.map((w) => w.word + w.yomi)).size >= 20,
+    `${new Set(words.map((w) => w.word + w.yomi)).size}しゅるい / ${words.length}もん`);
 
   console.log('\n' + results.join('\n'));
   if (fails.length) { console.log('\nこまかい しっぱい:'); fails.slice(0, 10).forEach(f => console.log(' -', f)); }

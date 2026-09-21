@@ -16,7 +16,7 @@ export const MODES = [
   // えいご
   "eigo", "listen", "eword", "talk", "abc",
   // かんじ
-  "kanji", "kj-trace", "kj-yomi", "kj-kaki",
+  "kanji", "kj-trace", "kj-yomi", "kj-kaki", "kj-word",
   // タイピング
   "ty-moji", "ty-word", "ty-roma", "ty-num",
 ];

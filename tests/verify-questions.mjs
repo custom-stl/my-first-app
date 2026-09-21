@@ -189,8 +189,110 @@ for (const lv of [1, 2, 3]) {
     }
   }
 }
+// ===== さんすうの よみあげ =====
+// こえを にせものに して「なにを しゃべったか」を とる。
+// 見るのは 3つ: ボタンが 出るか／しゃべる ことばが もんだいと あって いるか／
+// ぶんしょうだいだけ じどうで 1かい よむか（ひっさん・とけいでは かってに よまない）。
+{
+  const ctx = await b.newContext({ viewport: { width: 430, height: 950 } });
+  await ctx.addInitScript(`
+    window.__said = [];
+    class U { constructor(t){ this.text = t; this.onend = null; this.onerror = null; this.lang = ''; } }
+    window.SpeechSynthesisUtterance = U;
+    Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: {
+      getVoices: () => [{ name: 'Kyoko', lang: 'ja-JP', localService: true }],
+      speak: (u) => { window.__said.push(String(u.text)); setTimeout(() => u.onend && u.onend(), 10); },
+      cancel: () => {}, onvoiceschanged: null } });
+    try { localStorage.setItem('sn-players', JSON.stringify(['はると']));
+          localStorage.setItem('sn-current', 'はると'); } catch {}
+  `);
+  const sp = await ctx.newPage();
+  sp.on('pageerror', (e) => errs.push(String(e)));
+  await sp.goto('file://' + process.cwd() + '/index.html');
+  await sp.waitForTimeout(1200);
+
+  const toTop = async () => {
+    for (let i = 0; i < 4; i++) {
+      const moved = await sp.evaluate(() => {
+        if (!document.getElementById('top').hidden) return false;
+        for (const id of ['quit', 'tohome', 'home-back', 'kanji-back', 'eigo-back']) {
+          const el = document.getElementById(id);
+          if (el && el.offsetParent !== null) { el.click(); return true; }
+        }
+        return false;
+      });
+      await sp.waitForTimeout(300);
+      if (!moved) break;
+    }
+  };
+
+  for (const [mode, lv, auto] of [['calc', 2, false], ['word', 1, true], ['clock', 1, false]]) {
+    await toTop();
+    await sp.click('.mode[data-app="home"]');
+    await sp.click(`#home .lv[data-lv="${lv}"]`);
+    await sp.click(`.mode[data-mode="${mode}"]`);
+    await sp.waitForTimeout(700);
+    const got = await sp.evaluate(() => {
+      const said = window.__said.slice();
+      window.__said.length = 0;
+      return {
+        hasBtn: Boolean(document.getElementById('replay')),
+        disabled: document.getElementById('replay')?.disabled,
+        ask: document.getElementById('ask').textContent.trim(),
+        body: document.getElementById('body').textContent.trim(),
+        auto: said,
+      };
+    });
+    await sp.evaluate(() => document.getElementById('replay')?.click());
+    await sp.waitForTimeout(150);
+    const spoken = await sp.evaluate(() => { const v = window.__said.slice(); window.__said.length = 0; return v; });
+
+    if (!got.hasBtn) fails.push(`${mode}: 「もんだいを きく」ボタンが ない`);
+    if (got.disabled) fails.push(`${mode}: こえが あるのに ボタンが おせない`);
+    if (spoken.length !== 1) fails.push(`${mode}: ボタンで しゃべった かいすうが ${spoken.length}`);
+    if (auto && got.auto.length !== 1) fails.push(`${mode}: じどうで よむ はずが ${got.auto.length}かい`);
+    if (!auto && got.auto.length !== 0) fails.push(`${mode}: かってに よんで しまう（${got.auto.length}かい）`);
+
+    // しゃべった ことばが もんだいと あって いるか
+    const say = spoken[0] || '';
+    if (mode === 'calc') {
+      const nums = (got.body.match(/\d+/g) || []).slice(0, 2);
+      const ok = nums.length === 2 && say.includes(nums[0]) && say.includes(nums[1])
+        && /たす|ひく/.test(say) && (got.ask.startsWith('たし') ? say.includes('たす') : say.includes('ひく'));
+      if (!ok) fails.push(`calc: しゃべる ことばが もんだいと ちがう（${got.ask} ${nums.join(',')} → ${say}）`);
+    } else if (mode === 'word') {
+      if (norm(say) !== norm(got.ask)) fails.push(`word: もんだい文と ちがう ことばを よむ（${got.ask} → ${say}）`);
+      if (norm(got.auto[0] || '') !== norm(say)) fails.push(`word: じどうと ボタンで よむ ことばが ちがう`);
+    } else if (!/なんじ|とけい/.test(say)) {
+      fails.push(`clock: とけいの もんだいを よんで いない（${say}）`);
+    }
+  }
+
+  // こえが ない たんまつでは ボタンは 出るが おせない
+  const off = await b.newContext({ viewport: { width: 430, height: 950 } });
+  await off.addInitScript(`Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: {
+    getVoices: () => [], speak: () => {}, cancel: () => {}, onvoiceschanged: null } });`);
+  const op = await off.newPage();
+  await op.goto('file://' + process.cwd() + '/index.html');
+  await op.waitForTimeout(1000);
+  await op.click('.mode[data-app="home"]');
+  await op.click('.mode[data-mode="calc"]');
+  await op.waitForTimeout(500);
+  const offBtn = await op.evaluate(() => {
+    const el = document.getElementById('replay');
+    return el ? { label: el.textContent.trim(), disabled: el.disabled } : null;
+  });
+  if (!offBtn) fails.push('こえが ない たんまつ: ボタンが ない');
+  else if (!offBtn.disabled) fails.push('こえが ない たんまつ: ボタンが おせて しまう');
+  else if (!/こえが/.test(offBtn.label)) fails.push(`こえが ない たんまつ: りゆうを 出して いない（${offBtn.label}）`);
+  await off.close();
+  await ctx.close();
+  stats.yomiage = 4;
+}
+
 console.log('もんだいすう:', JSON.stringify(stats));
 console.log('しっぱい:', fails.length);
 fails.slice(0, 12).forEach(f => console.log(' -', f));
 console.log('JS errors:', errs.length ? errs.slice(0,5).join(' | ') : 'none');
+if (fails.length || errs.length) process.exitCode = 1;
 await b.close();
