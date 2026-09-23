@@ -53,6 +53,7 @@ node tests/verify-voice-order.mjs # ケロとコロの声が重ならないか�
 | `config.js` | きろくサーバーのURL・あいことばの既定値（空でよい） |
 | `server/` | きろくサーバー。`api.mjs` が本体で、Workers版（`worker.js`）とローカル版（`dev-server.mjs`）が共用 |
 | `tests/` | 上記の検証スクリプト |
+| `windows-timer/` | 別アプリ：Windows 用キッズタイマー（PowerShell+WinForms。さんすうノートとは無関係でZIPにも入れない）。`.ps1` は **UTF-8 BOM付き**必須（5.1が文字化けする） |
 | `.github/workflows/pages.yml` | GitHub Pages 用（リポジトリが private のままなので現在は動かない） |
 
 ## 気をつけること
